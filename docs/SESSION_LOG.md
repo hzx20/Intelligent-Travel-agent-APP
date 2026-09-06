@@ -51,3 +51,28 @@
 【待办清单】
 - 追加：v0.7 开工前补学/引入 langgraph 包（LangChain 1.4 生态兼容，预计无版本冲突）
 - **远景待办：Neo4j 知识图谱**（2026-09-06 用户拍板"列入之后的待办项"）：不排进当前版本序列；触发条件 = 未来上智能推荐引擎（相似景点推荐/多城串联）或关系查询超 2 层；届时只替换 LangGraph"检索节点"实现，其余架构不动
+
+---
+
+## 2026-09-06 v0.5「数据底座」完成（commit 5b33f3f + tag v0.5-data）
+
+【项目状态】v0.5 ✅ 完成；下一步 v0.6「有门有脸」（前端工程：Vue 3 + 首页/景点板块）
+
+【已定决策】（本条新增）
+- 用户"继续"视为十页效果图放行，直接开工 v0.5
+- SQLite 落 backend/data/app.db（gitignore 隔离）；换 MySQL 只改 DATABASE_URL
+- 免费标签：高德 POI 无票价字段，按名称/类型粗判（公园/街区/广场/湖/古镇/步行街/绿地=免费），41.5% 免费比，后台管理员可改
+- 城市口径归一化：入库"成都市"→"成都"，对齐原型筛选下拉
+- JWT 密钥：.env 可配 JWT_SECRET；未配置时用开发期派生值（上云前配置正式值）
+
+【当前任务】v0.5 交付物
+- backend/app/db/{database.py,models.py}：8 表全套（users/spots/favorites/comments/guides/guide_images/guide_spots/ai_plans）
+- backend/scripts/fetch_pois.py：高德 v5 官方接口采集（--city 单城 / --all 全量，QPS 限流 0.4s）
+- backend/app/security.py + app/routers/auth.py：PBKDF2 10 万次迭代哈希 + PyJWT HS256（7 天）；/api/auth/register、/login、/me；get_current_user 依赖供后续收藏等接口复用
+- 数据：5 城 530 条真实景点（成都 130/其余各 100），有图 99.4%、坐标 100%、amap_id 零重复
+- 测试：pytest 11 项全过（v0.5 新增 6 项 + M1/M2 回归 5 项，智谱真实调用验证无回归）
+
+【待办清单】
+1. v0.6「有门有脸」：Vue 3 前端工程初始化 + 首页（轮播+推荐+猜你喜欢）+ 景点板块（列表筛选+详情收藏）
+2. 远程 GitHub/Gitee 仓库建立（需用户账号配合）
+3. Neo4j 远景待办（见上）
