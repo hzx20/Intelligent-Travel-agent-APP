@@ -1,0 +1,8 @@
+# 本地钥匙文件，永远不上传
+.env
+.env.local
+
+# 系统与依赖杂物
+node_modules/
+__pycache__/
+.DS_Store
