@@ -1,15 +1,15 @@
-"""景点只读接口（v0.6）：列表筛选分页 / 热门推荐 / 猜你喜欢 / 详情。"""
-import random
+"""景点接口（v0.6）：列表筛选分页 / 热门推荐 / 猜你喜欢 / 详情 / 收藏 / 评论。"""
 from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.db.database import get_db
 from app.db.models import Comment, Favorite, Spot, User
-from app.routers.auth import get_current_user
+from app.routers.auth import bearer, get_current_user, get_current_user_optional
+from app.security import decode_token
 
 router = APIRouter(prefix="/api/spots", tags=["spots"])
 
@@ -51,6 +51,7 @@ class SpotDetailOut(BaseModel):
     source: str
     source_url: str
     favorite_count: int
+    favorited: bool = False  # 当前用户是否已收藏（游客恒为 False）
     comments: list[CommentOut]
 
 
@@ -195,7 +196,11 @@ def for_you_guest(page: int = Query(1, ge=1, le=3), db: Session = Depends(get_db
 
 
 @router.get("/{spot_id}", response_model=SpotDetailOut)
-def spot_detail(spot_id: int, db: Session = Depends(get_db)):
+def spot_detail(
+    spot_id: int,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user_optional),
+):
     spot = (
         db.query(Spot).options(joinedload(Spot.comments))
         .filter(Spot.id == spot_id).first()
@@ -203,6 +208,12 @@ def spot_detail(spot_id: int, db: Session = Depends(get_db)):
     if spot is None:
         raise HTTPException(404, "景点不存在")
     fav_count = db.query(Favorite).filter(Favorite.spot_id == spot_id).count()
+    favorited = bool(
+        user
+        and db.query(Favorite)
+        .filter(Favorite.user_id == user.id, Favorite.spot_id == spot_id)
+        .first()
+    )
     comments = (
         db.query(Comment, User.username)
         .join(User, Comment.user_id == User.id)
@@ -218,6 +229,7 @@ def spot_detail(spot_id: int, db: Session = Depends(get_db)):
         source=spot.source,
         source_url=spot.source_url,
         favorite_count=fav_count,
+        favorited=favorited,
         comments=[
             CommentOut(
                 id=c.id, content=c.content, rating=c.rating,
@@ -226,4 +238,71 @@ def spot_detail(spot_id: int, db: Session = Depends(get_db)):
             )
             for c, name in comments
         ],
+    )
+
+
+class CommentIn(BaseModel):
+    content: str = Field(min_length=1, max_length=500)
+    rating: Optional[int] = Field(default=None, ge=1, le=5)
+
+    @field_validator("content")
+    @classmethod
+    def reject_blank(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("评论内容不能为空")
+        return v
+
+
+@router.post("/{spot_id}/favorite")
+def toggle_favorite(
+    spot_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """收藏/取消收藏切换：已收藏则取消，未收藏则添加。返回最新状态与人数。"""
+    if db.get(Spot, spot_id) is None:
+        raise HTTPException(404, "景点不存在")
+    fav = (
+        db.query(Favorite)
+        .filter(Favorite.user_id == user.id, Favorite.spot_id == spot_id)
+        .first()
+    )
+    if fav:
+        db.delete(fav)
+        db.commit()
+        favorited = False
+    else:
+        db.add(Favorite(user_id=user.id, spot_id=spot_id))
+        db.commit()
+        favorited = True
+    count = db.query(Favorite).filter(Favorite.spot_id == spot_id).count()
+    return {"favorited": favorited, "favorite_count": count}
+
+
+@router.post("/{spot_id}/comments", status_code=201)
+def add_comment(
+    spot_id: int,
+    body: CommentIn,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """发表景点评论（1-500 字，可选 1-5 星评分）。"""
+    if db.get(Spot, spot_id) is None:
+        raise HTTPException(404, "景点不存在")
+    comment = Comment(
+        user_id=user.id,
+        spot_id=spot_id,
+        content=body.content.strip(),
+        rating=body.rating,
+    )
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+    return CommentOut(
+        id=comment.id,
+        content=comment.content,
+        rating=comment.rating,
+        created_at=comment.created_at.strftime("%Y-%m-%d %H:%M"),
+        username=user.username,
     )

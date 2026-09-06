@@ -1,13 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { useAuth } from './store/auth'
 
-const { user, login, register, logout } = useAuth()
-const showLogin = ref(false)
-const mode = ref('login') // login | register
-const username = ref('')
-const password = ref('')
-const nickname = ref('')
+const { user, showLogin, loginMode, login, register, logout, openLogin } = useAuth()
+const form = reactive({ username: '', nickname: '', password: '' })
 const err = ref('')
 const busy = ref(false)
 
@@ -15,8 +11,8 @@ async function submit() {
   err.value = ''
   busy.value = true
   try {
-    if (mode.value === 'login') await login(username.value, password.value)
-    else await register(username.value, nickname.value || username.value, password.value)
+    if (loginMode.value === 'login') await login(form.username, form.password)
+    else await register(form.username, form.password, form.nickname || form.username)
     showLogin.value = false
   } catch (e) {
     err.value = e.message
@@ -38,26 +34,27 @@ async function submit() {
         你好，{{ user.nickname }} · <span class="lk" @click="logout">退出</span>
       </template>
       <template v-else>
-        游客 · <span class="lk" @click="showLogin = true; mode = 'login'">登录</span> / <span class="lk" @click="showLogin = true; mode = 'register'">注册</span>
+        游客 · <span class="lk" @click="openLogin('login')">登录</span> /
+        <span class="lk" @click="openLogin('register')">注册</span>
       </template>
     </span>
   </nav>
 
   <router-view />
 
-  <!-- 登录/注册弹窗 -->
+  <!-- 登录/注册弹窗（状态在 store，任何页面可唤起） -->
   <div v-if="showLogin" class="modal-mask" @click.self="showLogin = false">
     <div class="modal">
       <div class="tabs">
-        <span :class="{ on: mode === 'login' }" @click="mode = 'login'">登录</span>
-        <span :class="{ on: mode === 'register' }" @click="mode = 'register'">注册</span>
+        <span :class="{ on: loginMode === 'login' }" @click="loginMode = 'login'">登录</span>
+        <span :class="{ on: loginMode === 'register' }" @click="loginMode = 'register'">注册</span>
       </div>
-      <input v-model="username" placeholder="用户名（3 位以上，字母/数字/中文）" />
-      <input v-model="nickname" v-if="mode === 'register'" placeholder="昵称（可留空）" />
-      <input v-model="password" type="password" placeholder="密码（6 位以上）" @keyup.enter="submit" />
+      <input v-model="form.username" placeholder="用户名（3 位以上，字母/数字/中文）" />
+      <input v-if="loginMode === 'register'" v-model="form.nickname" placeholder="昵称（可留空）" />
+      <input v-model="form.password" type="password" placeholder="密码（6 位以上）" @keyup.enter="submit" />
       <p v-if="err" class="err">{{ err }}</p>
       <button class="btn-main" :disabled="busy" @click="submit">
-        {{ busy ? '请稍候…' : (mode === 'login' ? '登录' : '注册并登录') }}
+        {{ busy ? '请稍候…' : (loginMode === 'login' ? '登录' : '注册并登录') }}
       </button>
     </div>
   </div>

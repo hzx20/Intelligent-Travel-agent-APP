@@ -54,6 +54,20 @@ def get_current_user(
     return user
 
 
+def get_current_user_optional(
+    cred: HTTPAuthorizationCredentials | None = Depends(bearer),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """可选登录：带有效 token 返回用户，否则 None（游客可浏览的页面用）。"""
+    if cred is None:
+        return None
+    user_id = decode_token(cred.credentials)
+    if user_id is None:
+        return None
+    user = db.get(User, user_id)
+    return user if (user and user.is_active) else None
+
+
 @router.post("/register", status_code=status.HTTP_201_CREATED, response_model=UserOut)
 def register(body: RegisterIn, db: Session = Depends(get_db)):
     exists = db.query(User).filter(User.username == body.username).first()

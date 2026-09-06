@@ -1,8 +1,10 @@
-/** 登录态（响应式）：token + 当前用户信息，供导航栏与权限判断共用 */
+/** 登录态（响应式）：token + 当前用户 + 全局登录弹窗，供导航栏与各页面共用 */
 import { ref } from 'vue'
 import { api, getToken, setToken } from '../api'
 
 const user = ref(null)
+const showLogin = ref(false)
+const loginMode = ref('login') // login | register
 
 export function useAuth() {
   async function restore() {
@@ -23,5 +25,9 @@ export function useAuth() {
     setToken('')
     user.value = null
   }
-  return { user, restore, login, register, logout }
+  function openLogin(mode = 'login') {
+    loginMode.value = mode
+    showLogin.value = true
+  }
+  return { user, showLogin, loginMode, restore, login, register, logout, openLogin }
 }

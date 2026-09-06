@@ -70,15 +70,19 @@ def test_for_you_guest_and_logged_in(client):
     db = Session()
     spots, u1, _ = _seed(db)
     db.close()
-    # 游客：有收藏数据 → 按热度返回（此时收藏覆盖 2 个 spot，热度不足 12 兜底 id）
+    # 游客：返回分页结构，页 1 满 12 条，页 2 为剩余 2 条（种子共 14 条）且与页 1 不重叠
     guest = c.get("/api/spots/for-you-guest").json()
-    assert len(guest) == 12
+    assert len(guest["items"]) == 12 and guest["total"] == 14
+    p2 = c.get("/api/spots/for-you-guest", params={"page": 2}).json()
+    assert len(p2["items"]) == 2 and guest["total"] == 14
+    ids1 = {s["id"] for s in guest["items"]}
+    assert all(s["id"] not in ids1 for s in p2["items"]), "页 2 不应与页 1 重复"
     # 登录用户：alice 收藏了"公园"标签景点 → 偏好命中应包含公园类
     login = c.post("/api/auth/login", json={"username": "alice", "password": "pass123456"}).json()
     mine = c.get("/api/spots/for-you",
                  headers={"Authorization": f"Bearer {login['token']}"}).json()
-    assert len(mine) == 12
-    assert all(s["tags"] for s in mine), "偏好推荐应命中带标签景点"
+    assert len(mine["items"]) == 12
+    assert all(s["tags"] for s in mine["items"]), "偏好推荐应命中带标签景点"
     # 未登录访问 /for-you 应 401
     assert c.get("/api/spots/for-you").status_code == 401
 
