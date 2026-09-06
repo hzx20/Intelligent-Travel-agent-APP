@@ -116,6 +116,35 @@ def test_plan_stream_sse_guest(client):
             break
 
 
+def test_plan_history_endpoints(client):
+    """历史列表与详情：仅本人可见，游客返回空列表。"""
+    c, Session = client
+    db = Session()
+    u = User(username=f"hist_{uuid.uuid4().hex[:6]}", password_hash="x", nickname="有历史")
+    other = User(username=f"oth_{uuid.uuid4().hex[:6]}", password_hash="x", nickname="别人")
+    db.add_all([u, other])
+    db.commit()
+    db.add(AiPlan(user_id=u.id, session_id="s1", status="completed",
+                  intent_json='{"destination":"西安","days":3}',
+                  process_json="[]", result_json='{"days":[{"day":1,"spots":[]}]}'))
+    db.commit()
+    t1, t2 = create_token(u.id), create_token(other.id)
+    db.close()
+
+    # 游客 → 空列表提示
+    guest = c.get("/api/plan/history").json()
+    assert guest["items"] == []
+    # 本人 → 1 条，含城市与天数
+    mine = c.get("/api/plan/history", headers={"Authorization": f"Bearer {t1}"}).json()
+    assert len(mine["items"]) == 1 and mine["items"][0]["city"] == "西安" and mine["items"][0]["days"] == 1
+    pid = mine["items"][0]["id"]
+    # 详情：本人可看 / 他人 404 / 游客 401
+    detail = c.get(f"/api/plan/{pid}", headers={"Authorization": f"Bearer {t1}"})
+    assert detail.status_code == 200 and detail.json()["intent"]["destination"] == "西安"
+    assert c.get(f"/api/plan/{pid}", headers={"Authorization": f"Bearer {t2}"}).status_code == 404
+    assert c.get(f"/api/plan/{pid}").status_code == 401
+
+
 def test_plan_stream_saves_history_when_logged_in(client):
     """登录用户完整规划（补齐天数）→ ai_plans 落库。"""
     c, Session = client

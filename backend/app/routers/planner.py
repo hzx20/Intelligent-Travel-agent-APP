@@ -32,6 +32,59 @@ def _sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
+@router.get("/history")
+def plan_history(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user_optional),
+):
+    """我的历史规划列表（登录用户）。"""
+    if user is None:
+        return {"items": [], "note": "游客不保存历史，登录后自动记录"}
+    rows = (
+        db.query(AiPlan)
+        .filter(AiPlan.user_id == user.id, AiPlan.status == "completed")
+        .order_by(AiPlan.created_at.desc())
+        .limit(20)
+        .all()
+    )
+    items = []
+    for p in rows:
+        intent = json.loads(p.intent_json or "{}")
+        result = json.loads(p.result_json or "{}")
+        items.append({
+            "id": p.id,
+            "session_id": p.session_id,
+            "city": intent.get("destination") or intent.get("city") or "未知城市",
+            "days": len(result.get("days") or []),
+            "created_at": p.created_at.strftime("%Y-%m-%d %H:%M"),
+        })
+    return {"items": items}
+
+
+@router.get("/{plan_id}")
+def plan_detail(
+    plan_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user_optional),
+):
+    """单条历史规划详情（仅本人可见）。"""
+    if user is None:
+        from fastapi import HTTPException
+        raise HTTPException(401, "登录后可查看历史规划")
+    p = db.get(AiPlan, plan_id)
+    if p is None or p.user_id != user.id:
+        from fastapi import HTTPException
+        raise HTTPException(404, "记录不存在")
+    return {
+        "id": p.id,
+        "status": p.status,
+        "intent": json.loads(p.intent_json or "{}"),
+        "verify_logs": json.loads(p.process_json or "[]"),
+        "itinerary": json.loads(p.result_json or "{}"),
+        "created_at": p.created_at.strftime("%Y-%m-%d %H:%M"),
+    }
+
+
 @router.post("/stream")
 async def plan_stream(
     body: StreamIn,

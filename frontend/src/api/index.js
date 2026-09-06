@@ -32,3 +32,42 @@ export const api = {
   patch: (url, body) => request('PATCH', url, body),
   raw: (method, url) => request(method, url),
 }
+
+/**
+ * SSE 流式规划：POST + ReadableStream 手动解析（fetch 不支持 EventSource 的 POST）
+ * 回调：onLog({node,message}) / onToken(text) / onResult(data) / onDone()
+ */
+export async function streamPlan(payload, { onLog, onToken, onResult, onDone }) {
+  const headers = { 'Content-Type': 'application/json' }
+  const token = getToken()
+  if (token) headers.Authorization = `Bearer ${token}`
+  const resp = await fetch('/api/plan/stream', {
+    method: 'POST', headers, body: JSON.stringify(payload),
+  })
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+  const reader = resp.body.getReader()
+  const decoder = new TextDecoder()
+  let buf = ''
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buf += decoder.decode(value, { stream: true })
+    const parts = buf.split('\n\n')
+    buf = parts.pop()
+    for (const part of parts) {
+      let ev = 'message', data = ''
+      for (const line of part.split('\n')) {
+        if (line.startsWith('event: ')) ev = line.slice(7).trim()
+        else if (line.startsWith('data: ')) data += line.slice(6)
+      }
+      if (!data) continue
+      try {
+        const obj = JSON.parse(data)
+        if (ev === 'log') onLog?.(obj)
+        else if (ev === 'token') onToken?.(obj.text || '')
+        else if (ev === 'result') onResult?.(obj)
+        else if (ev === 'done') onDone?.()
+      } catch { /* 跳过不完整块 */ }
+    }
+  }
+}
