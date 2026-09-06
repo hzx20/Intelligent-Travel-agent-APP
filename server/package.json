@@ -1,0 +1,12 @@
+{
+  "name": "trip-agent-server",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "description": "智能旅行规划 Agent - 后端核心模块",
+  "scripts": {
+    "cli": "node cli.js",
+    "test:m1": "node ../test/m1.test.js",
+    "test:m2": "node ../test/m2.test.js"
+  }
+}
