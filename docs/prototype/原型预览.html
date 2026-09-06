@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-page-node-id="NBCdUtBTE6tTtdY0IIKYC3">
-<head data-page-node-id="XrjiZFvhtDDrO1rnQBGBd7">
-<meta charset="UTF-8" data-page-node-id="dtV4Ab3ZCkB0X2um8huDub">
-<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="6Rye2YA9nl3WtURa5b7HB0">
-<title>智能旅行规划 Agent — 产品原型 v0.2 第三稿</title>
+<html lang="zh-CN" data-page-node-id="FVrrpfFMBwqlduvYPnHK4p">
+<head data-page-node-id="pJQHHQHMAMWjoRJ382rjIS">
+<meta charset="UTF-8" data-page-node-id="vRXve7uXDKoFl1SsZApwJg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="POI328mWQeFvX1TWNtxE44">
+<title>智能旅行规划 Agent — 产品原型 v0.2 第四稿</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:"Microsoft YaHei",sans-serif; background:#f0efeb; color:#333; padding:24px 16px; }
@@ -72,179 +72,144 @@
   .mb { font-size:12px; border:1px solid #ccc; background:#fff; border-radius:8px; padding:5px 12px; cursor:pointer; }
   .mb.danger { color:#a33; border-color:#d9b3b3; }
   .backlink { font-size:12px; color:#1a6e50; cursor:pointer; }
-  /* 页4 导出 */
-  .paper { background:#fff; border:1px solid #ddd; width:100%; max-width:520px; margin:0 auto; padding:26px 30px; font-size:13px; }
-  .paper h2 { font-size:17px; text-align:center; margin-bottom:4px; }
-  .paper .meta { text-align:center; color:#777; font-size:12px; margin-bottom:14px; }
-  .paper table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:14px; }
-  .paper th, .paper td { border:1px solid #ddd; padding:6px 8px; text-align:left; }
-  .paper th { background:#f4f3ef; }
-  .paper .dayh { background:#e3f0ea; font-weight:bold; }
-  .budget { background:#f6f6f3; border:1px solid #e4e2da; border-radius:8px; padding:10px 12px; font-size:12px; line-height:2; }
-  .pbuttons { text-align:right; margin-bottom:10px; }
   footer { margin-top:20px; font-size:12px; color:#888; line-height:1.8; }
 </style>
 </head>
-<body data-page-node-id="OB28POzHD9VfSVb5V0lyxr">
-<div class="wrap" data-page-node-id="1Pjt2QuCxxOHQyarGO9Jec">
-  <h1 data-page-node-id="wfiGlejibycdEGZ5f0DNMM">智能旅行规划 Agent · 产品原型 <span class="tag" data-page-node-id="KMU6JQB9QNCuMAcmEaE2Xs">v0.2 样板间 · 第三稿（移除独立对话回放页）</span></h1>
-  <div class="changelist" data-page-node-id="A5wrXkaSCVSCSNhiOH5eNV">本次变更：移除独立的「对话回放页」。查看历史对话统一在页③ 历史记录页内完成——点会话卡上的「继续对话」，就在本页内展开对话回放视图，可接着聊。其余功能不变。</div>
-  <div class="sub" data-page-node-id="GQXAcRFPgyNgI7Tm5XBot9">线框图 = 定布局和交互用，不是最终配色。点下面四个页签切换页面。</div>
+<body data-page-node-id="2aoArzLFt0niiMMgTtvENC">
+<div class="wrap" data-page-node-id="5whg6nHjk6qIdVhFXg3Sip">
+  <h1 data-page-node-id="WWQ0y9W2nWiebKt0Wu8kYG">智能旅行规划 Agent · 产品原型 <span class="tag" data-page-node-id="92O3k9tdNoC5iu9JGHUmCu">v0.2 样板间 · 第四稿（移除独立行程单导出页）</span></h1>
+  <div class="changelist" data-page-node-id="sCNlUDdRRfIx1b8P78HujJ">本次变更：移除独立的「行程单导出页」。导出动作并入页② 行程结果页——点「导出 Word」按钮直接下载表格版 .docx 文件，不经过单独页面。其余功能不变。</div>
+  <div class="sub" data-page-node-id="ljUjxxV8I53ch9psMOGCLc">线框图 = 定布局和交互用，不是最终配色。点下面三个页签切换页面。</div>
 
-  <div class="tabs" data-page-node-id="BZwtDfGm42L6Ak53d1nzkQ">
-    <div class="tab on" onclick="show(0)" data-page-node-id="Rot7GSZNv0FWE1GOBJjANG">① 对话规划页</div>
-    <div class="tab" onclick="show(1)" data-page-node-id="EHLcAdV7wBLFlPLrelBxIs">② 行程结果页·地图主视图</div>
-    <div class="tab" onclick="show(2)" data-page-node-id="ZhcYh0G5NDruNXJ8xWGr7l">③ 历史记录页</div>
-    <div class="tab" onclick="show(3)" data-page-node-id="poUyWFqxh4YaVw50R02DiN">④ 行程单导出页</div>
+  <div class="tabs" data-page-node-id="QbPVBLBI5PgplXzVRzx4VG">
+    <div class="tab on" onclick="show(0)" data-page-node-id="s14wATigVnIdfORO2IvGxJ">① 对话规划页</div>
+    <div class="tab" onclick="show(1)" data-page-node-id="9EunPlA1dQdrnXHqEDBx2E">② 行程结果页·地图主视图</div>
+    <div class="tab" onclick="show(2)" data-page-node-id="0HJXiEueTr5wOUubEDTsoH">③ 历史记录页</div>
   </div>
 
   <!-- 页1 -->
-  <div class="page on" data-page-node-id="8mWM9xTrAvVaTssTHWLtPc">
-    <div class="frame" data-page-node-id="ZAtxB0f8AdNLZYCH0a1Qu4">
-      <div class="bar" data-page-node-id="WTgOcBg8yPezGRh8Rt64nX"><b data-page-node-id="FNszDh3a3ZcDG01cPBWMvC">🧳 智能行程规划师</b><span data-page-node-id="leigPhnwWcJVmvNkxH6lIl">首页</span></div>
-      <div class="inner" data-page-node-id="tKE7jOwG1MfkHVGvC2bE7Q">
-        <div class="hero" data-page-node-id="lFiB7ceikwdJSi6OZ9VuB2">
-          <p style="font-size:16px;font-weight:bold;" data-page-node-id="qHJDOZB1WXTtoVCCstH8fh">说一句话，得到一份画在地图上的旅行计划</p>
-          <p data-page-node-id="cFALSCUS3ZbeXHEKbiwQZu">真实路线连线 · 真实天气 · 预算算得清</p>
+  <div class="page on" data-page-node-id="tS7aBePyGNH0GtDwLm9tz5">
+    <div class="frame" data-page-node-id="j6sXhlPUFztPwGtOT7zBnW">
+      <div class="bar" data-page-node-id="RX2xFOTBzVFModLaff8tkI"><b data-page-node-id="dA6MPtLwzRxi9jwggDYsna">🧳 智能行程规划师</b><span data-page-node-id="CmzDQJ2kpm19CYxsXIOhyu">首页</span></div>
+      <div class="inner" data-page-node-id="hSYwUrhBXJGVWartx3LxkH">
+        <div class="hero" data-page-node-id="cH5MAZSeiARTgkdksKW4B2">
+          <p style="font-size:16px;font-weight:bold;" data-page-node-id="iS2utLhvehccQZCMXKrlID">说一句话，得到一份画在地图上的旅行计划</p>
+          <p data-page-node-id="BjSQeMKYzg4lMVrGIbWwSF">真实路线连线 · 真实天气 · 预算算得清</p>
         </div>
-        <div class="input" data-page-node-id="H3zS3jkm87gaGLLubjTNDa">十一想去成都玩 3 天，预算 3000，带 5 岁小孩，不想太赶</div>
-        <button class="btn" data-page-node-id="Od9FHtGh0aOSKVG0mXS8wY">开始规划</button>
-        <div class="chat" data-page-node-id="iTYA8QTkF5buOs7x4PpXFQ">
-          <div class="msg user" data-page-node-id="wo7CQRlb9mnVyzxgfihvs7">十一想去成都玩 3 天，预算 3000，带 5 岁小孩，不想太赶</div>
-          <div class="msg ai" data-page-node-id="k9L60VhkR6abD4BuK4YFC0">好的！还差 2 个信息就能开工：<br data-page-node-id="hoQ1R8EZUifvZVC8cnM8Oo">① 大概哪几天出发？② 住酒店还是民宿？</div>
-          <div class="chips" data-page-node-id="neBM5vcnLD3fjaLGHJALgI"><span class="chip" data-page-node-id="ypExdjkDYTeSTlaH1P51cG">10月1日-3日</span><span class="chip" data-page-node-id="EADtKR6RNsRbuBDp3GUwPt">随便，干净就行</span><span class="chip" data-page-node-id="RQnkWqFZyKiEkI4dtkgPYZ">自己补充…</span></div>
-          <div class="msg ai" data-page-node-id="sv7LEWHwoCAmp7LXWmokWv">收到！信息齐了，我来生成行程 —— 会把地点按顺序画在地图上，配好真实路线、天气和预算。</div>
+        <div class="input" data-page-node-id="izH0996cLTp0G9c7f26Vw3">十一想去成都玩 3 天，预算 3000，带 5 岁小孩，不想太赶</div>
+        <button class="btn" data-page-node-id="nulp1WlHH9aBm2QEPiYNvq">开始规划</button>
+        <div class="chat" data-page-node-id="ofqVHD2YNpWGS2uwGxQmPU">
+          <div class="msg user" data-page-node-id="pEPMs3fqINEjtq88ekdlzy">十一想去成都玩 3 天，预算 3000，带 5 岁小孩，不想太赶</div>
+          <div class="msg ai" data-page-node-id="wy5Pf4r3DT54euuxnInQFw">好的！还差 2 个信息就能开工：<br data-page-node-id="jWywCKRY7DjUmdjynvABCA">① 大概哪几天出发？② 住酒店还是民宿？</div>
+          <div class="chips" data-page-node-id="DPFlwiqBOZAxbb7YOLtx2a"><span class="chip" data-page-node-id="QHuXCi63fEObtFHxUKMGfH">10月1日-3日</span><span class="chip" data-page-node-id="oUXU8GLG0OKU7jnnaz7KKT">随便，干净就行</span><span class="chip" data-page-node-id="9RSrIc2NBEt1QrM0lwwZdq">自己补充…</span></div>
+          <div class="msg ai" data-page-node-id="SJu0kEZx1JORmEAtCQjZI6">收到！信息齐了，我来生成行程 —— 会把地点按顺序画在地图上，配好真实路线、天气和预算。</div>
         </div>
       </div>
     </div>
-    <div class="note" data-page-node-id="T11gXJY5eftiU44U2YCaCg"><b data-page-node-id="H7JtVzbjf9KcqGnGuIhDQQ">这页的交互：</b><br data-page-node-id="cGQN0nMyiGR186SQSUZMYS">1. 你输入一句话需求 → AI 解析，缺什么就追问什么，信息不全不会硬编行程。<br data-page-node-id="CCyRIdDqJ4k3jHytsYw6MF">2. 点绿色快捷选项即可回答，不用打字。<br data-page-node-id="vkkPm7aEadmuBDtaijhKsq">3. 信息齐了自动开始生成 → 进入 ② 行程结果页。</div>
+    <div class="note" data-page-node-id="lkL719wtjzdObmKbuaAqF2"><b data-page-node-id="pO3iS2OGktNw0y24Dtr7j4">这页的交互：</b><br data-page-node-id="loVsx6ENiFDRDetuSFi06v">1. 你输入一句话需求 → AI 解析，缺什么就追问什么，信息不全不会硬编行程。<br data-page-node-id="jQeIsq7ARr12nWJD4pgBUZ">2. 点绿色快捷选项即可回答，不用打字。<br data-page-node-id="VDmw15KI317i3UQ4oUVkA3">3. 信息齐了自动开始生成 → 进入 ② 行程结果页。</div>
   </div>
 
   <!-- 页2 地图主视图 -->
-  <div class="page" data-page-node-id="tszHpqj9oHXEgys2baqLmw">
-    <div class="frame" data-page-node-id="Fg02pWYgY2f9pP84vE76ne">
-      <div class="bar" data-page-node-id="KKztyD4anhB12qyKHXisY0"><b data-page-node-id="z6aHXW8MePV2F4m7wWabIj">行程结果</b><span data-page-node-id="BEaJz4qzWBSx7qH0VNWgUs">生成中 → 已完成</span></div>
-      <div class="inner" data-page-node-id="E6qHgZRixsOGTL0YBcBVrR">
-        <div class="sumline" data-page-node-id="wCRyjA55WDTHthHghi3Jgq">
-          <span class="pill" data-page-node-id="gu47jynzEZ3qUe0pfXaI8d">成都</span><span class="pill" data-page-node-id="BNvUcfq13jDaeDqS1v7pSx">10月1日-3日 · 3天2晚</span><span class="pill" data-page-node-id="GYg0vHGe2VzgqRU4EUdkPd">2大1小</span><span class="pill" data-page-node-id="LLsnnRXjw8qe4CNhrFo4DA">预算 ¥3000</span>
+  <div class="page" data-page-node-id="HcZahRv5fxNygVtWAxzyKT">
+    <div class="frame" data-page-node-id="ZlOULrA0IUbAASrf9z1x7t">
+      <div class="bar" data-page-node-id="Y2WRf2Z5xXKfcMu0BAabKh"><b data-page-node-id="fNIOMI3FcnCfPTTaezSn6h">行程结果</b><span data-page-node-id="0YjAz8t3QL9djg06dCdNYM">生成中 → 已完成</span></div>
+      <div class="inner" data-page-node-id="0FeqmFeMTCla0VKKAHl9J3">
+        <div class="sumline" data-page-node-id="RidIPcW1oMsKbJMpfqNjdD">
+          <span class="pill" data-page-node-id="z41V83hXibFvsEOaWkrxuE">成都</span><span class="pill" data-page-node-id="6Mh2zATgRj8ebRoMUNVxGF">10月1日-3日 · 3天2晚</span><span class="pill" data-page-node-id="ELr98ChwDcLZgLTA9LGTUs">2大1小</span><span class="pill" data-page-node-id="2pmF5zwikFeQPoW5zBH5Bt">预算 ¥3000</span>
         </div>
-        <div class="steps" data-page-node-id="4IUMPZY0Kn6apa1rKsMkmn">
-          <span class="step done" data-page-node-id="8JDrphlLufMrp1hPWreJDj">✓ 理解需求</span><span class="step done" data-page-node-id="l1byzAGaL6VcLBonNNe6Ca">✓ 想行程</span><span class="step done" data-page-node-id="I5yJX83rMELepn7XtwJ55f">✓ 核实真实路线</span><span class="step done" data-page-node-id="mntvyMG1IEFCJFS3mfiE09">✓ 查天气</span><span class="step now" data-page-node-id="WYFA7rA0GMR61bAmNKcHuX">画到地图上…</span>
+        <div class="steps" data-page-node-id="NO5IrtbCMjx5eYaBHSvjVK">
+          <span class="step done" data-page-node-id="xSHndubRBgRSZ5VoTZbCn3">✓ 理解需求</span><span class="step done" data-page-node-id="zjml0y4uOACCsMMXhKULUv">✓ 想行程</span><span class="step done" data-page-node-id="VHO6m5YwQnrzX8OHOrbvd0">✓ 核实真实路线</span><span class="step done" data-page-node-id="YPJSQ9vdAExsSGZ0COmAsG">✓ 查天气</span><span class="step now" data-page-node-id="vs7FL6YAT8LvL84gmoZwJ4">画到地图上…</span>
         </div>
-        <div class="viewbar" data-page-node-id="TZpAFdhhlafWYoHfSQGw91">
-          <span class="viewchip on" data-page-node-id="32GFQLUqfWZej2i7oqC2aM">🗺 地图视图（默认）</span><span class="viewchip" onclick="flipList()" data-page-node-id="cQqKW8A9MQpdcpBzRkaJ7r">☰ 列表视图</span>
+        <div class="viewbar" data-page-node-id="3UfelOI92kJYM96qBDe3Vd">
+          <span class="viewchip on" data-page-node-id="IhpgVtJcAKv2Mjq9AuQGdl">🗺 地图视图（默认）</span><span class="viewchip" onclick="flipList()" data-page-node-id="1WrcxFdiu1zDh0cINMADDn">☰ 列表视图</span>
         </div>
-        <div id="mapview" data-page-node-id="N1AUR0VrMtjilDBIMbsyqR">
-          <div class="rainswap" data-page-node-id="dK1c76cMTRWtnbES9rgbHm">🌧 Day 2 预报小雨：已自动把「人民公园」换成室内备选「成都博物馆」</div>
-          <div class="mapbox" data-page-node-id="QDNT0wGQwxzhT1wl17urDL">
-            <svg viewBox="0 0 520 230" width="100%" xmlns="http://www.w3.org/2000/svg" data-page-node-id="4g5hiCe4bVYoAU4c1XDBlg">
-              <path d="M70 60 L160 120 L330 70 L430 150" fill="none" stroke="#1a6e50" stroke-width="2" stroke-dasharray="6 5" data-page-node-id="cw37ANgFdo6WoFVFFyuNvf"/>
-              <g data-page-node-id="nbQus4pFfZcsDjaBeltN6X">
-                <circle cx="70" cy="60" r="13" fill="#1a6e50" data-page-node-id="pHz8qK68MWLbNPhQdM0Kd8"/><text x="70" y="60" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="12" data-page-node-id="J8U4KSZ9wb2lKkAT7kiW0b">1</text>
-                <circle cx="160" cy="120" r="13" fill="#1a6e50" data-page-node-id="nQyer4TGn2PHypnBqUBk2f"/><text x="160" y="120" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="12" data-page-node-id="2DbiOzJbW7R0OtzHLZFXZH">2</text>
-                <circle cx="330" cy="70" r="13" fill="#ba7517" data-page-node-id="OjJTUcCuzzygXqE1xDHT94"/><text x="330" y="70" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="12" data-page-node-id="YsdOtQtF3cuZq9ZOoQeJ8q">3</text>
-                <circle cx="430" cy="150" r="13" fill="#5F5E5A" data-page-node-id="M04rs3aDVB4b1epmXsI4T4"/><text x="430" y="150" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="12" data-page-node-id="snwqEHXWluRxwDYcqknKzT">4</text>
+        <div id="mapview" data-page-node-id="Sa4Cs05HyhFMVoZCErynxx">
+          <div class="rainswap" data-page-node-id="QAss0gH9fyJRujFMRDElYA">🌧 Day 2 预报小雨：已自动把「人民公园」换成室内备选「成都博物馆」</div>
+          <div class="mapbox" data-page-node-id="JtTnDk03ILy9GN7h2CtqDg">
+            <svg viewBox="0 0 520 230" width="100%" xmlns="http://www.w3.org/2000/svg" data-page-node-id="sg8w5qVKlwmEUoFjYNDayV">
+              <path d="M70 60 L160 120 L330 70 L430 150" fill="none" stroke="#1a6e50" stroke-width="2" stroke-dasharray="6 5" data-page-node-id="1ASppXFSQY9Pto6Q3vDHco"/>
+              <g data-page-node-id="a5XNnNajDQPCeFOFBQKyjB">
+                <circle cx="70" cy="60" r="13" fill="#1a6e50" data-page-node-id="QLH4lJyl9pX7YNzz4lKD4t"/><text x="70" y="60" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="12" data-page-node-id="j63clumTE3juSA7MgjswDK">1</text>
+                <circle cx="160" cy="120" r="13" fill="#1a6e50" data-page-node-id="kzhqaCbwa6VbF2zDgUsuLH"/><text x="160" y="120" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="12" data-page-node-id="dfPbAEnEKWXDd9GaytbA7g">2</text>
+                <circle cx="330" cy="70" r="13" fill="#ba7517" data-page-node-id="YP4NIyNKxkRRqRlYFaZCQP"/><text x="330" y="70" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="12" data-page-node-id="GrRl8ZIZB8kUUDD9UEOnZf">3</text>
+                <circle cx="430" cy="150" r="13" fill="#5F5E5A" data-page-node-id="EsWrm4Dmf8sYJc2OvDKqm5"/><text x="430" y="150" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="12" data-page-node-id="HjwUKaK1SonoVfLt8bTU0u">4</text>
               </g>
-              <text x="70" y="38" text-anchor="middle" fill="#444" font-size="12" data-page-node-id="WR3WrZ3dDYBfWRmPyofTgy">宽窄巷子</text>
-              <text x="160" y="148" text-anchor="middle" fill="#444" font-size="12" data-page-node-id="rOpiYOj9o2WBUin2lVL0dL">午餐·担担面</text>
-              <text x="330" y="48" text-anchor="middle" fill="#444" font-size="12" data-page-node-id="IedH88GkqfydPbx606I8qL">熊猫基地 ▼</text>
-              <text x="430" y="178" text-anchor="middle" fill="#444" font-size="12" data-page-node-id="72RIZgyNAcLUYjsVEgBXmk">酒店</text>
+              <text x="70" y="38" text-anchor="middle" fill="#444" font-size="12" data-page-node-id="GREmCfBOSEPNxBkkI0CASb">宽窄巷子</text>
+              <text x="160" y="148" text-anchor="middle" fill="#444" font-size="12" data-page-node-id="lYHBeIIEcekJoaBGfIx3oe">午餐·担担面</text>
+              <text x="330" y="48" text-anchor="middle" fill="#444" font-size="12" data-page-node-id="0gask8AeUSUaIi08pZt4WJ">熊猫基地 ▼</text>
+              <text x="430" y="178" text-anchor="middle" fill="#444" font-size="12" data-page-node-id="fYRgvrfzUUroFvDzEQlyN3">酒店</text>
             </svg>
-            <div class="hint" data-page-node-id="LUqeecotCE61Ao505DdJ69">正式版接入高德地图后：可缩放拖动，地点按顺序连线成完整路径，点击任意标记看详情（下方即点击「3」后的效果）</div>
+            <div class="hint" data-page-node-id="0cKqwRIUa6GyMLoN3yNPhR">正式版接入高德地图后：可缩放拖动，地点按顺序连线成完整路径，点击任意标记看详情（下方即点击「3」后的效果）</div>
           </div>
-          <div class="mapcard" data-page-node-id="ggjO0Aqs6cBF6b2beBp8f2">
-            <b data-page-node-id="otGtJoW61WNgnKmlUor8u9">14:00 · 成都大熊猫繁育基地</b><br data-page-node-id="FQFYGqHTfWA62HZuWyvp8l">
-            <span class="kv" data-page-node-id="Vl66BNPP2wTYcE4L9rZcGQ">活动：看大熊猫 + 熊猫幼儿园（适合带娃）<br data-page-node-id="6zmI2KR4X2mqULEczXNmvG">交通：从午餐地打车约 25 分钟<br data-page-node-id="qewZ33WjxVNsAuKYLd8W3r">门票：¥55/人 · 2大1小共 ¥165<br data-page-node-id="lhE5lE8g21yicsRdtVuEeN">建议游玩：3 小时 · 附近亲子餐厅 2 家</span><br data-page-node-id="dY2e7aAorPObI0x93sasqy">
-            <button class="btn gray" style="font-size:12px;padding:6px 14px;margin-top:6px;" data-page-node-id="fbXcuZlFWPitkAwl5ThbVh">从这调整</button>
-            <button class="btn hollow" style="font-size:12px;padding:6px 14px;margin-top:6px;" data-page-node-id="GArONyFMHFuysCvX2oelnp">导航到这里</button>
-          </div>
-        </div>
-        <div id="listview" style="display:none;" data-page-node-id="qAIJmsZdgBpnux7us8gtMu">
-          <div class="daytabs" data-page-node-id="THwnSf6BueyF32damX70ot"><span class="daytab on" data-page-node-id="FtSeM0XaFJHNVSLDCeRZF9">Day 1</span><span class="daytab" data-page-node-id="rtDXSLdmEMVMtdGM4QF6UN">Day 2</span><span class="daytab" data-page-node-id="FX88icQxYwAplhhFhGiWvf">Day 3</span></div>
-          <div class="listview" data-page-node-id="PRGpapG0elmv0KZ9ghN6Gn">
-            <div class="item" data-page-node-id="mI14sZdhfoh1qbpAJfNmLv"><div data-page-node-id="syJ1cYlKNK29mVBqu0SKmA">09:30 宽窄巷子<small data-page-node-id="rN5j6eIUyakv1pjMlTsfjS">地铁4号线 · 步行12分钟 · 门票免费</small></div><span data-page-node-id="lxEhX00nwi6aq1IcZ8xUIn">¥0</span></div>
-            <div class="item" data-page-node-id="Cg4W7vQh1mb6Jh67Jq45XZ"><div data-page-node-id="BhlqJErZHrzVvLfrNgiEc3">12:00 午餐：小名堂担担面<small data-page-node-id="03owRsu5I9svbpKXa4FJwM">步行6分钟 · 人均¥40</small></div><span data-page-node-id="J1ln484uHySZnJPc4BMrrd">¥120</span></div>
-            <div class="item" data-page-node-id="HaNowbSYYLZyAOmUcMNw81"><div data-page-node-id="47taCNcaWW07D6jgAWjFLb">14:00 成都大熊猫繁育基地<small data-page-node-id="spa7vBCyNB1taJ6Hu24VVp">打车25分钟 · 门票¥55/人</small></div><span data-page-node-id="EBjw0KFk00KDr84t8NVPTy">¥165</span></div>
+          <div class="mapcard" data-page-node-id="C65b6hVAYZdDYp6piVY22A">
+            <b data-page-node-id="AGGCYmXtdLpz2rs5Bmneim">14:00 · 成都大熊猫繁育基地</b><br data-page-node-id="xT7mSHM7SFKlxhzyqbeDJf">
+            <span class="kv" data-page-node-id="W9UGPspIxxVx0X7XPfTeef">活动：看大熊猫 + 熊猫幼儿园（适合带娃）<br data-page-node-id="icWUtAaNlXTM9qAvjuIiwS">交通：从午餐地打车约 25 分钟<br data-page-node-id="SdOx1hdUMM81iIDcBtaD8O">门票：¥55/人 · 2大1小共 ¥165<br data-page-node-id="zc0ShrPy0A5fbMQ16bWyyO">建议游玩：3 小时 · 附近亲子餐厅 2 家</span><br data-page-node-id="jRkHjN2eA3hD9qHblP1kwg">
+            <button class="btn gray" style="font-size:12px;padding:6px 14px;margin-top:6px;" data-page-node-id="L7QcjoV0KUaJ9Fd7TQIZJN">从这调整</button>
+            <button class="btn hollow" style="font-size:12px;padding:6px 14px;margin-top:6px;" data-page-node-id="eOtKdsX4xiWovz2bNVBRXI">导航到这里</button>
           </div>
         </div>
-        <div class="actions" data-page-node-id="quL9c9UIxbRZHEsxMpR5kB">
-          <button class="btn gray" data-page-node-id="JBjEVQ8RGBy6tUGK1ddsoV">调整行程</button><button class="btn gray" data-page-node-id="vUD2aRKGKZXFCwvvGB74ix">换个方案</button><button class="btn gray" data-page-node-id="63r6IWxCZr3iSm4Q1CPvnf">保存行程</button><button class="btn" data-page-node-id="MiWiK9aMMAiPg879dxg39e">导出 Word 行程单（表格版）</button>
+        <div id="listview" style="display:none;" data-page-node-id="BEN6nClQMKqXn9atFtxjne">
+          <div class="daytabs" data-page-node-id="09IBJA3fUhAPiFI4IlBfG8"><span class="daytab on" data-page-node-id="ufclDAW32dCjlHBYVGVH1T">Day 1</span><span class="daytab" data-page-node-id="X5sRHrZmEHs43shxQ1M6KS">Day 2</span><span class="daytab" data-page-node-id="VwJ5zGhZECgvvQviJ4ioZD">Day 3</span></div>
+          <div class="listview" data-page-node-id="VWRQ4yFNRD7DZ8lvkAXEsb">
+            <div class="item" data-page-node-id="CgyfGej2Hp6q0nc0qBtruA"><div data-page-node-id="nxwWKY3LTqiBRPjiujYZGT">09:30 宽窄巷子<small data-page-node-id="Oxv1kMgEqHGzclzwtbRkz0">地铁4号线 · 步行12分钟 · 门票免费</small></div><span data-page-node-id="S8qgUQBbrMtoWKj0JCxAF9">¥0</span></div>
+            <div class="item" data-page-node-id="jwQJGgZGw9ln12Q4rhBzUj"><div data-page-node-id="ZPQZeFe5tX05XLuaEbJJbf">12:00 午餐：小名堂担担面<small data-page-node-id="lyRX1aVjSJKoHGSVCVxcu1">步行6分钟 · 人均¥40</small></div><span data-page-node-id="YDhPefEQTZi8sDHqvPhUHq">¥120</span></div>
+            <div class="item" data-page-node-id="AlDJrxwpPsoUrsTu6b0aA8"><div data-page-node-id="h06CG0j8R1Xi8BfcxKOPIj">14:00 成都大熊猫繁育基地<small data-page-node-id="l864aqXe86OIvtFY3ALSiE">打车25分钟 · 门票¥55/人</small></div><span data-page-node-id="wGqTCQ0SCsZFntBtjlZ8cQ">¥165</span></div>
+          </div>
+        </div>
+        <div class="actions" data-page-node-id="RFArcB4DWaXGUDkWccc5VU">
+          <button class="btn gray" data-page-node-id="CEYEqypjgDoO4PufsLORVP">调整行程</button><button class="btn gray" data-page-node-id="I2EU6ZwEDpXAT6fXxDZnwC">换个方案</button><button class="btn gray" data-page-node-id="c8Uw2wgjmRsXqqwij9lexw">保存行程</button><button class="btn" data-page-node-id="AexvrUv0Gdbum9M9uqYL2M">导出 Word 行程单</button>
         </div>
       </div>
     </div>
-    <div class="note" data-page-node-id="KyO3c7AwWcaIKJn8WKc4Kn"><b data-page-node-id="WajrZD0dKX40jAzFpcR30M">这页的交互：</b><br data-page-node-id="9tU7zZJksowuMyeqMdmC9K">1. <b data-page-node-id="ytoMK96vvWBNqkSuYF1UnQ">地图是主展示</b>：地点按顺序连线成路径，一眼看到"完整行程怎么走"；点任意标记弹出时间/活动/交通/花费详情卡。<br data-page-node-id="qRcaLLqKUSwHMe6ND2S6DH">2. 想要逐条列表？点「列表视图」随时切换，两种都保留。<br data-page-node-id="IFdCHFiiBRbqt07RRDdirq">3. 生成过程仍能看到五步进度；雨天自动换室内备选并黄条提醒。<br data-page-node-id="2Io406ZdpOZjcDYks0a8Ys">4. 表格版行程单只在点「导出 Word」时出现（见页④）。</div>
+    <div class="note" data-page-node-id="jqW6ogHYy77kxtjuSJsI4w"><b data-page-node-id="qmWydLZkmRncTyxqhCGYtr">这页的交互（导出已并入本页）：</b><br data-page-node-id="okrRZWHEVVglMdLfEhGBqX">1. <b data-page-node-id="iN4c0qNGa3udwpa5BpX0yg">地图是主展示</b>：地点按顺序连线成路径，一眼看到"完整行程怎么走"；点任意标记弹出时间/活动/交通/花费详情卡。<br data-page-node-id="mgcjj0cf2CvK72mB2T7l8E">2. 想要逐条列表？点「列表视图」随时切换，两种都保留。<br data-page-node-id="5zoB5z9fgBicLtXMzKNUOg">3. 点「导出 Word 行程单」<b data-page-node-id="UJd1qk2C8ECBmF5tOUrYUh">直接下载</b>表格版 .docx 文件（每日安排表 + 预算汇总，可打印转发），不经过任何中间页面。<br data-page-node-id="l1mT5t6h64T1noXu3jCgdT">4. 生成过程仍能看到五步进度；雨天自动换室内备选并黄条提醒。</div>
   </div>
 
   <!-- 页3 历史记录（含页内对话回放视图） -->
-  <div class="page" data-page-node-id="vbJamSDJM4wbK2J63K1YAd">
-    <div class="frame" data-page-node-id="AkOzfLOyUtTaD2EEmoAFum">
-      <div class="bar" data-page-node-id="6kbgiUMA3pdMZLnzgOYtfH"><b data-page-node-id="NafkeY0Dtngcw6nnUok3RL">历史记录</b><span data-page-node-id="jS0OgflPlchUQypraVq9jJ">行程与对话，都能翻旧账</span></div>
-      <div class="inner" data-page-node-id="5mFi1oKbcNQRagLtZneUAN">
-        <div id="hisMain" data-page-node-id="HbuMYnhPbxFBfopveT9kIT">
-          <div class="subtabs" data-page-node-id="BPsJjWDfOc26X8S2oMriFO">
-            <span class="subtab on" onclick="flipHis(0)" data-page-node-id="MbRh3k3Dl1imEK2LaT89Mz">我的行程</span>
-            <span class="subtab" onclick="flipHis(1)" data-page-node-id="RKNtgm4BTxmqMz8T8zqmAW">对话记录</span>
+  <div class="page" data-page-node-id="H650CUgGPoyWquBjCJmhAd">
+    <div class="frame" data-page-node-id="GDElcFpDppgT1gqDfAdGz5">
+      <div class="bar" data-page-node-id="kh7Tum8fOrAidaTdobI8IJ"><b data-page-node-id="vRXVVodkO1olLHzixA4hOU">历史记录</b><span data-page-node-id="dAx8qy3H8xl5dFEYwnnzKK">行程与对话，都能翻旧账</span></div>
+      <div class="inner" data-page-node-id="elvmb9xwIkQhLcEXtYso5z">
+        <div id="hisMain" data-page-node-id="8KIET3NBQwCylYLInr5srn">
+          <div class="subtabs" data-page-node-id="DBlNLzWOATDvgZ4qM8kfjB">
+            <span class="subtab on" onclick="flipHis(0)" data-page-node-id="kr4r5RJIN1hBCxz5QxKb3h">我的行程</span>
+            <span class="subtab" onclick="flipHis(1)" data-page-node-id="rahlq4WITmKEOuYltUp2nR">对话记录</span>
           </div>
-          <div id="hisTrip" data-page-node-id="8qSABrOdAjYYEc8oF0v8ww">
-            <div class="cards" data-page-node-id="ALtZUauOBrEEBUGrqst57g">
-              <div class="card" data-page-node-id="gXf8DjwTraCI03qAhxrvNs"><div data-page-node-id="thwFB4BXi8G7or4bnp5CMw"><b data-page-node-id="HegO7FAE2OwTZOsH2oCQui">成都亲子 3 日行</b><small data-page-node-id="6t5kuUBkJeqO7qXgpbQbKf">10月1日-3日 · 2大1小 · 总花费 ¥2,850</small></div><div class="minibtns" data-page-node-id="3BTLRppmd1RYsCozn3X225"><button class="mb" data-page-node-id="8vV4BgGyvIR7ciqn1MPShk">打开</button><button class="mb danger" data-page-node-id="ZPg7BoDIGVjTJas0gSrHCB">删除</button></div></div>
-              <div class="card" data-page-node-id="x2K6a8zDrbVTO9F7oYEDV0"><div data-page-node-id="LmHCjgEAVyMKyeSEfvz7Wg"><b data-page-node-id="MxyAhgnFqGfpZMB0rwZvG9">杭州周末 2 日</b><small data-page-node-id="MaflzZlGb81xWeDzjbnHrA">6月7日-8日 · 2人 · 总花费 ¥1,600</small></div><div class="minibtns" data-page-node-id="Gc1FUr9GvOLJtTUJBw4Vsv"><button class="mb" data-page-node-id="1CWU3GgqYaby1wKKKJRo32">打开</button><button class="mb danger" data-page-node-id="MYZ8LteyN17z4RH5DTrwzk">删除</button></div></div>
-              <div class="card" data-page-node-id="hjaM8rnHPPtO5BDYCKSd73"><div data-page-node-id="3A5Sq4MTmqgoHGKM00ylgw"><b data-page-node-id="e5IWgPSWWKa6N0YTdvv10v">三亚 5 日</b><small data-page-node-id="EG1TKx1ig3CQqMjg1GbhIe">生成中 · 完成后自动出现在这里</small></div><div class="minibtns" data-page-node-id="ImLOQkwzDd9JlmwesI4bgz"><button class="mb" data-page-node-id="RKrtAgNGg7e7M2VJVHTkmq">查看进度</button></div></div>
+          <div id="hisTrip" data-page-node-id="8MxDZqw2dvOMYc956TCXEJ">
+            <div class="cards" data-page-node-id="L17CDu5vWLC4k0T78ikCj3">
+              <div class="card" data-page-node-id="R6cQonGXKQg61cR19xWFqf"><div data-page-node-id="JljrF6qV32eALCBEblv04w"><b data-page-node-id="svqNn9u7igWgSim3zweYtm">成都亲子 3 日行</b><small data-page-node-id="N3eG2mU0ZiDjzuLg7Ef2Kd">10月1日-3日 · 2大1小 · 总花费 ¥2,850</small></div><div class="minibtns" data-page-node-id="mX2GNM9v0ugK8XQkdYU5id"><button class="mb" data-page-node-id="Fk8cLfqRkYqe3omyy4KLe2">打开</button><button class="mb danger" data-page-node-id="1kLUej4m4iAMGbRuCkqKCB">删除</button></div></div>
+              <div class="card" data-page-node-id="5D4V7MsRGZkuCj1tQcB7Ch"><div data-page-node-id="jeyGp96TsG5hmnFZGzcBv8"><b data-page-node-id="HdjUspS5m3eBrx7I8dP5Sg">杭州周末 2 日</b><small data-page-node-id="PvOOEGl8FlqqX17ttwHcKT">6月7日-8日 · 2人 · 总花费 ¥1,600</small></div><div class="minibtns" data-page-node-id="IOkHQWcdwSkE0Pgh4KyISM"><button class="mb" data-page-node-id="RbuTlHiv6b0QMhYgOoqovk">打开</button><button class="mb danger" data-page-node-id="fKRq2Y22bw5AaxaKnjTM1H">删除</button></div></div>
+              <div class="card" data-page-node-id="ZzFOrKYcGdRDcUoBlrvW5c"><div data-page-node-id="BMhGu6LJcT03DWDCElcUrc"><b data-page-node-id="baeV4mbWfH7Bsce4oghQAd">三亚 5 日</b><small data-page-node-id="sWK8aygHqHus5c6IifCCBN">生成中 · 完成后自动出现在这里</small></div><div class="minibtns" data-page-node-id="5I8Sk8uQBa0O57eq2r9VQY"><button class="mb" data-page-node-id="NsB9D8WwnjDBOUPz1Qh3Fi">查看进度</button></div></div>
             </div>
           </div>
-          <div id="hisChat" style="display:none;" data-page-node-id="TEOpn5YwAHEiE65bLDKh4n">
-            <div class="cards" data-page-node-id="JGbgZq1u1c1jgslDYQE8HN">
-              <div class="card" data-page-node-id="Ka0WqwbLQJlE4G3ocT6FCF"><div data-page-node-id="7iRWGDwIsdxogPOvfm51dW"><b data-page-node-id="aclhap1B0Kf0bMlFCtId2u">「成都 3 天带娃怎么玩…」</b><small data-page-node-id="eW4mmIyMXSSNIwy6tmr3NF">9月6日 · 12 轮对话 · 已生成行程</small></div><div class="minibtns" data-page-node-id="V6y4ZGZ4eWR2qxbqXXSh1W"><button class="mb" onclick="flipChatDetail(1)" data-page-node-id="GCivacMTN2NHkqZY991FBt">继续对话</button><button class="mb danger" data-page-node-id="lC3oAEdpjJ3NVjL1gqbROQ">删除</button></div></div>
-              <div class="card" data-page-node-id="MjzLVZZGQlgUqu5bTORTiP"><div data-page-node-id="0uOqxcek2WwxlYC30RofRx"><b data-page-node-id="ul1s7SM6r2xr4M6cx8kJoO">「杭州周边两天一晚推荐…」</b><small data-page-node-id="iw2w2BsGTiDtsDAjkFtBH4">6月5日 · 8 轮对话 · 已生成行程</small></div><div class="minibtns" data-page-node-id="1daOAKCVbvEV6299NOclHx"><button class="mb" onclick="flipChatDetail(1)" data-page-node-id="4YK1ZO46eczVC1i0EpcuVP">继续对话</button><button class="mb danger" data-page-node-id="gJuPKPBITHxvcB5Cd4Tbte">删除</button></div></div>
-              <div class="card" data-page-node-id="wz4oqN6fST7q0pfCesOVtg"><div data-page-node-id="NR0fQg88vGH0k8sFEohp9Y"><b data-page-node-id="BeXf2FPB0JiHgMel6kq4v6">「预算 1000 能去哪…」</b><small data-page-node-id="F9qAVyZd4ZalXCLND3tYpy">5月20日 · 3 轮对话 · 未生成行程</small></div><div class="minibtns" data-page-node-id="VBaNisDbsICtnkSyMNOgsN"><button class="mb" onclick="flipChatDetail(1)" data-page-node-id="iJw7JpG1kJe4egsT6bhRQG">继续对话</button><button class="mb danger" data-page-node-id="y5ZMKrUAO8hTZdWS94h5dL">删除</button></div></div>
+          <div id="hisChat" style="display:none;" data-page-node-id="Ll0oouxYutaIjcvKYs8olg">
+            <div class="cards" data-page-node-id="BPzn2CBdxKGDDQlIc7zRye">
+              <div class="card" data-page-node-id="6tTxtUjGkQwe1f2bgLPra0"><div data-page-node-id="wEBdgrHxv5QKuAABEuVsdp"><b data-page-node-id="o5gYGX26mCaQc2BBOyYTBh">「成都 3 天带娃怎么玩…」</b><small data-page-node-id="D07sbucOHTQYnU4EVJDXMx">9月6日 · 12 轮对话 · 已生成行程</small></div><div class="minibtns" data-page-node-id="A5FPpbRPSZMM0YpKmM7WBb"><button class="mb" onclick="flipChatDetail(1)" data-page-node-id="irJtkhMX8aWd6mnBi4Sc4n">继续对话</button><button class="mb danger" data-page-node-id="pojHeCKXtKjUU4KHNUjryq">删除</button></div></div>
+              <div class="card" data-page-node-id="q5KnBAqe9tRH8p7HqxbGCd"><div data-page-node-id="7LjHV4VMI5dGU7E3ARMde9"><b data-page-node-id="KRpQiUoUXRs4rtN99n6UMi">「杭州周边两天一晚推荐…」</b><small data-page-node-id="vDEfMS4mx2dNux754iJXxj">6月5日 · 8 轮对话 · 已生成行程</small></div><div class="minibtns" data-page-node-id="f7NKh0UKzfQsUK6O9FNyco"><button class="mb" onclick="flipChatDetail(1)" data-page-node-id="jd85A2XY6yo9Tk1F02vSFn">继续对话</button><button class="mb danger" data-page-node-id="LKTiqQhHWODlkWlBVivLZs">删除</button></div></div>
+              <div class="card" data-page-node-id="4wC5h9hrnkvyCbbksEV4hK"><div data-page-node-id="ZyRlqNBULpWUtMfr1huLGp"><b data-page-node-id="bCCieGb7BJwDjSxwj4kPPR">「预算 1000 能去哪…」</b><small data-page-node-id="Q7h83GVr5dEZ2DW5mT6HrS">5月20日 · 3 轮对话 · 未生成行程</small></div><div class="minibtns" data-page-node-id="MpuwSotbwstZzkoGDnVz6A"><button class="mb" onclick="flipChatDetail(1)" data-page-node-id="cFSAuShkJrN5DPWKighcCG">继续对话</button><button class="mb danger" data-page-node-id="vSXqg1vo9h7BDk86l258DH">删除</button></div></div>
             </div>
           </div>
         </div>
-        <div id="chatDetail" style="display:none;" data-page-node-id="wp9YNRScOeDlT62J6pMLWr">
-          <div style="margin-bottom:12px;" data-page-node-id="tgMmhvzVQ2AfNePGNDWlD1"><span class="backlink" onclick="flipChatDetail(0)" data-page-node-id="BboZOgjcVyFcA2gbyT38zt">← 返回对话列表</span></div>
-          <div class="chat" style="margin-top:0;" data-page-node-id="asACAVYh56V4CabbfgoxnH">
-            <div class="msg user" data-page-node-id="zkaJhlgfkjOOFsqEDGYeMo">十一想去成都玩 3 天，预算 3000，带 5 岁小孩，不想太赶</div>
-            <div class="msg ai" data-page-node-id="DzogYFMdE0wVVNQHpmDJp0">好的！还差 2 个信息：① 哪几天出发？② 住酒店还是民宿？</div>
-            <div class="msg user" data-page-node-id="ldEoynJLnoi0HUUcpAlHEp">10月1日到3日，住民宿吧，带娃要安静点</div>
-            <div class="msg ai" data-page-node-id="lnIk3YDLJxAKts06o4Du1I">收到！行程生成好了 —— 3 天共 9 个地点，已画在地图上：<br data-page-node-id="dyrTk9DVr3glyFJCCpYrMC"><small style="color:#1a6e50;" data-page-node-id="1OuzAZ576FlJ9P4TUAix8E">▸ 查看当时的完整行程（跳转到行程结果页）</small></div>
-            <div class="msg user" data-page-node-id="XUOEiNRLgVQ8ZXuxix53ri">第二天太赶了，能松一点吗</div>
-            <div class="msg ai" data-page-node-id="bECVUZVqcWwvPIocXlLOfS">已把 Day 2 从 5 个点减到 3 个点，下午留了 2 小时带娃午休。</div>
+        <div id="chatDetail" style="display:none;" data-page-node-id="kqrPCdqWXCYcHeKaUctOkw">
+          <div style="margin-bottom:12px;" data-page-node-id="FpSCUUs3cYxFe3BqGmFtJJ"><span class="backlink" onclick="flipChatDetail(0)" data-page-node-id="zi4H7OB5hsyHJjVBeFJYCX">← 返回对话列表</span></div>
+          <div class="chat" style="margin-top:0;" data-page-node-id="9BMMVHBRYAWJ6PW2cKi3ZH">
+            <div class="msg user" data-page-node-id="HG75Cyhny4GvY6bIakFctS">十一想去成都玩 3 天，预算 3000，带 5 岁小孩，不想太赶</div>
+            <div class="msg ai" data-page-node-id="U8dzMCgvGdXU7V9R2dGQXS">好的！还差 2 个信息：① 哪几天出发？② 住酒店还是民宿？</div>
+            <div class="msg user" data-page-node-id="8kcLdvweN4GGJkg0n3wu3i">10月1日到3日，住民宿吧，带娃要安静点</div>
+            <div class="msg ai" data-page-node-id="uvgYHilwOFM5bVVQ1fcx14">收到！行程生成好了 —— 3 天共 9 个地点，已画在地图上：<br data-page-node-id="8uFOYzb8F0aEd1xQpEPcsC"><small style="color:#1a6e50;" data-page-node-id="JAVV4jQIipqz5GRHbNZzYU">▸ 查看当时的完整行程（跳转到行程结果页）</small></div>
+            <div class="msg user" data-page-node-id="46v8FR5VBW4xOBXHR4lj1x">第二天太赶了，能松一点吗</div>
+            <div class="msg ai" data-page-node-id="G6BOoH0u8SA9146n9zLjJa">已把 Day 2 从 5 个点减到 3 个点，下午留了 2 小时带娃午休。</div>
           </div>
-          <div class="input" style="margin-top:14px;" data-page-node-id="qmRyCiB8qSDiNrQTRz2DvU">接着这次对话继续聊（AI 记得之前聊过的所有内容）…</div>
-          <div class="actions" data-page-node-id="Nr5IxDOOk5wIj8V2BB3nH7">
-            <button class="btn" data-page-node-id="4fsWaH44IpAlW5GsMD3HK5">发送</button><button class="btn hollow" data-page-node-id="4CW2fJpaHdJ3XyWFD5Ly52">基于这次对话重新生成行程</button>
+          <div class="input" style="margin-top:14px;" data-page-node-id="5F8HhVn4f6EjHQmImoXtr6">接着这次对话继续聊（AI 记得之前聊过的所有内容）…</div>
+          <div class="actions" data-page-node-id="sqnyBOG7KCyu1v7Bccyrx5">
+            <button class="btn" data-page-node-id="iwVuPPxnnGdhPimdDNVcWX">发送</button><button class="btn hollow" data-page-node-id="acuGffw1Z0U82PCCT5hnZ3">基于这次对话重新生成行程</button>
           </div>
         </div>
       </div>
     </div>
-    <div class="note" data-page-node-id="k93nC190jSiGiiyGZGu3GP"><b data-page-node-id="rJ74NafmULROfg3N0dZNyb">这页的交互（对话回放已并入本页）：</b><br data-page-node-id="5twFZt9JIRz4XlatJzMF4W">1. 「我的行程」：生成完成的行程存档，点「打开」回行程结果页。<br data-page-node-id="z9tu9NcnvddL7CeY5RNMwC">2. 「对话记录」：每一次和 AI 的会话都存档；点「继续对话」<b data-page-node-id="8sUBIEzwwOMWpD9kEoiWek">在本页内展开对话回放</b>（上方示意），可接着聊——AI 带着这次会话的全部上下文，不用重新交代背景；也可一键「基于这次对话重新生成行程」。点「← 返回对话列表」回到列表。<br data-page-node-id="Tt4GsRgAxyWwfHoSpCR2Og">3. 「删除」都弹窗二次确认，防手滑。<br data-page-node-id="haTR1EY8OzunF7oA7FirPL">4. 不再设独立回放页——历史查看只此一处，路径更短。</div>
+    <div class="note" data-page-node-id="oNMKlscKhVrxs4herXVCuc"><b data-page-node-id="n6r8nEpLg7y0zJVkw5elRp">这页的交互（对话回放已并入本页）：</b><br data-page-node-id="yQPjPLXA4lMMss3c8WYlKX">1. 「我的行程」：生成完成的行程存档，点「打开」回行程结果页。<br data-page-node-id="StL2L3A8zJeXT6crQLW2d2">2. 「对话记录」：每一次和 AI 的会话都存档；点「继续对话」<b data-page-node-id="tkuxDqFjxVDVVgny8mtS6y">在本页内展开对话回放</b>（上方示意），可接着聊——AI 带着这次会话的全部上下文，不用重新交代背景；也可一键「基于这次对话重新生成行程」。点「← 返回对话列表」回到列表。<br data-page-node-id="aONOecFM85fUKalwXtFkDg">3. 「删除」都弹窗二次确认，防手滑。<br data-page-node-id="51dZlEpekMSSC0SBuY8zDx">4. 不设独立回放页——历史查看只此一处，路径更短。</div>
   </div>
 
-  <!-- 页4 行程单导出 -->
-  <div class="page" data-page-node-id="mlw1NAijItSEnKykRw3XCO">
-    <div class="frame" data-page-node-id="kTrZHmUZy1rHHnkLlJiP2L">
-      <div class="bar" data-page-node-id="TMS8tlg71vQHopbMIOvcAw"><b data-page-node-id="PvukoNzIQH0OZKEKhSHnCq">行程单导出</b><span data-page-node-id="Pg4IE54YFcyJEbDV8pEGSj">表格版 · 仅用于下载/打印</span></div>
-      <div class="inner" data-page-node-id="PdD2hbOpHo1JppwGqeyNa9">
-        <div class="changelist" style="margin-bottom:12px;" data-page-node-id="PcNdLxRzOU2aMctx5KBiy5">说明：主界面已经是地图版（页②）；下面这个表格版<b data-page-node-id="9rLpPLDlGxNnwk5Cz9cv9I">只在点「导出 Word」时出现</b>，给需要打印或转发的人用。</div>
-        <div class="pbuttons" data-page-node-id="bEraZTECnI5oNTN9hZcOKE"><button class="btn gray" data-page-node-id="VXJ5GMf5MdDANh3h2gxRCl">打印</button> <button class="btn" data-page-node-id="YQ9qpHB3XkhrLUzTclnOcw">下载 Word</button></div>
-        <div class="paper" data-page-node-id="Ud8vWK2Aax6M3Uh1j12VeO">
-          <h2 data-page-node-id="wbGJ4TJJMl7oSJZ0r8Xmfb">成都亲子 3 日行</h2>
-          <div class="meta" data-page-node-id="OnotRt2ivsNh2kBHhVFhpA">10月1日 - 10月3日 · 2大1小 · 预算 ¥3000 · 生成于 2026-09-06</div>
-          <table data-page-node-id="GsqYLv9fiPMoLE9lApa9OS">
-            <tr data-page-node-id="DaE5BWCMYgCVDdAr0IZ5Cq"><td class="dayh" colspan="4" data-page-node-id="zIp9AzzTtorbk8y2mahSfa">Day 1 · 10月1日 · 多云 18-25℃</td></tr>
-            <tr data-page-node-id="lh09xUEodcYHNSdAfaUa1h"><th data-page-node-id="wE70ZIJ27vxE4g2hcjgNbc">时间</th><th data-page-node-id="TEddAByJtnPq6GtXRx0knw">安排</th><th data-page-node-id="p9qu12ErJqwcgTBogDnTlp">交通</th><th data-page-node-id="bmHRP6MmN2uK6ER2YabVSh">花费</th></tr>
-            <tr data-page-node-id="jPa7VbmzvDGvUmJZ1S6sxC"><td data-page-node-id="t8oZZ9vIRXyuYgdvpVWHcf">09:30</td><td data-page-node-id="pJl3YLL4AQu5UzzByu6UCE">宽窄巷子</td><td data-page-node-id="D3uMnyMjxsTXFnobTpxMKt">地铁+步行12分</td><td data-page-node-id="Xuboit8l2eQk8FyssbtOeI">免费</td></tr>
-            <tr data-page-node-id="tWMWavDu8D9PbxD1u9XHQn"><td data-page-node-id="NokGPfzNBxc2b6CiBzQ33c">12:00</td><td data-page-node-id="Q6UERiqAsJHAQHyaPdcQYa">午餐：小名堂担担面</td><td data-page-node-id="2IByeS5MDC1HbvOizJ6lMm">步行6分</td><td data-page-node-id="jWqXi0C6AafSQDOGomF5Zo">¥120</td></tr>
-            <tr data-page-node-id="NJHhA7GMrl8C3AYZXMTsa7"><td data-page-node-id="8pP9DgZcJbWHEM4hSKTaKF">14:00</td><td data-page-node-id="750e4nVNFkv9346FGiKI4U">大熊猫繁育基地</td><td data-page-node-id="raszLWdUYaMdtyPv0DITjn">打车25分</td><td data-page-node-id="5vtlGc3tmbqkjv3YQKLCAJ">¥165</td></tr>
-          </table>
-          <div class="budget" data-page-node-id="bd5p3fTRgpYGkDAYpc8sOM"><b data-page-node-id="AM8eEKepc04GOZnSzYU5x7">预算汇总：</b>门票 ¥420 · 餐饮 ¥900 · 住宿 ¥1,100 · 市内交通 ¥430 = <b data-page-node-id="piiKmcEdH5yxrvq30Bo9U6">¥2,850</b>（预算 ¥3000 内 ✓ 剩余 ¥150 机动）</div>
-        </div>
-      </div>
-    </div>
-    <div class="note" data-page-node-id="JrXOYD9vZHfAIDTXmXEPwQ"><b data-page-node-id="3c0F0U2w0UR3CiD4f7xzqn">这页的交互：</b><br data-page-node-id="wfBn8NfeDGVM2xygMlxBry">1. 点「下载 Word」得到 .docx 表格版行程单，可打印可转发可再编辑。<br data-page-node-id="eIT0pCAQYA4tWRVCjlGxgE">2. 它是导出选项，不占主界面；日常看行程用地图版。</div>
-  </div>
-
-  <footer data-page-node-id="LQlBnwjPiIKn3GTCd9hGyz">说明：① 本原型只定"布局 + 点什么出什么"，正式版会套真实配色、真实高德地图和动效；② 页面按手机浏览自动适配（正式版验证）；③ 你确认或继续提修改意见后，原型定稿 → 打 v0.2「样板间」书签 → 进入阶段 2「水电接通」（注册 AI 和高德账号）。</footer>
+  <footer data-page-node-id="8O8nMp6ODW7utIb1Ob6Ia7">说明：① 本原型只定"布局 + 点什么出什么"，正式版会套真实配色、真实高德地图和动效；② 页面按手机浏览自动适配（正式版验证）；③ 你确认或继续提修改意见后，原型定稿 → 打 v0.2「样板间」书签 → 进入阶段 2「水电接通」（注册 AI 和高德账号）。</footer>
 </div>
 <script>
   function show(i){
