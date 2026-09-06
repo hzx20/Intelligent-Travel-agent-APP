@@ -111,9 +111,11 @@ img { display: block; }
 .pager .pg {
   font-size: 12px; border: 1px solid #ddd; background: #fff;
   border-radius: 6px; padding: 5px 11px; color: #666; cursor: pointer;
+  user-select: none;
 }
 .pager .pg.on { background: var(--green); color: #fff; border-color: var(--green); }
-.pager .pg:disabled { opacity: .4; cursor: default; }
+.pager .pg.disabled { opacity: .4; cursor: default; pointer-events: none; }
+.pager .pg.ellipsis { border: none; background: transparent; cursor: default; color: #999; }
 
 /* 轮播 */
 .carousel { position: relative; border-radius: var(--radius); overflow: hidden; height: 260px; background: #dfe8e2; }

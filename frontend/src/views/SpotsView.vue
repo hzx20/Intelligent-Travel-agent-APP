@@ -1,8 +1,9 @@
 <script setup>
-/** 景点列表：关键词/城市/免费三筛选 + 每页 12 条真实分页 */
-import { onMounted, ref } from 'vue'
+/** 景点列表：关键词/城市/免费三筛选 + 每页 12 条真实分页（折叠式页码） */
+import { computed, onMounted, ref } from 'vue'
 import SpotCard from '../components/SpotCard.vue'
 import { api } from '../api'
+import { pageList } from '../utils/pagination'
 
 const CITIES = ['全部城市', '成都', '杭州', '西安', '北京', '三亚']
 const keyword = ref('')
@@ -42,6 +43,7 @@ function goPage(n) {
   if (n < 1 || n > pages.value || n === page.value) return
   load(n)
 }
+const pageItems = computed(() => pageList(page.value, pages.value))
 onMounted(() => load(1))
 </script>
 
@@ -68,9 +70,12 @@ onMounted(() => load(1))
     </div>
 
     <div class="pager" v-if="pages > 1">
-      <span class="pg" @click="goPage(page - 1)">‹ 上一页</span>
-      <span v-for="n in pages" :key="n" class="pg" :class="{ on: n === page }" @click="goPage(n)">{{ n }}</span>
-      <span class="pg" @click="goPage(page + 1)">下一页 ›</span>
+      <span class="pg" :class="{ disabled: page <= 1 }" @click="page > 1 && goPage(page - 1)">‹ 上一页</span>
+      <template v-for="(n, i) in pageItems" :key="`${n}-${i}`">
+        <span v-if="n === '...'" class="pg ellipsis">…</span>
+        <span v-else class="pg" :class="{ on: n === page }" @click="goPage(n)">{{ n }}</span>
+      </template>
+      <span class="pg" :class="{ disabled: page >= pages }" @click="page < pages && goPage(page + 1)">下一页 ›</span>
     </div>
   </div>
 </template>
