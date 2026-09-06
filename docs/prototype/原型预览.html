@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能旅行规划 Agent — 产品原型 v0.2 初稿</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:"Microsoft YaHei",sans-serif; background:#f0efeb; color:#333; padding:24px 16px; }
+  .wrap { max-width:860px; margin:0 auto; }
+  h1 { font-size:20px; margin-bottom:4px; }
+  .sub { font-size:13px; color:#777; margin-bottom:16px; }
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .tab { padding:8px 16px; border:1px solid #ccc; background:#fff; border-radius:20px; cursor:pointer; font-size:14px; }
+  .tab.on { background:#333; color:#fff; border-color:#333; }
+  .page { display:none; }
+  .page.on { display:block; }
+  .frame { background:#fff; border:1px solid #d5d3cc; border-radius:12px; overflow:hidden; margin-bottom:12px; }
+  .bar { padding:12px 16px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between; }
+  .bar b { font-size:15px; }
+  .bar span { font-size:12px; color:#888; }
+  .inner { padding:20px; }
+  .note { background:#fff; border:1px dashed #b8b5aa; border-radius:10px; padding:14px 16px; font-size:13px; line-height:1.9; }
+  .note b { color:#1a6e50; }
+  .tag { display:inline-block; font-size:11px; color:#888; border:1px solid #ddd; border-radius:4px; padding:1px 6px; margin-left:8px; vertical-align:2px; }
+  /* 页1 */
+  .hero { text-align:center; padding:8px 0 18px; }
+  .hero p { font-size:13px; color:#777; margin-top:4px; }
+  .input { border:1.5px solid #bbb; border-radius:12px; padding:14px; font-size:14px; color:#555; margin:14px 0; background:#fafaf8; }
+  .btn { display:inline-block; background:#1a6e50; color:#fff; border-radius:10px; padding:10px 22px; font-size:14px; border:none; }
+  .btn.gray { background:#888; }
+  .chat { margin-top:18px; display:flex; flex-direction:column; gap:10px; }
+  .msg { max-width:78%; padding:10px 14px; border-radius:12px; font-size:13px; line-height:1.7; }
+  .msg.user { align-self:flex-end; background:#e3f0ea; border:1px solid #cfe4da; }
+  .msg.ai { align-self:flex-start; background:#f6f6f3; border:1px solid #e4e2da; }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .chip { border:1px solid #1a6e50; color:#1a6e50; border-radius:16px; font-size:12px; padding:4px 12px; background:#fff; }
+  /* 页2 */
+  .sumline { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+  .pill { background:#f1efe8; border:1px solid #e0ddd2; border-radius:6px; font-size:12px; padding:4px 10px; }
+  .steps { display:flex; gap:6px; flex-wrap:wrap; font-size:12px; color:#666; margin-bottom:16px; }
+  .step { padding:4px 10px; border-radius:6px; background:#f6f6f3; border:1px solid #e4e2da; }
+  .step.done { background:#e3f0ea; border-color:#cfe4da; }
+  .step.now { background:#1a6e50; color:#fff; border-color:#1a6e50; }
+  .cols { display:flex; gap:14px; }
+  .daytabs { display:flex; gap:6px; margin-bottom:10px; }
+  .daytab { font-size:12px; padding:5px 14px; border:1px solid #ddd; border-radius:16px; background:#fff; }
+  .daytab.on { background:#333; color:#fff; border-color:#333; }
+  .tl { flex:1.4; display:flex; flex-direction:column; gap:8px; }
+  .item { border:1px solid #e4e2da; border-radius:10px; padding:10px 12px; font-size:13px; background:#fbfbf9; display:flex; justify-content:space-between; gap:8px; }
+  .item small { color:#888; display:block; font-size:12px; margin-top:2px; }
+  .weather { flex:.8; border:1.5px dashed #bbb; border-radius:10px; min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#999; font-size:12px; gap:6px; text-align:center; padding:10px; }
+  .mapdot { width:8px; height:8px; border-radius:50%; background:#1a6e50; }
+  .actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+  .rainswap { background:#fdf6ec; border:1px solid #f0dfc0; border-radius:8px; font-size:12px; color:#8a6d3b; padding:6px 10px; margin-bottom:8px; }
+  /* 页3 */
+  .cards { display:flex; flex-direction:column; gap:10px; }
+  .card { border:1px solid #e4e2da; border-radius:10px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; background:#fbfbf9; }
+  .card b { font-size:14px; }
+  .card small { color:#888; font-size:12px; display:block; margin-top:3px; }
+  .minibtns { display:flex; gap:6px; }
+  .mb { font-size:12px; border:1px solid #ccc; background:#fff; border-radius:8px; padding:5px 12px; cursor:pointer; }
+  .mb.danger { color:#a33; border-color:#d9b3b3; }
+  /* 页4 */
+  .paper { background:#fff; border:1px solid #ddd; width:100%; max-width:520px; margin:0 auto; padding:26px 30px; font-size:13px; }
+  .paper h2 { font-size:17px; text-align:center; margin-bottom:4px; }
+  .paper .meta { text-align:center; color:#777; font-size:12px; margin-bottom:14px; }
+  .paper table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:14px; }
+  .paper th, .paper td { border:1px solid #ddd; padding:6px 8px; text-align:left; }
+  .paper th { background:#f4f3ef; }
+  .paper .dayh { background:#e3f0ea; font-weight:bold; }
+  .budget { background:#f6f6f3; border:1px solid #e4e2da; border-radius:8px; padding:10px 12px; font-size:12px; line-height:2; }
+  .pbuttons { text-align:right; margin-bottom:10px; }
+  footer { margin-top:20px; font-size:12px; color:#888; line-height:1.8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>智能旅行规划 Agent · 产品原型 <span class="tag">v0.2 样板间 · 初稿待确认</span></h1>
+  <div class="sub">线框图 = 定布局和交互用，不是最终配色。点下面四个页签切换页面。</div>
+
+  <div class="tabs">
+    <div class="tab on" onclick="show(0)">① 对话规划页（首页）</div>
+    <div class="tab" onclick="show(1)">② 行程结果页</div>
+    <div class="tab" onclick="show(2)">③ 历史列表页</div>
+    <div class="tab" onclick="show(3)">④ 行程单预览页</div>
+  </div>
+
+  <!-- 页1 -->
+  <div class="page on">
+    <div class="frame">
+      <div class="bar"><b>🧳 智能行程规划师</b><span>首页</span></div>
+      <div class="inner">
+        <div class="hero">
+          <p style="font-size:16px;font-weight:bold;">说一句话，得到一份靠谱的旅行计划</p>
+          <p>真实地图路线 · 真实天气 · 预算算得清</p>
+        </div>
+        <div class="input">十一想去成都玩 3 天，预算 3000，带 5 岁小孩，不想太赶</div>
+        <button class="btn">开始规划</button>
+        <div class="chat">
+          <div class="msg user">十一想去成都玩 3 天，预算 3000，带 5 岁小孩，不想太赶</div>
+          <div class="msg ai">好的！还差 2 个信息就能开工：<br>① 大概哪几天出发？② 住酒店还是民宿？</div>
+          <div class="chips"><span class="chip">10月1日-3日</span><span class="chip">随便，干净就行</span><span class="chip">自己补充…</span></div>
+          <div class="msg ai">收到！信息齐了，我来生成行程 —— 会顺手把真实路线、天气和预算都配好。</div>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>这页的交互：</b><br>1. 你输入一句话需求 → AI 解析，缺什么就追问什么，信息不全不会硬编行程。<br>2. 点绿色快捷选项即可回答，不用打字。<br>3. 信息齐了自动开始生成 → 进入 ② 行程结果页。</div>
+  </div>
+
+  <!-- 页2 -->
+  <div class="page">
+    <div class="frame">
+      <div class="bar"><b>行程结果</b><span>生成中 → 已完成</span></div>
+      <div class="inner">
+        <div class="sumline">
+          <span class="pill">成都</span><span class="pill">10月1日-3日 · 3天2晚</span><span class="pill">2大1小</span><span class="pill">预算 ¥3000</span>
+        </div>
+        <div class="steps">
+          <span class="step done">✓ 理解需求</span><span class="step done">✓ 想行程</span><span class="step now">核实真实路线…</span><span class="step">查天气</span><span class="step">拆预算</span>
+        </div>
+        <div class="cols">
+          <div class="tl">
+            <div class="daytabs"><span class="daytab on">Day 1</span><span class="daytab">Day 2</span><span class="daytab">Day 3</span></div>
+            <div class="rainswap">🌧 Day 2 预报小雨：已自动把「人民公园」换成室内备选「成都博物馆」</div>
+            <div class="item"><div>09:30 宽窄巷子<small>地铁4号线 · 步行12分钟 · 门票免费</small></div><span>¥0</span></div>
+            <div class="item"><div>12:00 午餐：小名堂担担面<small>步行6分钟 · 人均¥40</small></div><span>¥120</span></div>
+            <div class="item"><div>14:00 成都大熊猫繁育基地<small>打车25分钟 · 门票¥55/人</small></div><span>¥165</span></div>
+          </div>
+          <div class="weather">
+            <div class="mapdot"></div>
+            <div style="width:2px;height:14px;background:#bbb;"></div>
+            <div class="mapdot"></div>
+            <div style="width:2px;height:14px;background:#bbb;"></div>
+            <div class="mapdot"></div>
+            <div>真实地图路线区<br>（接入高德后显示可缩放地图）</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn gray">调整这段</button><button class="btn gray">换个方案</button><button class="btn gray">保存行程</button><button class="btn">导出 Word 行程单</button>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>这页的交互：</b><br>1. 生成时你能看到五步进度条（正在查真实路线等），不再是干等。<br>2. 左边每天的时间线都标了交通耗时和花费；下雨天自动换室内备选并黄条提醒。<br>3. 说"第二天太赶了"AI 就重排；满意后点「导出 Word」或「保存行程」。</div>
+  </div>
+
+  <!-- 页3 -->
+  <div class="page">
+    <div class="frame">
+      <div class="bar"><b>我的行程</b><span>历史列表</span></div>
+      <div class="inner">
+        <div class="cards">
+          <div class="card"><div><b>成都亲子 3 日行</b><small>10月1日-3日 · 2大1小 · 总花费 ¥2,850</small></div><div class="minibtns"><button class="mb">打开</button><button class="mb danger">删除</button></div></div>
+          <div class="card"><div><b>杭州周末 2 日</b><small>6月7日-8日 · 2人 · 总花费 ¥1,600</small></div><div class="minibtns"><button class="mb">打开</button><button class="mb danger">删除</button></div></div>
+          <div class="card"><div><b>三亚 5 日</b><small>生成中 · 完成后自动出现在这里</small></div><div class="minibtns"><button class="mb">查看进度</button></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>这页的交互：</b><br>1. 每次生成的行程自动存档，点「打开」回到行程结果页继续用。<br>2. 「删除」会先弹窗二次确认，防手滑。</div>
+  </div>
+
+  <!-- 页4 -->
+  <div class="page">
+    <div class="frame">
+      <div class="bar"><b>行程单预览</b><span>所见即所得</span></div>
+      <div class="inner">
+        <div class="pbuttons"><button class="btn gray">打印</button> <button class="btn">下载 Word</button></div>
+        <div class="paper">
+          <h2>成都亲子 3 日行</h2>
+          <div class="meta">10月1日 - 10月3日 · 2大1小 · 预算 ¥3000 · 生成于 2026-09-06</div>
+          <table>
+            <tr><td class="dayh" colspan="4">Day 1 · 10月1日 · 多云 18-25℃</td></tr>
+            <tr><th>时间</th><th>安排</th><th>交通</th><th>花费</th></tr>
+            <tr><td>09:30</td><td>宽窄巷子</td><td>地铁+步行12分</td><td>免费</td></tr>
+            <tr><td>12:00</td><td>午餐：小名堂担担面</td><td>步行6分</td><td>¥120</td></tr>
+            <tr><td>14:00</td><td>大熊猫繁育基地</td><td>打车25分</td><td>¥165</td></tr>
+          </table>
+          <div class="budget"><b>预算汇总：</b>门票 ¥420 · 餐饮 ¥900 · 住宿 ¥1,100 · 市内交通 ¥430 = <b>¥2,850</b>（预算 ¥3000 内 ✓ 剩余 ¥150 机动）</div>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>这页的交互：</b><br>1. 导出前先看这份预览，和最终 Word 内容完全一致。<br>2. 点「下载 Word」得到 .docx 文件，可打印可转发可再编辑。</div>
+  </div>
+
+  <footer>说明：① 本原型只定"布局 + 点什么出什么"，正式版会套真实配色、地图和动效；② 页面按手机浏览自动适配（正式版验证）；③ 你确认或提出修改意见后，原型定稿 → 打 v0.2「样板间」书签 → 进入阶段 2「水电接通」（注册 AI 和高德账号）。</footer>
+</div>
+<script>
+  function show(i){
+    document.querySelectorAll('.tab').forEach(function(t,k){ t.classList.toggle('on', k===i); });
+    document.querySelectorAll('.page').forEach(function(p,k){ p.classList.toggle('on', k===i); });
+  }
+</script>
+</body>
+</html>
