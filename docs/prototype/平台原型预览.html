@@ -169,6 +169,37 @@
   .thumb .ph { width:100%; height:100%; border-radius:6px; font-size:10px; }
   .thumb .x { position:absolute; top:-6px; right:-6px; width:16px; height:16px; border-radius:50%; background:#a33; color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .acard .desc { font-size:12px; color:#777; line-height:1.7; margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  /* 攻略详情：图片画廊 + 正文 两区块 */
+  .gallery { border:1px solid #cfe4da; background:#f4faf7; border-radius:12px; padding:14px 16px 12px; margin-bottom:18px; }
+  .glabel { font-size:12px; color:#1a6e50; font-weight:bold; margin-bottom:10px; }
+  .gwrap { position:relative; }
+  .gmain { height:250px; font-size:14px; }
+  .gbtn { position:absolute; top:50%; transform:translateY(-50%); width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.94); border:1px solid #cfe4da; color:#1a6e50; font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; }
+  .gbtn.l { left:10px; } .gbtn.r { right:10px; }
+  .gthumbs { display:flex; gap:8px; margin-top:10px; overflow-x:auto; padding-bottom:4px; }
+  .gt { flex:0 0 78px; height:56px; border-radius:6px; font-size:10px; cursor:pointer; border:2px solid transparent; }
+  .gt.on { border-color:#1a6e50; }
+  .articletext { border:1px solid #e4e2da; border-radius:12px; padding:16px 18px 8px; background:#fff; margin-bottom:16px; }
+  .articletext p { font-size:13.5px; line-height:2.1; color:#333; margin-bottom:12px; }
+  /* 移动端适配（≤640px） */
+  @media (max-width:640px){
+    body { padding:14px 8px; }
+    .wrap { max-width:100%; }
+    .grid { grid-template-columns:repeat(2,1fr) !important; }
+    .sgrid { grid-template-columns:1fr !important; }
+    .split { flex-direction:column; }
+    .dhero { flex-direction:column; } .dhero .ph { width:100%; }
+    .aflow .acard .ph { width:110px; height:82px; }
+    .acard .desc { display:none; }
+    .gmain { height:170px; }
+    .gbtn { width:26px; height:26px; font-size:13px; }
+    .nav { gap:8px; padding:10px 12px; } .navlinks .nl { padding:4px 8px; }
+    .admin { flex-direction:column; } .aside { width:100%; display:flex; flex-wrap:wrap; align-items:center; } .aside .ai2 { padding:6px 10px; }
+    .ustat { margin-left:0; flex-wrap:wrap; gap:10px; }
+    .gcard .ph { height:60px; }
+    .filters { flex-direction:column; } .finput { min-width:0; }
+    .gcard .row, .gcard small { font-size:11px; }
+  }
   footer { margin-top:20px; font-size:12px; color:#888; line-height:1.8; }
 </style>
 </head>
@@ -214,15 +245,16 @@
           <div class="gcard" data-page-node-id="Zk1bkPtx62h0T8PE0jcfiG"><div class="ph mount" data-page-node-id="ebeZBQkCaAq4yDMHytUcmB">都江堰 · 图占位</div><div class="gi" data-page-node-id="OhU6KrHJoxVNqJK9BPxRqu"><b data-page-node-id="m7L0hNyYq84iCKXRaczyG4">都江堰景区</b><small data-page-node-id="Jh1b9B5JMHVHRfu6uEOvzV">成都 · 都江堰市</small><div class="row" data-page-node-id="9RZ6txOcHndVYrcKLAxEMO"><span class="price" data-page-node-id="BuzOGaeOCFYcvFXCF47Wql">¥80 起</span><span class="ht" data-page-node-id="Rau6mA4CrUXPnGOcZCRHZ4">世界遗产</span></div></div></div>
         </div>
         <div class="sec" data-page-node-id="le9T72iU90rCfI9dazmNIG">猜你喜欢 <small data-page-node-id="sJEBEkNpBVnQKKQyarlMP5">按你的收藏偏好 + 全站收藏热度推荐</small></div>
-        <div class="grid" data-page-node-id="mD8cRsh34V0mVGhwlUaJvM">
+        <div class="grid" id="recgrid" data-page-node-id="mD8cRsh34V0mVGhwlUaJvM">
           <div class="gcard" data-page-node-id="QREGHxF7tR4LRMVSCJPdBF"><div class="ph mount" data-page-node-id="2nGNf6bFkjuKIfP7BwemlC">灵隐寺 · 图占位</div><div class="gi" data-page-node-id="96YHxE7YGKC9yU6sdY954d"><b data-page-node-id="WvTr9BdK79vZqtP31A41v0">灵隐寺</b><small data-page-node-id="lTHYssd3Jun8DA7hFJoF6C">杭州 · 因为收藏过"西湖"</small></div></div>
           <div class="gcard" data-page-node-id="ADvSjENZBTdOpgH8H4pkOv"><div class="ph" data-page-node-id="2eDpoa6WwCDIr2q3cFwgQ7">锦里古街 · 图占位</div><div class="gi" data-page-node-id="JPAGoXapplvljl0O0fxtMT"><b data-page-node-id="xphl7HFopZAmFBspJUQwPd">锦里古街</b><small data-page-node-id="iH3CGfYg0T7TS0iFnT5LTh">成都 · 热门美食街区</small></div></div>
           <div class="gcard" data-page-node-id="1VnpgWhg7g6oOjzokWAmNn"><div class="ph" data-page-node-id="jZilqlKChJmS0WDTadPhRD">大雁塔 · 图占位</div><div class="gi" data-page-node-id="f6ha1DMdx9pUd48TEbNe6z"><b data-page-node-id="4AGfNSvigo5DH6oo1hFZFQ">大雁塔</b><small data-page-node-id="FCjzS3nu3MowxNES2s4ATm">西安 · 全站收藏 Top3</small></div></div>
           <div class="gcard" data-page-node-id="wQ8bXKGuPd7p81AwZAFCF0"><div class="ph sun" data-page-node-id="TEPU5LJPDFMV6VVkspOOFg">蜈支洲岛 · 图占位</div><div class="gi" data-page-node-id="h1Lx5yl8h4EARxWw1VYHsm"><b data-page-node-id="eHdYnVChwY3uLR4ooxzmWk">蜈支洲岛</b><small data-page-node-id="XfvPYonQC1qvkuElrxXouu">三亚 · 海岛控必收</small></div></div>
         </div>
+        <div class="pager"><span class="pg on" id="recpg1" onclick="recPage(1)">1</span><span class="pg" id="recpg2" onclick="recPage(2)">2</span><span class="pg" id="recpg3" onclick="recPage(3)">3</span><span class="pg" onclick="recPage(recCur+1)">下一页 ›</span></div>
       </div>
     </div>
-    <div class="note" data-page-node-id="jqC7rZEzZS2CorMgN5ynUu"><b data-page-node-id="K1dFT6Ops4ZtF1Sz6nDigq">这页的交互：</b><br data-page-node-id="sjJfonA94FcSj8CyU0GxF1">1. 轮播图自动播放（5 秒/帧），底部圆点可手动切。<br data-page-node-id="lcp6CTw9kU5iiFx88MAxxo">2. 推荐卡片与"猜你喜欢"卡片：点击 → 进入 ③ 景点详情页。<br data-page-node-id="fcfFmGnx1xoN0EqTcyiYUn">3. "猜你喜欢"规则：你的收藏标签偏好优先，没登录就按全站收藏热度。<br data-page-node-id="7cGv67OJpOKKpWYO3uuHlW">4. 右上角"登录/注册"→ 打开 ⑩ 弹窗。游客可自由浏览本页。</div>
+    <div class="note" data-page-node-id="jqC7rZEzZS2CorMgN5ynUu"><b data-page-node-id="K1dFT6Ops4ZtF1Sz6nDigq">这页的交互：</b><br data-page-node-id="sjJfonA94FcSj8CyU0GxF1">1. 轮播图自动播放（5 秒/帧），底部圆点可手动切。<br data-page-node-id="lcp6CTw9kU5iiFx88MAxxo">2. 推荐卡片与"猜你喜欢"卡片：点击 → 进入 ③ 景点详情页。<br data-page-node-id="fcfFmGnx1xoN0EqTcyiYUn">3. "猜你喜欢"规则：你的收藏标签偏好优先，没登录就按全站收藏热度。<br data-page-node-id="7cGv67OJpOKKpWYO3uuHlW">4. "猜你喜欢"支持分页：页码 1/2/3 与"下一页"按钮切换，每页 4 条推荐，样式与景点列表页分页一致。<br>5. 右上角"登录/注册"→ 打开 ⑩ 弹窗。游客可自由浏览本页。</div>
   </div>
 
   <!-- ═══ 页2 景点列表 ═══ -->
@@ -409,18 +441,35 @@
         <div class="arti" data-page-node-id="dVYcIyFw78TXSFyfMGuLvE">
           <h2 data-page-node-id="KKBgU3Ca5mSjHnkfsk0wSs">成都 3 天 2 晚亲子悠闲攻略（带 5 岁娃实测）</h2>
           <div class="by" data-page-node-id="5SCMQTudbdNhyOuvVwaJPL">旅行家小王 · 发布于 2026-08-30 · 👁 1,204 · 关联景点 5 个</div>
-          <div class="ph" data-page-node-id="GC23xUlbcOv0eoeifNLNgl">攻略头图 · 图占位</div>
-          <div class="thumbs" style="margin-top:8px;">
-            <div class="thumb"><div class="ph">图 2 · 宽窄巷子</div></div>
-            <div class="thumb"><div class="ph">图 3 · 鹤鸣茶社</div></div>
-            <div class="thumb"><div class="ph">图 4 · 熊猫基地</div></div>
-            <div class="thumb"><div class="ph">图 5 · 锦里夜景</div></div>
-            <div class="thumb"><div class="ph">图 6 · 建设路小吃</div></div>
-            <div class="thumb"><div class="ph" style="background:#f1efe8;color:#999;">共 12 图 · 点击看大图</div></div>
+
+          <!-- 区块一：图片画廊（与正文完全分离） -->
+          <div class="gallery">
+            <div class="glabel">🖼️ 图片画廊 · 共 12 图（左右箭头或点缩略图切换）</div>
+            <div class="gwrap">
+              <div class="gmain ph" id="gmain">图 1 · 攻略头图 · 图占位</div>
+              <span class="gbtn l" onclick="gshow(gi-1)">‹</span>
+              <span class="gbtn r" onclick="gshow(gi+1)">›</span>
+            </div>
+            <div class="gthumbs">
+              <div class="gt ph on" onclick="gshow(0)">图 1 · 头图</div>
+              <div class="gt ph sea" onclick="gshow(1)">图 2 · 宽窄巷子</div>
+              <div class="gt ph" onclick="gshow(2)">图 3 · 鹤鸣茶社</div>
+              <div class="gt ph" onclick="gshow(3)">图 4 · 熊猫基地</div>
+              <div class="gt ph sun" onclick="gshow(4)">图 5 · 锦里夜景</div>
+              <div class="gt ph" onclick="gshow(5)">图 6 · 建设路小吃</div>
+              <div class="gt ph mount" onclick="gshow(6)">图 7 · 武侯祠红墙</div>
+              <div class="gt ph mount" onclick="gshow(7)">图 8 · 人民公园</div>
+            </div>
           </div>
-          <p data-page-node-id="O6jTu1SmwiRQIuBpZGvnMQ">带娃出门的核心原则：每天最多两个"大点"，中间夹公园和美食。我们住春熙路地铁口，去哪儿都方便……</p>
-          <div class="ph" style="height:130px;" data-page-node-id="GC23xUlbcOv0eoeifNLNgl2">正文插图 · 图 7 · 武侯祠红墙夹道 · 图占位</div>
-          <p data-page-node-id="MHxaQS4bweh42lCy7DXyA4">Day 1 路线是宽窄巷子 → 人民公园 → 武侯祠 → 锦里，全程顺路不折腾；大熊猫基地放在 Day 2 上午，一定赶 8:30 开园首批进场，熊猫最活跃……</p>
+
+          <!-- 区块二：正文（纯文字，与图片区分） -->
+          <div class="articletext">
+            <div class="glabel">📝 正文</div>
+            <p data-page-node-id="O6jTu1SmwiRQIuBpZGvnMQ">带娃出门的核心原则：每天最多两个"大点"，中间夹公园和美食。我们住春熙路地铁口，去哪儿都方便……</p>
+            <p data-page-node-id="MHxaQS4bweh42lCy7DXyA4">Day 1 路线是宽窄巷子 → 人民公园 → 武侯祠 → 锦里，全程顺路不折腾；大熊猫基地放在 Day 2 上午，一定赶 8:30 开园首批进场，熊猫最活跃……</p>
+            <p>更多完整路线、餐厅排队时段和避坑清单，欢迎在评论区交流；所有图片都可以点击放大查看原图。</p>
+          </div>
+
           <div class="sec" data-page-node-id="bshwjamUDDkPGaGx4AunKj">关联景点 <small data-page-node-id="txkGUmMJ1mGjUDdOpyPNSS">点击直达详情页</small></div>
           <div class="linkspot" data-page-node-id="E7b9YL7wYMW8WwBLhv4uGw">
             <span class="lspot" data-page-node-id="OFP01OExkgWlI5Bf5RCM78">🏛️ 宽窄巷子</span><span class="lspot" data-page-node-id="LlBAUGGOwfHQd2LoGOjsrQ">🌳 人民公园</span><span class="lspot" data-page-node-id="3mAz5NiQGMDWRe7KIiXKGT">🏮 武侯祠博物馆</span><span class="lspot" data-page-node-id="09ecvq33mgrBIDBYOYxV6o">🏮 锦里古街</span><span class="lspot" data-page-node-id="J8qeDGsCmZXGIipcO8YdBp">🐼 大熊猫繁育研究基地</span>
@@ -428,7 +477,7 @@
         </div>
       </div>
     </div>
-    <div class="note" data-page-node-id="Pk78sAjEuXa7ZGsJVNbOy1"><b data-page-node-id="XeEGotIpCVcYSCeutfcYif">这页的交互：</b><br data-page-node-id="eMyGkSuPSB28lIT9VBf4Zs">1. <b>多图展示</b>：头图 + 图集缩略图行（点缩略图看大图轮播）+ 正文内插图，全部来自发布时上传（存本地文件目录）。<br data-page-node-id="haynk5DIv4eet9QPX27KRx2">2. 底部"关联景点"胶囊点击直达 ③ 景点详情——这是"攻略↔景点"双向打通的入口。</div>
+    <div class="note" data-page-node-id="Pk78sAjEuXa7ZGsJVNbOy1"><b data-page-node-id="XeEGotIpCVcYSCeutfcYif">这页的交互：</b><br data-page-node-id="eMyGkSuPSB28lIT9VBf4Zs">1. <b>两大区块清晰分离</b>：上方"图片画廊"区块（主图 + 左右箭头轮播 + 缩略图点击切换，全部图片集中于此）；下方"正文"区块（纯文字，不再穿插插图），间距分隔、互不干扰。<br data-page-node-id="haynk5DIv4eet9QPX27KRx2">2. 桌面端与手机端均适配（窄屏自动纵排、画廊缩略图横向滑动）。<br data-page-node-id="haynk5DIv4eet9QPX27KRx3">3. 底部"关联景点"胶囊点击直达 ③ 景点详情——这是"攻略↔景点"双向打通的入口。</div>
   </div>
 
   <!-- ═══ 页7 攻略编写 ═══ -->
@@ -546,6 +595,19 @@
 </div>
 <script>
   function show(i){document.querySelectorAll('.tab').forEach((t,k)=>t.classList.toggle('on',k===i));document.querySelectorAll('.page').forEach((p,k)=>p.classList.toggle('on',k===i));}
+  /* 攻略详情：图片画廊切换 */
+  var gpics=['图 1 · 攻略头图 · 图占位','图 2 · 宽窄巷子 · 图占位','图 3 · 鹤鸣茶社 · 图占位','图 4 · 熊猫基地 · 图占位','图 5 · 锦里夜景 · 图占位','图 6 · 建设路小吃 · 图占位','图 7 · 武侯祠红墙 · 图占位','图 8 · 人民公园 · 图占位'];
+  var gi=0;
+  function gshow(i){gi=(i+gpics.length)%gpics.length;document.getElementById('gmain').textContent=gpics[gi];document.querySelectorAll('.gt').forEach(function(t,k){t.classList.toggle('on',k===gi);});}
+  /* 首页"猜你喜欢"分页：3 页 × 4 条 */
+  var recCur=1;
+  var recData={
+    1:[['灵隐寺','杭州 · 因为收藏过"西湖"','mount','灵隐寺 · 图占位'],['锦里古街','成都 · 热门美食街区','','锦里古街 · 图占位'],['大雁塔','西安 · 全站收藏 Top3','','大雁塔 · 图占位'],['蜈支洲岛','三亚 · 海岛控必收','sun','蜈支洲岛 · 图占位']],
+    2:[['宽窄巷子','成都 · 历史街区，同款Citywalk','','宽窄巷子 · 图占位'],['西湖','杭州 · 你收藏过的湖光山色','sea','西湖 · 图占位'],['都江堰景区','成都 · 世界遗产水位线','mount','都江堰 · 图占位'],['亚龙湾','三亚 · 海滨度假首选','sun','亚龙湾 · 图占位']],
+    3:[['鼓浪屿','厦门 · 文艺小岛步行环线','sea','鼓浪屿 · 图占位'],['洪崖洞','重庆 · 夜景打卡顶流','','洪崖洞 · 图占位'],['岳麓山','长沙 · 免费登高好去处','','岳麓山 · 图占位'],['洱海','大理 · 环湖骑行路线','sea','洱海 · 图占位']]
+  };
+  function recCard(c){return '<div class="gcard"><div class="ph '+c[2]+'">'+c[3]+'</div><div class="gi"><b>'+c[0]+'</b><small>'+c[1]+'</small></div></div>';}
+  function recPage(n){if(n<1||n>3)return;recCur=n;document.getElementById('recgrid').innerHTML=recData[n].map(recCard).join('');for(var k=1;k<=3;k++){document.getElementById('recpg'+k).classList.toggle('on',k===n);}}
 </script>
 </body>
 </html>
