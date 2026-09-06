@@ -22,10 +22,13 @@ async function request(method, url, body) {
     try { detail = (await resp.json()).detail || detail } catch { /* keep */ }
     throw new Error(detail)
   }
+  if (resp.status === 204) return null // 删除等无响应体
   return resp.json()
 }
 
 export const api = {
   get: (url) => request('GET', url),
   post: (url, body) => request('POST', url, body),
+  patch: (url, body) => request('PATCH', url, body),
+  raw: (method, url) => request(method, url),
 }

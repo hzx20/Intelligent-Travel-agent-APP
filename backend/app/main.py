@@ -16,18 +16,22 @@
 from fastapi import FastAPI
 
 from app.db.database import init_db
+from app.routers.admin import router as admin_router
 from app.routers.auth import router as auth_router
+from app.routers.me import router as me_router
 from app.routers.spots import router as spots_router
 from app.schemas import ClarifyRequest, ClarifyResponse, ItineraryRequest
 from app.services.clarify import clarify_turn
 from app.services.itinerary import generate_itinerary
 
-app = FastAPI(title="智能旅行规划 Agent API", version="0.8.0")
+app = FastAPI(title="智能旅行规划 Agent API", version="0.9.0")
 
 # v0.5：启动时建库建表（幂等），并挂载用户系统路由
 init_db()
 app.include_router(auth_router)
 app.include_router(spots_router)
+app.include_router(me_router)
+app.include_router(admin_router)
 
 
 @app.get("/api/health")
