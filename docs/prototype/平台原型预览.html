@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="zh-CN" data-page-node-id="IhsUgLMDWRup4uNPT6cqbE">
+<head data-page-node-id="wb9jAIKEZfhbpYbYd0UFWT">
+<meta charset="UTF-8" data-page-node-id="7ICaUYy0fb1TxDch89nf4x">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="3SwotnCHrhNq1ZeEH1XkES">
 <title>智能旅行规划平台 — 页面效果图 v1.0</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -107,9 +107,9 @@
   .spot small { color:#888; display:block; margin-top:2px; font-size:11px; }
   .actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
   /* 攻略 */
-  .aflow { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+  .aflow { display:grid; grid-template-columns:1fr; gap:12px; }
   .acard { border:1px solid #e4e2da; border-radius:10px; overflow:hidden; background:#fff; cursor:pointer; display:flex; }
-  .acard .ph { width:96px; height:76px; border-radius:0; flex-shrink:0; }
+  .acard .ph { width:210px; height:116px; border-radius:0; flex-shrink:0; }
   .acard .ai { padding:9px 11px; min-width:0; }
   .acard b { font-size:13px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .acard small { color:#888; font-size:11px; display:block; margin-top:4px; }
@@ -156,342 +156,393 @@
   .authbox .btn { width:100%; }
   .authsw { text-align:center; font-size:12px; color:#888; margin-top:12px; }
   .authsw em { color:#1a6e50; font-style:normal; cursor:pointer; }
+  .more { font-size:12px; color:#1a6e50; cursor:pointer; font-weight:normal; margin-left:auto; }
+  .planswitch { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; align-items:center; }
+  .plan { font-size:11px; padding:4px 11px; border:1px solid #ddd; border-radius:16px; background:#fff; cursor:pointer; color:#555; }
+  .plan.on { background:#1a6e50; color:#fff; border-color:#1a6e50; font-weight:bold; }
+  .dayplan { border:1px solid #e4e2da; border-radius:10px; background:#fbfbf9; padding:11px 14px; margin-bottom:9px; font-size:12.5px; line-height:1.95; }
+  .dayplan b.dt { color:#1a6e50; }
+  .dayplan small { color:#888; }
+  .photobox { border:1.5px dashed #b0ada2; border-radius:10px; padding:16px; text-align:center; font-size:12px; color:#777; background:#fafaf8; cursor:pointer; }
+  .thumbs { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  .thumb { position:relative; width:84px; height:62px; }
+  .thumb .ph { width:100%; height:100%; border-radius:6px; font-size:10px; }
+  .thumb .x { position:absolute; top:-6px; right:-6px; width:16px; height:16px; border-radius:50%; background:#a33; color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .acard .desc { font-size:12px; color:#777; line-height:1.7; margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   footer { margin-top:20px; font-size:12px; color:#888; line-height:1.8; }
 </style>
 </head>
-<body>
-<div class="wrap">
-  <h1>智能旅行规划平台 · 页面效果图 <span class="tag">v1.0 · 十页完整版（docs/PROJECT_BRIEF.md 定稿配套）</span></h1>
-  <div class="sub">高保真线框图 = 定布局、内容和交互用，不是最终配色。顶部导航栏是每个页面都会有的"平台骨架"，各页里绿色高亮的板块就是当前页。点页签切换，共 10 页。</div>
+<body data-page-node-id="8DMXPykdPbHtYZdlqnhDsb">
+<div class="wrap" data-page-node-id="sJTCJpuUx05sY3vvxYgNKf">
+  <h1 data-page-node-id="ee1NKqgdttMrLHqI2yvF8U">智能旅行规划平台 · 页面效果图 <span class="tag" data-page-node-id="ymCmhWA0KcA1DyJYXmANsn">v1.0 · 十页完整版（docs/PROJECT_BRIEF.md 定稿配套）</span></h1>
+  <div class="sub" data-page-node-id="aIehVWuIADZWrc5vCMdpDz">高保真线框图 = 定布局、内容和交互用，不是最终配色。顶部导航栏是每个页面都会有的"平台骨架"，各页里绿色高亮的板块就是当前页。点页签切换，共 10 页。</div>
 
-  <div class="tabs">
-    <div class="tab on" onclick="show(0)">① 首页</div>
-    <div class="tab" onclick="show(1)">② 景点·列表页</div>
-    <div class="tab" onclick="show(2)">③ 景点·详情页</div>
-    <div class="tab" onclick="show(3)">④ 线路规划助手</div>
-    <div class="tab" onclick="show(4)">⑤ 攻略·列表页</div>
-    <div class="tab" onclick="show(5)">⑥ 攻略·详情页</div>
-    <div class="tab" onclick="show(6)">⑦ 攻略·编写页</div>
-    <div class="tab" onclick="show(7)">⑧ 个人中心</div>
-    <div class="tab" onclick="show(8)">⑨ 管理员后台</div>
-    <div class="tab" onclick="show(9)">⑩ 登录 / 注册</div>
+  <div class="tabs" data-page-node-id="z3IcALAyzAV11b3qQDDrmn">
+    <div class="tab on" onclick="show(0)" data-page-node-id="rCoVGGtqNNmfGomVEKjNh0">① 首页</div>
+    <div class="tab" onclick="show(1)" data-page-node-id="5j2czo3E5GEvk10BtBpSVp">② 景点·列表页</div>
+    <div class="tab" onclick="show(2)" data-page-node-id="ItHSoxDAzOhCpimVDbOurm">③ 景点·详情页</div>
+    <div class="tab" onclick="show(3)" data-page-node-id="Mf7P9cWQQ8uw6R40HfFS1R">④ 线路规划助手</div>
+    <div class="tab" onclick="show(4)" data-page-node-id="lxka3wKd0csjP81lKZL2mZ">⑤ 攻略·列表页</div>
+    <div class="tab" onclick="show(5)" data-page-node-id="BHgyMvYPtEyNcPRmAF932k">⑥ 攻略·详情页</div>
+    <div class="tab" onclick="show(6)" data-page-node-id="ssTFuykilyLdVjT0reO4NG">⑦ 攻略·编写页</div>
+    <div class="tab" onclick="show(7)" data-page-node-id="GpJ4TqCgCB7vhtKDDJ8ai4">⑧ 个人中心</div>
+    <div class="tab" onclick="show(8)" data-page-node-id="4oe6RAk51A7WdjvYcvVRmD">⑨ 管理员后台</div>
+    <div class="tab" onclick="show(9)" data-page-node-id="ynP25j3ZmL8r7Ib3NKSWwx">⑩ 登录 / 注册</div>
   </div>
 
   <!-- ═══ 页1 首页 ═══ -->
-  <div class="page on">
-    <div class="frame">
-      <div class="nav">
-        <span class="logo">🧭 旅行规划平台</span>
-        <span class="navlinks"><span class="nl on">首页</span><span class="nl">旅游景点</span><span class="nl">线路规划助手</span><span class="nl">旅游攻略</span><span class="nl">个人中心</span></span>
-        <span class="navuser">游客 · <span class="lk">登录</span> / <span class="lk">注册</span></span>
+  <div class="page on" data-page-node-id="tjzHAKUAOAqzjteermjOBj">
+    <div class="frame" data-page-node-id="l8dvTdznwJhWOrDhpJo8Qp">
+      <div class="nav" data-page-node-id="cRO72nHKPlAKi2pn6oQvE0">
+        <span class="logo" data-page-node-id="xpAZ3LSEzYSIRziTn7mIEL">🧭 旅行规划平台</span>
+        <span class="navlinks" data-page-node-id="rvbCxFHXhmq3R81mrgs99n"><span class="nl on" data-page-node-id="0DaK9gk8JYGoh3yO3BsZit">首页</span><span class="nl" data-page-node-id="DawdmHTXeE8He2KmOsZ13w">旅游景点</span><span class="nl" data-page-node-id="wkQgJLfBgd5P57dzCLbLkM">线路规划助手</span><span class="nl" data-page-node-id="CsqcN3bBfVArQoDPYpZWLR">旅游攻略</span><span class="nl" data-page-node-id="0Cx10rBzQnXhjCtW673bgj">个人中心</span></span>
+        <span class="navuser" data-page-node-id="kscEZZUGrORmPskgheKUkp">游客 · <span class="lk" data-page-node-id="1ULX77dvJZZOEFdLmsqv0S">登录</span> / <span class="lk" data-page-node-id="Bdpz5B9oNJyJ1QX90CdSVJ">注册</span></span>
       </div>
-      <div class="inner">
-        <div class="carousel">
-          <div class="slide" style="background:linear-gradient(120deg,#4a8a68,#2d5e45);">
-            <div class="t1">成都 · 大熊猫繁育研究基地</div>
-            <div class="t2">国宝萌态 · 建议上午前往看活跃时段</div>
+      <div class="inner" data-page-node-id="e4ip6o5ZF9v5fdLjSpIGLe">
+        <div class="carousel" data-page-node-id="fpgY4w91fwbCskfuUnoRgx">
+          <div class="slide" style="background:linear-gradient(120deg,#4a8a68,#2d5e45);" data-page-node-id="f0BpAAs3kDLBzWN97y1y2g">
+            <div class="t1" data-page-node-id="yDhbwsdQh0K2BFnjXxvtsD">成都 · 大熊猫繁育研究基地</div>
+            <div class="t2" data-page-node-id="OlE3On4q3oSQWS6gKZ9gTL">国宝萌态 · 建议上午前往看活跃时段</div>
           </div>
-          <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+          <div class="dots" data-page-node-id="zUAEhmKgxD7sHRjJUs6tRX"><span class="dot on" data-page-node-id="moL4Ysp43tEaPJiKFLTSGt"></span><span class="dot" data-page-node-id="AcZe5kIeUitZYBy9Hvabhy"></span><span class="dot" data-page-node-id="6dqQFbKZ1NTOhUfZqGgwQX"></span></div>
         </div>
-        <div class="sec">热门景区推荐 <small>轮播图 5s 自动切换，共 3 帧</small></div>
-        <div class="grid">
-          <div class="gcard"><div class="ph">宽窄巷子 · 图占位</div><div class="gi"><b>宽窄巷子</b><small>成都 · 青羊区</small><div class="row"><span class="free">免费</span><span class="ht">历史街区</span></div></div></div>
-          <div class="gcard"><div class="ph sea">西湖 · 图占位</div><div class="gi"><b>杭州西湖</b><small>杭州 · 西湖区</small><div class="row"><span class="free">免费</span><span class="ht">湖光山色</span></div></div></div>
-          <div class="gcard"><div class="ph sun">亚龙湾 · 图占位</div><div class="gi"><b>亚龙湾</b><small>三亚 · 吉阳区</small><div class="row"><span class="price">¥158 起</span><span class="ht">海滨度假</span></div></div></div>
-          <div class="gcard"><div class="ph mount">都江堰 · 图占位</div><div class="gi"><b>都江堰景区</b><small>成都 · 都江堰市</small><div class="row"><span class="price">¥80 起</span><span class="ht">世界遗产</span></div></div></div>
+        <div class="sec" style="display:flex;align-items:baseline;" data-page-node-id="rO9qIcwM55akrX17cVdu0j">热门景区推荐 <small data-page-node-id="AeqGtRWGvcAD2LSuw8WV2G">轮播图 5s 自动切换，共 3 帧</small><a class="more" onclick="show(1)">查看全部景点 →</a></div>
+        <div class="grid" data-page-node-id="URsEEJq6GQy0pcM7bPZ3aw">
+          <div class="gcard" data-page-node-id="UEYMzXvsQhdLCakECOx3tU"><div class="ph" data-page-node-id="PWbOKebfrM0O6XxNVCdiiI">宽窄巷子 · 图占位</div><div class="gi" data-page-node-id="METUrLLpKSoiby4zG9FRCp"><b data-page-node-id="UMUJtm3yXBouFVRDPGBgFB">宽窄巷子</b><small data-page-node-id="mzMqfFwfHtTCNMDkluYQG6">成都 · 青羊区</small><div class="row" data-page-node-id="ubDBRAejFvbMnggmXmCMkO"><span class="free" data-page-node-id="B4vcNQFZNi4E6aJyMztDhz">免费</span><span class="ht" data-page-node-id="FNUKmyS0xu4TTAmokp5zDL">历史街区</span></div></div></div>
+          <div class="gcard" data-page-node-id="OESM2VK4ZH9SPiSVIiPtSU"><div class="ph sea" data-page-node-id="DKvmJRhxmMTHmZcgY5FByg">西湖 · 图占位</div><div class="gi" data-page-node-id="iZTK7nTygxMZLMqOZMlrNH"><b data-page-node-id="TKa2dzRGYsHSZdD06J5D4j">杭州西湖</b><small data-page-node-id="Hz2A2vYXpZAFAaFmIf91G7">杭州 · 西湖区</small><div class="row" data-page-node-id="PoM8Ot1kxFt4jJhDEq0M3L"><span class="free" data-page-node-id="1qUD81DYw6HrtLx9tUVaFO">免费</span><span class="ht" data-page-node-id="WiKcAx8quAWxR4X0PJtEDk">湖光山色</span></div></div></div>
+          <div class="gcard" data-page-node-id="Hp8xBZwfs7KtTYQYkx1W6W"><div class="ph sun" data-page-node-id="sZdmO4BPpNFQIStjCX8toY">亚龙湾 · 图占位</div><div class="gi" data-page-node-id="sNAMVDPRE4f4sX8hrfrAh5"><b data-page-node-id="y9mryobsE4x0w4oaoQtyEA">亚龙湾</b><small data-page-node-id="LAGdUtcnOS9jvxcCXdZtQ1">三亚 · 吉阳区</small><div class="row" data-page-node-id="A4FHfgbyZpQdVI5OZnlkFj"><span class="price" data-page-node-id="tLa5HjmaR3HWbVZHnaz5za">¥158 起</span><span class="ht" data-page-node-id="f97peXkEQZzyXMkHuAIaXi">海滨度假</span></div></div></div>
+          <div class="gcard" data-page-node-id="Zk1bkPtx62h0T8PE0jcfiG"><div class="ph mount" data-page-node-id="ebeZBQkCaAq4yDMHytUcmB">都江堰 · 图占位</div><div class="gi" data-page-node-id="OhU6KrHJoxVNqJK9BPxRqu"><b data-page-node-id="m7L0hNyYq84iCKXRaczyG4">都江堰景区</b><small data-page-node-id="Jh1b9B5JMHVHRfu6uEOvzV">成都 · 都江堰市</small><div class="row" data-page-node-id="9RZ6txOcHndVYrcKLAxEMO"><span class="price" data-page-node-id="BuzOGaeOCFYcvFXCF47Wql">¥80 起</span><span class="ht" data-page-node-id="Rau6mA4CrUXPnGOcZCRHZ4">世界遗产</span></div></div></div>
         </div>
-        <div class="sec">猜你喜欢 <small>按你的收藏偏好 + 全站收藏热度推荐</small></div>
-        <div class="grid">
-          <div class="gcard"><div class="ph mount">灵隐寺 · 图占位</div><div class="gi"><b>灵隐寺</b><small>杭州 · 因为收藏过"西湖"</small></div></div>
-          <div class="gcard"><div class="ph">锦里古街 · 图占位</div><div class="gi"><b>锦里古街</b><small>成都 · 热门美食街区</small></div></div>
-          <div class="gcard"><div class="ph">大雁塔 · 图占位</div><div class="gi"><b>大雁塔</b><small>西安 · 全站收藏 Top3</small></div></div>
-          <div class="gcard"><div class="ph sun">蜈支洲岛 · 图占位</div><div class="gi"><b>蜈支洲岛</b><small>三亚 · 海岛控必收</small></div></div>
+        <div class="sec" data-page-node-id="le9T72iU90rCfI9dazmNIG">猜你喜欢 <small data-page-node-id="sJEBEkNpBVnQKKQyarlMP5">按你的收藏偏好 + 全站收藏热度推荐</small></div>
+        <div class="grid" data-page-node-id="mD8cRsh34V0mVGhwlUaJvM">
+          <div class="gcard" data-page-node-id="QREGHxF7tR4LRMVSCJPdBF"><div class="ph mount" data-page-node-id="2nGNf6bFkjuKIfP7BwemlC">灵隐寺 · 图占位</div><div class="gi" data-page-node-id="96YHxE7YGKC9yU6sdY954d"><b data-page-node-id="WvTr9BdK79vZqtP31A41v0">灵隐寺</b><small data-page-node-id="lTHYssd3Jun8DA7hFJoF6C">杭州 · 因为收藏过"西湖"</small></div></div>
+          <div class="gcard" data-page-node-id="ADvSjENZBTdOpgH8H4pkOv"><div class="ph" data-page-node-id="2eDpoa6WwCDIr2q3cFwgQ7">锦里古街 · 图占位</div><div class="gi" data-page-node-id="JPAGoXapplvljl0O0fxtMT"><b data-page-node-id="xphl7HFopZAmFBspJUQwPd">锦里古街</b><small data-page-node-id="iH3CGfYg0T7TS0iFnT5LTh">成都 · 热门美食街区</small></div></div>
+          <div class="gcard" data-page-node-id="1VnpgWhg7g6oOjzokWAmNn"><div class="ph" data-page-node-id="jZilqlKChJmS0WDTadPhRD">大雁塔 · 图占位</div><div class="gi" data-page-node-id="f6ha1DMdx9pUd48TEbNe6z"><b data-page-node-id="4AGfNSvigo5DH6oo1hFZFQ">大雁塔</b><small data-page-node-id="FCjzS3nu3MowxNES2s4ATm">西安 · 全站收藏 Top3</small></div></div>
+          <div class="gcard" data-page-node-id="wQ8bXKGuPd7p81AwZAFCF0"><div class="ph sun" data-page-node-id="TEPU5LJPDFMV6VVkspOOFg">蜈支洲岛 · 图占位</div><div class="gi" data-page-node-id="h1Lx5yl8h4EARxWw1VYHsm"><b data-page-node-id="eHdYnVChwY3uLR4ooxzmWk">蜈支洲岛</b><small data-page-node-id="XfvPYonQC1qvkuElrxXouu">三亚 · 海岛控必收</small></div></div>
         </div>
       </div>
     </div>
-    <div class="note"><b>这页的交互：</b><br>1. 轮播图自动播放（5 秒/帧），底部圆点可手动切。<br>2. 推荐卡片与"猜你喜欢"卡片：点击 → 进入 ③ 景点详情页。<br>3. "猜你喜欢"规则：你的收藏标签偏好优先，没登录就按全站收藏热度。<br>4. 右上角"登录/注册"→ 打开 ⑩ 弹窗。游客可自由浏览本页。</div>
+    <div class="note" data-page-node-id="jqC7rZEzZS2CorMgN5ynUu"><b data-page-node-id="K1dFT6Ops4ZtF1Sz6nDigq">这页的交互：</b><br data-page-node-id="sjJfonA94FcSj8CyU0GxF1">1. 轮播图自动播放（5 秒/帧），底部圆点可手动切。<br data-page-node-id="lcp6CTw9kU5iiFx88MAxxo">2. 推荐卡片与"猜你喜欢"卡片：点击 → 进入 ③ 景点详情页。<br data-page-node-id="fcfFmGnx1xoN0EqTcyiYUn">3. "猜你喜欢"规则：你的收藏标签偏好优先，没登录就按全站收藏热度。<br data-page-node-id="7cGv67OJpOKKpWYO3uuHlW">4. 右上角"登录/注册"→ 打开 ⑩ 弹窗。游客可自由浏览本页。</div>
   </div>
 
   <!-- ═══ 页2 景点列表 ═══ -->
-  <div class="page">
-    <div class="frame">
-      <div class="nav">
-        <span class="logo">🧭 旅行规划平台</span>
-        <span class="navlinks"><span class="nl">首页</span><span class="nl on">旅游景点</span><span class="nl">线路规划助手</span><span class="nl">旅游攻略</span><span class="nl">个人中心</span></span>
-        <span class="navuser">游客 · <span class="lk">登录</span></span>
+  <div class="page" data-page-node-id="CzZhCnM7oGo5OrZDcAnKPl">
+    <div class="frame" data-page-node-id="yxHvOByuF3Wwp5pFg4Putb">
+      <div class="nav" data-page-node-id="SCDsMCaEs9UbVVcX8Raa9t">
+        <span class="logo" data-page-node-id="lmxXcfE9Y17miYvBBTlWXO">🧭 旅行规划平台</span>
+        <span class="navlinks" data-page-node-id="bQNBHaJBJBcRbkggUlE45j"><span class="nl" data-page-node-id="nm3hDTwET3740Fujeqinz5">首页</span><span class="nl on" data-page-node-id="SeDym0DGEDOIBDXmGBzZAb">旅游景点</span><span class="nl" data-page-node-id="IRJvF5vKyNqhYJaIwi9tYv">线路规划助手</span><span class="nl" data-page-node-id="zFXmOli0yfbJIYaQDIjDbs">旅游攻略</span><span class="nl" data-page-node-id="yu97ZSuOC3d2y4fQnOG4ty">个人中心</span></span>
+        <span class="navuser" data-page-node-id="ZmNzdQA4xIY6wDS6zREZv0">游客 · <span class="lk" data-page-node-id="YgCvSzbvcYSHsw9rFAfpMf">登录</span></span>
       </div>
-      <div class="inner">
-        <div class="filters">
-          <div class="finput">🔍 搜索景点名 / 标签 / 区域，如"熊猫"</div>
-          <select class="fsel"><option>全部城市</option><option selected>成都</option><option>杭州</option><option>西安</option><option>北京</option><option>三亚</option></select>
-          <select class="fsel"><option>门票不限</option><option selected>免费</option><option>收费</option></select>
-          <button class="btn sm">搜索</button>
+      <div class="inner" data-page-node-id="34LJTzOQflj2wQUrbBFzeo">
+        <div class="filters" data-page-node-id="b1MHMOemVR4EunaGaIO9mm">
+          <div class="finput" data-page-node-id="whTvEhhCBkODBGFEpoKfOw">🔍 搜索景点名 / 标签 / 区域，如"熊猫"</div>
+          <select class="fsel" data-page-node-id="hyCucnBaQ04Wm7QFa17rVj"><option data-page-node-id="yLa0p0F6XR4sWolBSWkjB8">全部城市</option><option selected data-page-node-id="Ez8WEMjgLzbpUEWPq57q1G">成都</option><option data-page-node-id="gygOQ8w13EucBe7fGoYM1n">杭州</option><option data-page-node-id="Z2P1v3nIOGGQ6BT8JB7BjH">西安</option><option data-page-node-id="wf0qcH92ucrObkWQ9wuDBm">北京</option><option data-page-node-id="EZRjiuw9c1NQ7SebTMsSRD">三亚</option></select>
+          <select class="fsel" data-page-node-id="tCHFTTFDJDlcyIhn3XR1W9"><option data-page-node-id="KMzwk4QET0njO4cLceH73X">门票不限</option><option selected data-page-node-id="Qrc1XNuYt2F2M4lowkqgSN">免费</option><option data-page-node-id="E1tk6oLJzBr7gBaVK7h9gA">收费</option></select>
+          <button class="btn sm" data-page-node-id="7h6uuvFL6HiRFo2gxGHRLy">搜索</button>
         </div>
-        <div class="count">筛选结果：成都 · 免费 —— 共 86 条（首批 5 城共 3,214 条）</div>
-        <div class="sgrid">
-          <div class="gcard"><div class="ph">宽窄巷子 · 图占位</div><div class="gi"><b>宽窄巷子</b><small>青羊区 · 历史街区/美食</small><div class="row"><span class="free">免费</span><span>♡ 收藏</span></div></div></div>
-          <div class="gcard"><div class="ph">锦里古街 · 图占位</div><div class="gi"><b>锦里古街</b><small>武侯区 · 古街/美食</small><div class="row"><span class="free">免费</span><span>♡ 收藏</span></div></div></div>
-          <div class="gcard"><div class="ph mount">人民公园 · 图占位</div><div class="gi"><b>人民公园</b><small>青羊区 · 公园/茶馆</small><div class="row"><span class="free">免费</span><span>♡ 收藏</span></div></div></div>
-          <div class="gcard"><div class="ph">东郊记忆 · 图占位</div><div class="gi"><b>东郊记忆</b><small>成华区 · 文创园区</small><div class="row"><span class="free">免费</span><span>♡ 收藏</span></div></div></div>
-          <div class="gcard"><div class="ph mount">望江楼公园 · 图占位</div><div class="gi"><b>望江楼公园</b><small>武侯区 · 园林/竹景</small><div class="row"><span class="free">免费</span><span>♡ 收藏</span></div></div></div>
-          <div class="gcard"><div class="ph">文殊院 · 图占位</div><div class="gi"><b>文殊院</b><small>青羊区 · 寺庙/禅意</small><div class="row"><span class="free">免费</span><span>♡ 收藏</span></div></div></div>
+        <div class="count" data-page-node-id="NtKJUogl7PaQqCb4OXuJv5">筛选结果：成都 · 免费 —— 共 86 条（首批 5 城共 3,214 条）</div>
+        <div class="sgrid" data-page-node-id="2uxqyDRBFXPIlQmAYV6ghs">
+          <div class="gcard" data-page-node-id="PDecUkI0gKv6nLvxVhlyR0"><div class="ph" data-page-node-id="yiCMK9rd5sBOWm8rCoKYJN">宽窄巷子 · 图占位</div><div class="gi" data-page-node-id="vPD6XKiIDFOTYHSg8bmHti"><b data-page-node-id="3FkEOH2KtnuwWtkHRDJlxl">宽窄巷子</b><small data-page-node-id="v4TvwALIrikTSqYFy4DDQ1">青羊区 · 历史街区/美食</small><div class="row" data-page-node-id="KxMfKt2t32nxr8PBNNJz4K"><span class="free" data-page-node-id="38tlgOlxclpBVzKO3GFtxH">免费</span><span data-page-node-id="UKTCoZm1obznSW37FjwFtg">♡ 收藏</span></div></div></div>
+          <div class="gcard" data-page-node-id="DuVlp34KnCL59PanFqdui5"><div class="ph" data-page-node-id="FIBuZeZZV4KvEhOnqHCx7A">锦里古街 · 图占位</div><div class="gi" data-page-node-id="9ryEUFSzHdmD4aZi8cXp7E"><b data-page-node-id="HXgELUMXkrRqXZxsCVrbh7">锦里古街</b><small data-page-node-id="BG0BshyE7WYDfehl0mAbIs">武侯区 · 古街/美食</small><div class="row" data-page-node-id="mEEQLpnQPbTrcUODom8kyQ"><span class="free" data-page-node-id="N5vicxQw7lVt6lPLB9Hg83">免费</span><span data-page-node-id="p1dxypM2qbFEJbFOY0DQtI">♡ 收藏</span></div></div></div>
+          <div class="gcard" data-page-node-id="YGflPGFRPlKWpZzniDvLqG"><div class="ph mount" data-page-node-id="yerQTvjiNoBTL3bx08fhcq">人民公园 · 图占位</div><div class="gi" data-page-node-id="O5lKvdVw1KGi6ys0ncVGq9"><b data-page-node-id="STa2nACAuWXwjBF0tSCAOR">人民公园</b><small data-page-node-id="fnCqeAU7zHB6x0wttjJBKs">青羊区 · 公园/茶馆</small><div class="row" data-page-node-id="MYtTEfi50rksLmu15XS1qH"><span class="free" data-page-node-id="pFOgnwwxHlmrsHYaO6lOBd">免费</span><span data-page-node-id="QVNM8Cqh3A1tUq4inT1d2t">♡ 收藏</span></div></div></div>
+          <div class="gcard" data-page-node-id="pV39CLE7mMap4wusyb0on5"><div class="ph" data-page-node-id="wEC8iSnVm2BfnvPM3SBw54">东郊记忆 · 图占位</div><div class="gi" data-page-node-id="UG08SIdxtYAr5Ylz7Go2Qb"><b data-page-node-id="hKrGfzjcMRbI2IT9Ve8ify">东郊记忆</b><small data-page-node-id="1z7aPThGnnQArgW7xvoOUa">成华区 · 文创园区</small><div class="row" data-page-node-id="yD66Zth6nDuaO6xtV4h0yn"><span class="free" data-page-node-id="q2dVQrVubFsRfrIvxfNc0c">免费</span><span data-page-node-id="baUZCODDr0PxCVOmB443n4">♡ 收藏</span></div></div></div>
+          <div class="gcard" data-page-node-id="WnGN7D6Uu0UeYgCt03M3HQ"><div class="ph mount" data-page-node-id="A6CKUABE6CiN5R8FAcbdI1">望江楼公园 · 图占位</div><div class="gi" data-page-node-id="6J23o6FaIPTLWhg772Siwf"><b data-page-node-id="P5CyksxdC6w5clxCQ4YxZA">望江楼公园</b><small data-page-node-id="DTkmApyj7QNDxmj9MggbrD">武侯区 · 园林/竹景</small><div class="row" data-page-node-id="BvSFQ9HSilaoEcv11uRP7z"><span class="free" data-page-node-id="Svkjmq3XV7GvJ0KsJkztgB">免费</span><span data-page-node-id="JAXCd2wLHRqzDExuQFLEH3">♡ 收藏</span></div></div></div>
+          <div class="gcard" data-page-node-id="JCHn24nyCTZjwrERHcAOuF"><div class="ph" data-page-node-id="8pTR9MwWgQpdjCplZZhRDy">文殊院 · 图占位</div><div class="gi" data-page-node-id="GxIhq8MVZghdCYATAWBOea"><b data-page-node-id="AVdslkgyNae3VDDvXKhZxY">文殊院</b><small data-page-node-id="vCpcdjiMOaAdOvg3ccmiSM">青羊区 · 寺庙/禅意</small><div class="row" data-page-node-id="f9qsf6weL5coDs4522HniD"><span class="free" data-page-node-id="tcFQm7awwdgrKuBjX5LY2L">免费</span><span data-page-node-id="1i0lcB6ystOP3sGGsyrQ8O">♡ 收藏</span></div></div></div>
         </div>
-        <div class="pager"><span class="pg on">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">…</span><span class="pg">15</span></div>
+        <div class="pager" data-page-node-id="L4iELn6LWZpCySWFTBdhOx"><span class="pg on" data-page-node-id="wMECwCfBLf7B6mrpaqhLAX">1</span><span class="pg" data-page-node-id="9zCxhrUXKONlckyK44yCMW">2</span><span class="pg" data-page-node-id="qYF4kW83HlAutkUBWAh55S">3</span><span class="pg" data-page-node-id="CLS85dddbkOKIeXNB9YpcQ">…</span><span class="pg" data-page-node-id="e1dxqQ2EF0sSlrNgItEh0z">15</span></div>
       </div>
     </div>
-    <div class="note"><b>这页的交互：</b><br>1. 三个筛选条件可任意组合（关键词 × 城市 × 门票类型），结果实时更新。<br>2. 卡片：点击 → ③ 详情页；"♡ 收藏"点击 → 未登录弹登录框，已登录立即变红心。<br>3. 数据全部来自高德 POI 接口（v0.5 数据底座爬取入库），分页每页 12 条。</div>
+    <div class="note" data-page-node-id="pVnrFMSUe1gU1X3JRgPHpH"><b data-page-node-id="IjajGykqcNSCezwCI81DUv">这页的交互：</b><br data-page-node-id="5o3mmOnLxTZxNzbGik7KoM">1. 三个筛选条件可任意组合（关键词 × 城市 × 门票类型），结果实时更新。<br data-page-node-id="NgT57TDUNQCj1Nw8aKY1tJ">2. 卡片：点击 → ③ 详情页；"♡ 收藏"点击 → 未登录弹登录框，已登录立即变红心。<br data-page-node-id="NhfRbqujLUFpxkMk3zLyAY">3. 数据全部来自高德 POI 接口（v0.5 数据底座爬取入库），分页每页 12 条。</div>
   </div>
 
   <!-- ═══ 页3 景点详情 ═══ -->
-  <div class="page">
-    <div class="frame">
-      <div class="nav">
-        <span class="logo">🧭 旅行规划平台</span>
-        <span class="navlinks"><span class="nl">首页</span><span class="nl on">旅游景点</span><span class="nl">线路规划助手</span><span class="nl">旅游攻略</span><span class="nl">个人中心</span></span>
-        <span class="navuser">游客 · <span class="lk">登录</span></span>
+  <div class="page" data-page-node-id="nZDTFvuMURUA39ayxGoB72">
+    <div class="frame" data-page-node-id="YfZFwOviBneWxmSyqcghr1">
+      <div class="nav" data-page-node-id="hHeG8qB9oHR4XHerNBbI3v">
+        <span class="logo" data-page-node-id="yHhYogeEY2XGwGAklNg2n8">🧭 旅行规划平台</span>
+        <span class="navlinks" data-page-node-id="GgNrK0QmgLmUaLA2THhw0b"><span class="nl" data-page-node-id="kEmCtYa9M5EH36IX0FyDdC">首页</span><span class="nl on" data-page-node-id="lukmxWCtEEIxFO7T6cmBk9">旅游景点</span><span class="nl" data-page-node-id="9FwqCSvmLFq6wNjRgQQ20U">线路规划助手</span><span class="nl" data-page-node-id="V9Y6RCG7e1MpncNHsNat9m">旅游攻略</span><span class="nl" data-page-node-id="2OIpQ9FEX5cFmBVg2BLYur">个人中心</span></span>
+        <span class="navuser" data-page-node-id="ofPrWJ51ysDflSEFRGgydt">游客 · <span class="lk" data-page-node-id="3fp2btoxMirAyC1Apcpo4V">登录</span></span>
       </div>
-      <div class="inner">
-        <div class="crumb">旅游景点 / 成都 / <em>宽窄巷子</em></div>
-        <div class="dhero">
-          <div class="ph">宽窄巷子 主图 · 图占位</div>
-          <div>
-            <h3>宽窄巷子</h3>
-            <div class="sc">★ 4.7 · 全站 1,203 人收藏</div>
-            <div class="dtags"><span class="ht">历史街区</span> <span class="ht">美食</span> <span class="ht">夜游</span> <span class="ht">亲子友好</span></div>
-            <div class="meta">📍 四川省成都市青羊区长顺上街 127 号<br>🕖 全天开放（店铺约 10:00-22:00）</div>
-            <div class="actions"><button class="btn sm">♡ 收藏（登录后生效）</button><button class="btn sm hollow">加入行程规划</button></div>
+      <div class="inner" data-page-node-id="7ETODhmqZu5bVOyPCz6Dzo">
+        <div class="crumb" data-page-node-id="XIEv5vwVQgFLydTojAmHmh">旅游景点 / 成都 / <em data-page-node-id="zacrkKNLIPGqt6rZvrGh6r">宽窄巷子</em></div>
+        <div class="dhero" data-page-node-id="FO58j8Act7Ya7BksysYMOK">
+          <div class="ph" data-page-node-id="Nkv52rw7CBmKwGOZ14C04R">宽窄巷子 主图 · 图占位</div>
+          <div data-page-node-id="i73GKgS31tI11PtPUdtleW">
+            <h3 data-page-node-id="dMH1beYgswdqRx9RgG32o3">宽窄巷子</h3>
+            <div class="sc" data-page-node-id="eL0NfgGpEPCALvUbzBXP1J">★ 4.7 · 全站 1,203 人收藏</div>
+            <div class="dtags" data-page-node-id="BhnsmWF65UOxblMrzYVRyr"><span class="ht" data-page-node-id="CwziT1glO3lkCzcw420KGg">历史街区</span> <span class="ht" data-page-node-id="fL1WcUT1gWAmG53iWiblTa">美食</span> <span class="ht" data-page-node-id="WG9uchSagrWFqc1XY566nT">夜游</span> <span class="ht" data-page-node-id="OGQKwTIJOTPgOQutAtUBiP">亲子友好</span></div>
+            <div class="meta" data-page-node-id="XpIgTgRbkdKj9kFt6LEW9I">📍 四川省成都市青羊区长顺上街 127 号<br data-page-node-id="W0czy9q0FWNBGGdss52yok">🕖 全天开放（店铺约 10:00-22:00）</div>
+            <div class="actions" data-page-node-id="PtsdqZUNFwFNNSKmHJRCKN"><button class="btn sm" data-page-node-id="0aydexYNtLlzj1iG0ag8Yd">♡ 收藏 · 1,203 人已收藏</button><button class="btn sm hollow" data-page-node-id="dG9d8ByP5VHCtFS8cnZ1q3">加入行程规划</button><button class="btn sm hollow" onclick="window.open('https://www.amap.com/search/%E5%AE%BD%E7%AA%84%E5%B7%B7%E5%AD%90','_blank')">↗ 在高德地图查看</button></div>
           </div>
         </div>
-        <div class="dinfo">
-          <b>门票信息</b>：免费开放 · 巷内消费自付<br>
-          <b>简介</b>：清代川西民居风格街区，由宽巷子、窄巷子、井巷子组成，老成都生活缩影，盖碗茶、采耳、川剧变脸集中于 此，适合傍晚游览。<br>
-          <div class="src">数据来源：高德地图开放平台（POI 接口）· 更新于 2026-08-30</div>
+        <div class="dinfo" data-page-node-id="Jn24YpDghG9ANnbYTnCN94">
+          <b data-page-node-id="a0n2Wru2oA7eAV5x4jF5J2">门票信息</b>：免费开放 · 巷内消费自付<br data-page-node-id="E0syVRlNhkcH1uouCKKe4N">
+          <b data-page-node-id="Vz07e26yC6Ed0BTFwuQUEB">简介</b>：清代川西民居风格街区，由宽巷子、窄巷子、井巷子组成，老成都生活缩影，盖碗茶、采耳、川剧变脸集中于 此，适合傍晚游览。<br data-page-node-id="7b1erWLltQ2lFKql2WXb6g">
+          <div class="src" data-page-node-id="Pt8A0pCW88OT3e19QhO65g">数据来源：高德地图开放平台（POI 接口）· 更新于 2026-08-30</div>
         </div>
-        <div class="sec">评论区 <small>共 23 条</small></div>
-        <div class="cmt"><b>旅行家小王</b>：傍晚去最好，灯笼亮起来特别出片，推荐巷口的蛋烘糕！<small>2026-08-28 · 来自网页端</small></div>
-        <div class="cmt"><b>Momo</b>：带娃逛街合适，人多的周末注意走窄巷子北侧更清净。<small>2026-08-25 · 来自网页端</small></div>
-        <div class="lock">🔒 游客暂不能评论 —— 登录后即可发表评论（游客权限规则）</div>
+        <div class="sec" data-page-node-id="takdIKYoyfSCZ7zhMKj6Ez">评论区 <small data-page-node-id="UqC0hyUFKhwfqRvKsYm8xF">共 23 条</small></div>
+        <div class="cmt" data-page-node-id="vP6qFUpXzEjtBvJ0gi5265"><b data-page-node-id="3INUcDLLmegrEY2fLRmmaz">旅行家小王</b>：傍晚去最好，灯笼亮起来特别出片，推荐巷口的蛋烘糕！<small data-page-node-id="7KLrvPN50Vder0sXbIiFx5">2026-08-28 · 来自网页端</small></div>
+        <div class="cmt" data-page-node-id="IXgLzoYV5Ne1fJ6RjtBzTq"><b data-page-node-id="oJCwzqPHUA9IgdGh82oGY8">Momo</b>：带娃逛街合适，人多的周末注意走窄巷子北侧更清净。<small data-page-node-id="Mfjl5prVwyk9Tu6gbkwQAQ">2026-08-25 · 来自网页端</small></div>
+        <div class="lock" data-page-node-id="iBNszZYm0KWDbbbAFNOdxh">🔒 游客暂不能评论 —— 登录后即可发表评论（游客权限规则）</div>
       </div>
     </div>
-    <div class="note"><b>这页的交互：</b><br>1. "收藏 / 评论 / 加入行程规划"三个动作未登录都会先弹 ⑩ 登录框（游客可看不可互动）。<br>2. "加入行程规划"→ 跳转 ④ 助手页并自动带上该景点为偏好。<br>3. 每条数据都带"数据来源"标注，门票/时间以高德接口返回为准。</div>
+    <div class="note" data-page-node-id="DNa9ppTitRey2D9ASVlnGH"><b data-page-node-id="uFAVk2FCOYf42xEZogm00p">这页的交互：</b><br data-page-node-id="GubaIlqh1IMu5V7Nafdg4L">1. "收藏 / 评论 / 加入行程规划"三个动作未登录都会先弹 ⑩ 登录框（游客可看不可互动）；收藏按钮实时显示<b>本站收藏总人数</b>（数据库 favorites 表统计）。<br data-page-node-id="OV9QRHDAv6z2DmQ84vJugT">2. "加入行程规划"→ 跳转 ④ 助手页并自动带上该景点为偏好；"在高德地图查看"→ 新窗口打开数据来源官方网页（携程/高德等来源均可配）。<br data-page-node-id="wbtEaSgCMhov5Blun2FJEf">3. 每条数据都带"数据来源"标注，门票/时间以高德接口返回为准。</div>
   </div>
   <!-- ═══ 页4 线路规划助手 ═══ -->
-  <div class="page">
-    <div class="frame">
-      <div class="nav">
-        <span class="logo">🧭 旅行规划平台</span>
-        <span class="navlinks"><span class="nl">首页</span><span class="nl">旅游景点</span><span class="nl on">线路规划助手</span><span class="nl">旅游攻略</span><span class="nl">个人中心</span></span>
-        <span class="navuser">游客 · <span class="lk">登录</span></span>
+  <div class="page" data-page-node-id="hiESEZcPJzSCbH97GKbGr2">
+    <div class="frame" data-page-node-id="pnpXl3ezXLro032GXFKPRB">
+      <div class="nav" data-page-node-id="GFya0DcxL3bPzHcyb18y5v">
+        <span class="logo" data-page-node-id="lty4k14v6Ax7HZYhBuvecF">🧭 旅行规划平台</span>
+        <span class="navlinks" data-page-node-id="zsIH84OGb8TXix7kptPlF6"><span class="nl" data-page-node-id="6r37HVGKGy5TWfqpvSYp3H">首页</span><span class="nl" data-page-node-id="WK2kyWpFL2czbsqCDceL9J">旅游景点</span><span class="nl on" data-page-node-id="W5TurYWWEWySRAFWStxjjg">线路规划助手</span><span class="nl" data-page-node-id="qc3qy8DiuW0eMjGGRCPVuV">旅游攻略</span><span class="nl" data-page-node-id="lmciDX5J4MQPCaaGWFYvkJ">个人中心</span></span>
+        <span class="navuser" data-page-node-id="tRlHtOXE2FCHN1iHo3TlwH">游客 · <span class="lk" data-page-node-id="eTSpvEvkis1WMSWAZMMCkl">登录</span></span>
       </div>
-      <div class="inner">
-        <div class="split">
-          <div class="l">
-            <div class="sec" style="margin-top:0;">对话规划 <small>AI 追问补齐 → 生成</small></div>
-            <div class="chat">
-              <div class="msg user">十一想去成都玩 3 天，预算 3000，带 5 岁小孩，不想太赶</div>
-              <div class="msg ai">好的！带娃悠闲路线没问题～还差 1 个信息：大概哪几天出发？</div>
-              <div class="chips"><span class="chip">10月1日-3日</span><span class="chip">还没定</span></div>
-              <div class="msg user">10月1日到3日</div>
-              <div class="msg ai">信息齐了！正在生成行程：地点会按游览顺序标在地图上（已核实真实地点），并配天气提醒和预算。</div>
+      <div class="inner" data-page-node-id="xZYxzVT5YURpts93DvJhdS">
+        <div class="split" data-page-node-id="O1CjUOoo2qLXkal99Krcn1">
+          <div class="l" data-page-node-id="o4nnPTYCwN3jh4kDawymCV">
+            <div class="sec" style="margin-top:0;" data-page-node-id="bofpxJK2DLfuusPiIktHGw">对话规划 <small data-page-node-id="WtZDoO5sP7eDUBg9zBT2Rs">AI 追问补齐 → 生成</small></div>
+            <div class="chat" data-page-node-id="En36NFXWF7MiRFSZj9HAIK">
+              <div class="msg user" data-page-node-id="Lw5c74jPjLytFIDnMwU8Bb">十一想去成都玩 3 天，预算 3000，带 5 岁小孩，不想太赶</div>
+              <div class="msg ai" data-page-node-id="kQGb7qUzKgpjn9xQkRMX29">好的！带娃悠闲路线没问题～还差 1 个信息：大概哪几天出发？</div>
+              <div class="chips" data-page-node-id="Kz0yjPQTWki5qDXreji5qk"><span class="chip" data-page-node-id="3pCwQJo0AdZuNipCFvLPfl">10月1日-3日</span><span class="chip" data-page-node-id="E01mwyTOfFJskVgwKqMCwo">还没定</span></div>
+              <div class="msg user" data-page-node-id="pE7i0laja6dn7UC7pRX9rX">10月1日到3日</div>
+              <div class="msg ai" data-page-node-id="o240gJmQIygrGFE8FRCYNR">信息齐了！正在生成行程：地点会按游览顺序标在地图上（已核实真实地点），并配天气提醒和预算。</div>
             </div>
-            <div class="cinput"><div class="finput">继续补充需求…</div><button class="btn sm">发送</button></div>
-            <div class="actions"><button class="btn sm hollow">📜 历史规划（登录后可保存）</button></div>
+            <div class="cinput" data-page-node-id="DmvZSM9sUEDR0kJhK7cMEq"><div class="finput" data-page-node-id="G1ZelChRunH9jimMaVvkWj">继续补充需求…</div><button class="btn sm" data-page-node-id="mI2aA6MKK02uxXvqABDIt5">发送</button></div>
+            <div class="sec" style="margin-top:12px;font-size:13px;" data-page-node-id="helb5jV8tqUcD8ozmhdt2v">🕘 历史方案 <small data-page-node-id="Bt6a1ddNeFAPRD3efqmE9G">点选即可切换对比，游客浏览、登录后自动保存</small></div>
+            <div class="planswitch" data-page-node-id="helb5jV8tqUcD8ozmhdt2v2"><span class="plan on">方案A · 亲子悠闲（当前）</span><span class="plan">方案B · 经典打卡 3 日</span><span class="plan">方案C · 美食主题 3 日</span></div>
           </div>
-          <div class="r">
-            <div class="sumline">
-              <span class="pill">成都</span><span class="pill">10月1日-3日 · 3天2晚</span><span class="pill">2大1小</span><span class="pill">预算 ¥3000</span>
+          <div class="r" data-page-node-id="kmHKRf9SMBd0B9x2r9Vaz3">
+            <div class="sumline" data-page-node-id="cTeAOfkpocVqV9C8Wgsfts">
+              <span class="pill" data-page-node-id="yRTUfMY5qP3xPQx4OZqzJo">成都</span><span class="pill" data-page-node-id="h6MuY93XfTbX1vuEhtPGU4">10月1日-3日 · 3天2晚</span><span class="pill" data-page-node-id="QXpIEm2meEp6E9eqzSqJc3">2大1小</span><span class="pill" data-page-node-id="0IEGW6FAVZNwH97YIB33DJ">预算 ¥3000</span>
             </div>
-            <div class="mapbox">
-              <div class="mtop"><span>🗺️ 高德地图 · 行程标点连线</span><span>Day1 / Day2 / Day3 可切换</span></div>
-              <svg viewBox="0 0 400 210">
-                <rect width="400" height="210" fill="#eaf3ea"/>
-                <path d="M0,60 C90,50 150,75 210,62 C280,48 340,70 400,58" stroke="#d5e6d5" stroke-width="10" fill="none"/>
-                <path d="M40,0 C55,70 35,140 55,210" stroke="#e3ede3" stroke-width="8" fill="none"/>
-                <path d="M300,0 C285,60 310,150 290,210" stroke="#e3ede3" stroke-width="8" fill="none"/>
-                <path d="M70,160 L130,95 L215,105 L300,45" stroke="#1a6e50" stroke-width="2.5" stroke-dasharray="6,4" fill="none"/>
-                <circle cx="70" cy="160" r="11" fill="#1a6e50"/><text x="70" y="164.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">1</text>
-                <circle cx="130" cy="95" r="11" fill="#1a6e50"/><text x="130" y="99.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">2</text>
-                <circle cx="215" cy="105" r="11" fill="#1a6e50"/><text x="215" y="109.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">3</text>
-                <circle cx="300" cy="45" r="11" fill="#d4641e"/><text x="300" y="49.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">4</text>
-                <text x="70" y="184" text-anchor="middle" fill="#667" font-size="9">宽窄巷子 09:00</text>
-                <text x="130" y="119" text-anchor="middle" fill="#667" font-size="9">人民公园 11:30</text>
-                <text x="215" y="129" text-anchor="middle" fill="#667" font-size="9">武侯祠 14:30</text>
-                <text x="300" y="30" text-anchor="middle" fill="#667" font-size="9">锦里 17:30</text>
-                <text x="200" y="200" text-anchor="middle" fill="#9aa79a" font-size="9">示意占位 · 正式版为高德 JS API 实时地图，点标点弹图片+介绍</text>
+            <div class="mapbox" data-page-node-id="E7FFCDgsAPAyALmB1Uq6GF">
+              <div class="mtop" data-page-node-id="oB4BdMt70XJ9oynK2flYJU"><span data-page-node-id="rObmXBNyhI4FlzwHH9sc6t">🗺️ 高德地图 · 行程标点连线</span><span data-page-node-id="2RDG02GxUBzhWJNvW6IOVX">Day1 / Day2 / Day3 可切换</span></div>
+              <svg viewBox="0 0 400 210" data-page-node-id="Ztir6ZvTB4yrgljjMu6pKL">
+                <rect width="400" height="210" fill="#eaf3ea" data-page-node-id="jw6U3aZzOqhMPj24OLdxxK"/>
+                <path d="M0,60 C90,50 150,75 210,62 C280,48 340,70 400,58" stroke="#d5e6d5" stroke-width="10" fill="none" data-page-node-id="HSTGT5YdJl1LKy1vVTGORg"/>
+                <path d="M40,0 C55,70 35,140 55,210" stroke="#e3ede3" stroke-width="8" fill="none" data-page-node-id="0vLDlRWFH20nMdZYxGr3Z6"/>
+                <path d="M300,0 C285,60 310,150 290,210" stroke="#e3ede3" stroke-width="8" fill="none" data-page-node-id="cZhtuinCagqpd5mXb8Wlsh"/>
+                <path d="M70,160 L130,95 L215,105 L300,45" stroke="#1a6e50" stroke-width="2.5" stroke-dasharray="6,4" fill="none" data-page-node-id="Qau6RrVH9OV7H6Ia545WAx"/>
+                <circle cx="70" cy="160" r="11" fill="#1a6e50" data-page-node-id="0xvq4Q0JBWQxSsrGb5sYKG"/><text x="70" y="164.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" data-page-node-id="iKBIidkcShOeKsjLpcPhLq">1</text>
+                <circle cx="130" cy="95" r="11" fill="#1a6e50" data-page-node-id="oNfLhybTEbhTyAnNGelp3m"/><text x="130" y="99.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" data-page-node-id="2pIThInYqikIcaac0DX3Gj">2</text>
+                <circle cx="215" cy="105" r="11" fill="#1a6e50" data-page-node-id="MDNvXeKBt4Gdp0BGFmMwQC"/><text x="215" y="109.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" data-page-node-id="j3mVF7YTHHaEOQOjPM06C9">3</text>
+                <circle cx="300" cy="45" r="11" fill="#d4641e" data-page-node-id="t5e2j4irCaHNFN07PTrquT"/><text x="300" y="49.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" data-page-node-id="Jhz62zBEOdfudWpdk4GuM4">4</text>
+                <text x="70" y="184" text-anchor="middle" fill="#667" font-size="9" data-page-node-id="NCs8RAMT45rGNnbD8bB3I0">宽窄巷子 09:00</text>
+                <text x="130" y="119" text-anchor="middle" fill="#667" font-size="9" data-page-node-id="Ay0zpetHHzwnn1KvzzUkWn">人民公园 11:30</text>
+                <text x="215" y="129" text-anchor="middle" fill="#667" font-size="9" data-page-node-id="QH0IOIlHZasMfxBgmyPtYw">武侯祠 14:30</text>
+                <text x="300" y="30" text-anchor="middle" fill="#667" font-size="9" data-page-node-id="02zuijuaXu0BHmgdUZ26yr">锦里 17:30</text>
+                <text x="200" y="200" text-anchor="middle" fill="#9aa79a" font-size="9" data-page-node-id="ovRh4p1JUfTQkrBHKctOHq">示意占位 · 正式版为高德 JS API 实时地图，点标点弹图片+介绍</text>
               </svg>
             </div>
-            <div class="spotlist">
-              <div class="spot"><span class="n">1</span><div><b>宽窄巷子</b> · 09:00-11:00 <small>从酒店出发 · 步行 8 分钟 · 人均 ¥40</small></div></div>
-              <div class="spot"><span class="n">2</span><div><b>人民公园</b> · 11:30-13:30 <small>步行 12 分钟 · 鹤鸣茶社盖碗茶 · 人均 ¥30</small></div></div>
-              <div class="spot"><span class="n">3</span><div><b>武侯祠博物馆</b> · 14:30-16:30 <small>打车 10 分钟 · 讲解建议 · 人均 ¥50</small></div></div>
-              <div class="spot"><span class="n">4</span><div><b>锦里古街</b> · 17:30-20:00 <small>紧邻武侯祠 · 晚餐+夜景 · 人均 ¥80</small></div></div>
+            <div class="spotlist" data-page-node-id="eU21cJxuhTQW9KxvOhxUva">
+              <div class="spot" data-page-node-id="fjvCzB2Kcoj9KE1RTOkJCy"><span class="n" data-page-node-id="4wzADFlzpmQyHSzxWC1m06">1</span><div data-page-node-id="mNo71CBC2yCdV8t0NVYVfp"><b data-page-node-id="pogPWWwxyXhNMuaPh9ZA8P">宽窄巷子</b> · 09:00-11:00 <small data-page-node-id="eDBOYIMhFt2ivPdhXwmCl9">从酒店出发 · 步行 8 分钟 · 人均 ¥40</small></div></div>
+              <div class="spot" data-page-node-id="jO3K6AjLhOIzzijGGaelZ8"><span class="n" data-page-node-id="EFe0pAVBpMYMjzBeLBqaJi">2</span><div data-page-node-id="bp8lpeDefMgSOq5YHNJTVP"><b data-page-node-id="2oHBoOZBoehH2gLIBZyhj3">人民公园</b> · 11:30-13:30 <small data-page-node-id="uYFogt6qYVWJKgwQ0Dic27">步行 12 分钟 · 鹤鸣茶社盖碗茶 · 人均 ¥30</small></div></div>
+              <div class="spot" data-page-node-id="cqoflfEImIxMQo2IwY00cD"><span class="n" data-page-node-id="OPDQWOpP4LG832d86YGO0k">3</span><div data-page-node-id="Nz5GczWBLvYHqZlzwKgDu7"><b data-page-node-id="wWAyU92j461yEeS0m2QHiA">武侯祠博物馆</b> · 14:30-16:30 <small data-page-node-id="bl3AREtesPlfSQ8PCqxTnF">打车 10 分钟 · 讲解建议 · 人均 ¥50</small></div></div>
+              <div class="spot" data-page-node-id="V2KSZu2zDQpypnimetEE50"><span class="n" data-page-node-id="n3JmTPX7eD7BpLq65YsnKr">4</span><div data-page-node-id="sCa7ajYD2fxfrlF0UGaLQc"><b data-page-node-id="jso7pGXuHgE0xZcF6ZPAUA">锦里古街</b> · 17:30-20:00 <small data-page-node-id="2JtHu5Ol6yCpehkjPsdtTh">紧邻武侯祠 · 晚餐+夜景 · 人均 ¥80</small></div></div>
             </div>
-            <div class="actions">
-              <button class="btn sm">📄 导出 Word 行程单</button>
-              <button class="btn sm hollow">☰ 列表视图</button>
-              <button class="btn sm hollow">🌧️ Day2 有小雨 · AI 已建议 swap 室内点</button>
+            <div class="actions" data-page-node-id="Q1C0xSz2PEHUlPEHT3B2sn">
+              <button class="btn sm hollow" data-page-node-id="8KkcWvG4kwUOlxyPRXMt6s">☰ 列表视图</button>
+              <button class="btn sm hollow" data-page-node-id="pefSPlQC2t0BKtqRUvcWWb">🌧️ Day2 有小雨 · AI 已建议 swap 室内点</button>
+              <button class="btn sm hollow">🕘 对比历史方案</button>
             </div>
           </div>
         </div>
+        <div class="sec" style="margin-top:18px;">📋 行程单 <small>打开本页即完整展示，无需导出文件</small></div>
+        <div class="dayplan"><b class="dt">Day 1 · 老成都慢生活</b>：09:00 宽窄巷子（2h，早上人少适合先逛）→ 11:30 人民公园鹤鸣茶社喝茶歇脚 → 14:30 武侯祠博物馆 → 17:30 锦里晚餐+夜景。<br><small>当日人均约 ¥200 · 全程步行 + 打车 1 次 · 预算内</small></div>
+        <div class="dayplan"><b class="dt">Day 2 · 熊猫与市井</b>：08:30 大熊猫基地（赶首批进场看活跃时段）→ 13:00 建设路小吃街午餐 → 15:00 东郊记忆文创园。<br><small>当日人均约 ¥180 · 地铁 3 号线直达 · 带 5 岁娃节奏宽松</small></div>
+        <div class="dayplan"><b class="dt">Day 3 · 世遗一日</b>：09:00 都江堰景区（离堆公园进门逆时针环线）→ 14:00 返程春熙路补货买手信。<br><small>当日人均约 ¥220 · 城际铁路往返 · 预留返程缓冲 2h</small></div>
+        <div class="sec" style="margin-top:16px;">🗺️ 本次规划涉及的景区 <small>点击直达详情页，样式与首页推荐卡一致</small></div>
+        <div class="grid">
+          <div class="gcard"><div class="ph">宽窄巷子 · 图占位</div><div class="gi"><b>宽窄巷子</b><small>Day1 · 免费</small></div></div>
+          <div class="gcard"><div class="ph mount">人民公园 · 图占位</div><div class="gi"><b>人民公园</b><small>Day1 · 免费</small></div></div>
+          <div class="gcard"><div class="ph">武侯祠 · 图占位</div><div class="gi"><b>武侯祠博物馆</b><small>Day1 · ¥50</small></div></div>
+          <div class="gcard"><div class="ph">锦里古街 · 图占位</div><div class="gi"><b>锦里古街</b><small>Day1 · 免费</small></div></div>
+          <div class="gcard"><div class="ph">大熊猫基地 · 图占位</div><div class="gi"><b>大熊猫繁育研究基地</b><small>Day2 · ¥55</small></div></div>
+          <div class="gcard"><div class="ph">东郊记忆 · 图占位</div><div class="gi"><b>东郊记忆</b><small>Day2 · 免费</small></div></div>
+          <div class="gcard"><div class="ph mount">都江堰 · 图占位</div><div class="gi"><b>都江堰景区</b><small>Day3 · ¥80</small></div></div>
+          <div class="gcard"><div class="ph">春熙路 · 图占位</div><div class="gi"><b>春熙路商圈</b><small>住宿周边 · 免费</small></div></div>
+        </div>
       </div>
     </div>
-    <div class="note"><b>这页的交互：</b><br>1. 整合原"对话规划 + 行程结果"能力：左侧聊，右侧实时出图。AI 生成的地点先经高德 POI 核实（查无此地自动替换），再按顺序画数字标点连线。<br>2. 点地图标点或列表项 → 弹出该景点图片+介绍卡；Day 页签切换每日路线。<br>3. 游客可以完整体验规划；"保存到历史"需登录。历史规划列表 + 页内回看续聊，就是原 ③ 历史记录页的能力，入口在本页左下。<br>4. 导出 Word / 天气自动换点 / 顺路校验在 v0.7「图上谈兵」落地。</div>
+    <div class="note" data-page-node-id="YhBkDaoMEEd8EdPdmQtfqQ"><b data-page-node-id="3pBnFI6NzF6C1Lly0PDmqR">这页的交互：</b><br data-page-node-id="93xEhcXskoXks4jrFrL4Rc">1. 整合原"对话规划 + 行程结果"能力：左侧聊，右侧实时出图。AI 生成的地点先经高德 POI 核实（查无此地自动替换），再按顺序画数字标点连线。<br data-page-node-id="NmJmBxqpZMkY73DJnuAx40">2. <b>打开本页即直接看到完整行程单</b>（左下"📋 行程单"区，按天说明），无需导出文件；点地图标点或列表项 → 弹该景点图片+介绍卡；Day 页签切换每日路线。<br data-page-node-id="Xq3zcm9gyLwfOv1wg91MYM">3. <b>历史方案对比</b>：可保存多套规划，左下"历史方案"点选即切换对比（如亲子悠闲 vs 经典打卡）；游客可对比、登录后自动保存并累计规划次数。<br data-page-node-id="ou5rOVGy9CAxeVjCdpxaLS">4. 地图下方列出本次规划涉及的全部景区卡片（与首页推荐卡同样式，点击直达详情页）。天气自动换点 / 顺路校验在 v0.7「图上谈兵」落地。</div>
   </div>
 
   <!-- ═══ 页5 攻略列表 ═══ -->
-  <div class="page">
-    <div class="frame">
-      <div class="nav">
-        <span class="logo">🧭 旅行规划平台</span>
-        <span class="navlinks"><span class="nl">首页</span><span class="nl">旅游景点</span><span class="nl">线路规划助手</span><span class="nl on">旅游攻略</span><span class="nl">个人中心</span></span>
-        <span class="navuser">游客 · <span class="lk">登录</span></span>
+  <div class="page" data-page-node-id="8dnIW1g2M0BskA2qhNRPYg">
+    <div class="frame" data-page-node-id="JZmFEY7CYWkcraO8TbRfyz">
+      <div class="nav" data-page-node-id="CocRAHxvs3UuM1SuxdVBsq">
+        <span class="logo" data-page-node-id="fDkO1pRYEk4iHGnKKDPG7t">🧭 旅行规划平台</span>
+        <span class="navlinks" data-page-node-id="wEzKJpVgGKtyBF2bGOSlne"><span class="nl" data-page-node-id="0aif1djsFwX9CO8PAf2mry">首页</span><span class="nl" data-page-node-id="9b0mS3DSVAqxusjOF5iuie">旅游景点</span><span class="nl" data-page-node-id="Dvf458FLuNC9Z8ILLLumMY">线路规划助手</span><span class="nl on" data-page-node-id="gbBnDc4WDYryUhGmpafrhj">旅游攻略</span><span class="nl" data-page-node-id="5BZwo0tFRXlNFuWrM1LAot">个人中心</span></span>
+        <span class="navuser" data-page-node-id="G8OuzVsFpgvySDLE46nFPE">游客 · <span class="lk" data-page-node-id="XSkfIHohsIAjPEpbClf1Ts">登录</span></span>
       </div>
-      <div class="inner">
-        <div class="bar" style="border:none;padding:0 0 12px;">
-          <b style="font-size:15px;">全部攻略 <span class="tag">128 篇</span></b>
-          <span><select class="fsel"><option>全部城市</option><option>成都</option><option>杭州</option><option>西安</option><option>北京</option><option>三亚</option></select> <button class="btn sm">✍️ 写攻略（登录后开放）</button></span>
+      <div class="inner" data-page-node-id="HOAGrCrQFMHLpYgnvKH6KD">
+        <div class="filters" style="margin-bottom:10px;">
+          <div class="finput" style="flex:3;">🔍 多个关键词空格分隔，如：成都 亲子 悠闲（标题/正文/关联景点全文检索）</div>
+          <button class="btn sm">搜索</button>
         </div>
-        <div class="aflow">
-          <div class="acard"><div class="ph">封面 · 图占位</div><div class="ai"><b>成都 3 天 2 晚亲子悠闲攻略（带 5 岁娃实测）</b><small>旅行家小王 · 2026-08-30 · 👁 1,204 · 💬 18</small></div></div>
-          <div class="acard"><div class="ph sea">封面 · 图占位</div><div class="ai"><b>西湖周边一日暴走路线：断桥到灵隐寺</b><small>阿茶 · 2026-08-27 · 👁 986 · 💬 11</small></div></div>
-          <div class="acard"><div class="ph sun">封面 · 图占位</div><div class="ai"><b>三亚亲子酒店怎么选：亚龙湾 vs 海棠湾</b><small>Momo · 2026-08-25 · 👁 761 · 💬 9</small></div></div>
-          <div class="acard"><div class="ph mount">封面 · 图占位</div><div class="ai"><b>都江堰+青城山一日往返全记录</b><small>大刘 · 2026-08-21 · 👁 653 · 💬 6</small></div></div>
+        <div class="count">关键词示例命中："成都" + "亲子" —— 共 23 篇 · 多词为"与"关系，命中越多排序越靠前</div>
+        <div class="bar" style="border:none;padding:0 0 12px;" data-page-node-id="mTT9R1AvRrpitwmyZom6YU">
+          <b style="font-size:15px;" data-page-node-id="RGxXprlWo3RmBZCjDOVLZw">全部攻略 <span class="tag" data-page-node-id="q3oJoAteFg03X9AHvq3uoL">128 篇</span></b>
+          <span data-page-node-id="GhXdiHY0ClvcPn8Snp3UHr"><select class="fsel" data-page-node-id="r1cMMNkIRLCgQxyip3084E"><option data-page-node-id="S0gZUVPsYXJ52emiy1lQ52">全部城市</option><option data-page-node-id="T9ZsMdYjaM89qGiHm4jCym">成都</option><option data-page-node-id="pTsShBfvM7up7OsYbmO4dX">杭州</option><option data-page-node-id="67FCzVzPkkty2vlm5AJuHX">西安</option><option data-page-node-id="31GRi46Rc7BKqkmZLrT6t5">北京</option><option data-page-node-id="CDPsS2sFw5sUM8HiqcFp95">三亚</option></select> <button class="btn sm" data-page-node-id="ShqII1xkF159f92Ji8TEhs">✍️ 写攻略（登录后开放）</button></span>
+        </div>
+        <div class="aflow" data-page-node-id="q7EHDCdbEsH1o9FehGtSUq">
+          <div class="acard" data-page-node-id="VnoU98OL0PYg8d8yv1QKtC"><div class="ph" data-page-node-id="rCQsiAgbiIkkKIBa2zDxEa">封面 · 图占位</div><div class="ai" data-page-node-id="zyUymOS2S1R5EhKyAmo72y"><b data-page-node-id="iOwElC8lpKvYtUk4AXV4Jq">成都 3 天 2 晚亲子悠闲攻略（带 5 岁娃实测）</b><small data-page-node-id="V331ff2WMDiSKxdeSD3fgf">旅行家小王 · 2026-08-30 · 👁 1,204 · 💬 18</small><div class="desc">住春熙路地铁口，Day1 宽窄巷子→人民公园→武侯祠→锦里全程顺路；Day2 熊猫基地赶 8:30 首批进场，附带 5 岁娃实测避坑清单与餐厅排队攻略。</div></div></div>
+          <div class="acard" data-page-node-id="HErp7Z8NDfZKoat9hTXd5V"><div class="ph sea" data-page-node-id="KrWjEiHHfOb8tQ6toseYFE">封面 · 图占位</div><div class="ai" data-page-node-id="osNlywUsmPGKWn4LIkV0X6"><b data-page-node-id="0xM2LiF9tPgwzglTy2sQMS">西湖周边一日暴走路线：断桥到灵隐寺</b><small data-page-node-id="Asoqu1x2V7xzsE8pPjYFTJ">阿茶 · 2026-08-27 · 👁 986 · 💬 11</small><div class="desc">断桥→白堤→曲院风荷→灵隐寺，全程 9km 步行路线拆解，含地铁接驳与素斋推荐，日落时段摄影点位标注。</div></div></div>
+          <div class="acard" data-page-node-id="OZiOk1WTBZhT3vFw8iMjmT"><div class="ph sun" data-page-node-id="8sUSGOwIBOsfoOmYSRS3va">封面 · 图占位</div><div class="ai" data-page-node-id="0NbI8V3yKxPwffCgwRzHQ8"><b data-page-node-id="uUqEHfDFTZjFREUAu15r3g">三亚亲子酒店怎么选：亚龙湾 vs 海棠湾</b><small data-page-node-id="gVICVauGnjtS3rXq7ah84X">Momo · 2026-08-25 · 👁 761 · 💬 9</small><div class="desc">按预算档位对比两大湾区 8 家亲子酒店：泳池、儿童俱乐部、离海距离、淡旺季价格，附订房时间节点建议。</div></div></div>
+          <div class="acard" data-page-node-id="IFuIsuyDegtKU36N10k273"><div class="ph mount" data-page-node-id="9fNvx45wvHwdjqBL1FzWAx">封面 · 图占位</div><div class="ai" data-page-node-id="gtN7RSxABLkCEaJXNnH9Cg"><b data-page-node-id="cd6JGq6mGZHD8rYTMg5v5B">都江堰+青城山一日往返全记录</b><small data-page-node-id="WHoEFF09sZUtK4nwSNYU3U">大刘 · 2026-08-21 · 👁 653 · 💬 6</small><div class="desc">犀浦站城际 30 分钟直达，鱼嘴-安澜索桥-二王庙逆时针环线不走回头路，青城山前山索道上下省力方案。</div></div></div>
         </div>
       </div>
     </div>
-    <div class="note"><b>这页的交互：</b><br>1. 攻略卡片：点击 → ⑥ 详情页；可按城市筛选。<br>2. "写攻略"按钮：游客点击 → 弹登录框；登录用户 → ⑦ 编写页。<br>3. 攻略数据存数据库（strategies 表），图片上传到本地文件目录。</div>
+    <div class="note" data-page-node-id="0AhESyfcxOHiWx4j6HMJIO"><b data-page-node-id="XGyJ8IMz6xIbQHkZIhFzzH">这页的交互：</b><br data-page-node-id="W3qsdEBU1F8nPU7DUx6Rgy">1. 顶部搜索栏支持<b>多个关键词</b>（空格分隔，同时命中标题/正文/关联景点，多词为"与"关系）；攻略卡片：点击 → ⑥ 详情页；可按城市筛选。<br data-page-node-id="qGZGXexhY4nOgLuf93fdCx">2. 卡片为单列大图版式（封面 + 标题 + 摘要两行），信息密度足够不显空旷。<br data-page-node-id="qGZGXexhY4nOgLuf93fdCx2">3. "写攻略"按钮：游客点击 → 弹登录框；登录用户 → ⑦ 编写页。<br data-page-node-id="aKLAi5ncg3VaqEMR7QyCIe">4. 攻略数据存数据库（strategies 表），图片上传到本地文件目录。</div>
   </div>
 
   <!-- ═══ 页6 攻略详情 ═══ -->
-  <div class="page">
-    <div class="frame">
-      <div class="nav">
-        <span class="logo">🧭 旅行规划平台</span>
-        <span class="navlinks"><span class="nl">首页</span><span class="nl">旅游景点</span><span class="nl">线路规划助手</span><span class="nl on">旅游攻略</span><span class="nl">个人中心</span></span>
-        <span class="navuser">游客 · <span class="lk">登录</span></span>
+  <div class="page" data-page-node-id="Gw7lB0y4ESGJiODmMJnWx6">
+    <div class="frame" data-page-node-id="FTyPhyA4ujgyaNBMX7a2lB">
+      <div class="nav" data-page-node-id="h5LE7jY5pBZu2Es6oGN0YU">
+        <span class="logo" data-page-node-id="nTGNKMrFTGBLVGLhNQzkcV">🧭 旅行规划平台</span>
+        <span class="navlinks" data-page-node-id="TnE8P0Rs7v2ynyxlJx4x84"><span class="nl" data-page-node-id="zIMkzm9TlFarCSi3KPkTdu">首页</span><span class="nl" data-page-node-id="JL74n8cDD0P4AeR2CVPLyi">旅游景点</span><span class="nl" data-page-node-id="d0sUcMxAfSoKgBeMYNbvmr">线路规划助手</span><span class="nl on" data-page-node-id="eIwCF6F0hWDCA0RsoXJjGC">旅游攻略</span><span class="nl" data-page-node-id="u2aU8XsptouM18vP99SQM6">个人中心</span></span>
+        <span class="navuser" data-page-node-id="PBFrVsZZPNUFFf4GUh0Bhz">游客 · <span class="lk" data-page-node-id="kCGnszsyfEhk9KBgaDxt9a">登录</span></span>
       </div>
-      <div class="inner">
-        <div class="crumb">旅游攻略 / <em>成都 3 天 2 晚亲子悠闲攻略（带 5 岁娃实测）</em></div>
-        <div class="arti">
-          <h2>成都 3 天 2 晚亲子悠闲攻略（带 5 岁娃实测）</h2>
-          <div class="by">旅行家小王 · 发布于 2026-08-30 · 👁 1,204 · 关联景点 5 个</div>
-          <div class="ph">攻略头图 · 图占位</div>
-          <p>带娃出门的核心原则：每天最多两个"大点"，中间夹公园和美食。我们住春熙路地铁口，去哪儿都方便……</p>
-          <p>Day 1 路线是宽窄巷子 → 人民公园 → 武侯祠 → 锦里，全程顺路不折腾；大熊猫基地放在 Day 2 上午，一定赶 8:30 开园首批进场，熊猫最活跃……</p>
-          <div class="sec">关联景点 <small>点击直达详情页</small></div>
-          <div class="linkspot">
-            <span class="lspot">🏛️ 宽窄巷子</span><span class="lspot">🌳 人民公园</span><span class="lspot">🏮 武侯祠博物馆</span><span class="lspot">🏮 锦里古街</span><span class="lspot">🐼 大熊猫繁育研究基地</span>
+      <div class="inner" data-page-node-id="KiTxVO8OoC404VnPfSp0SR">
+        <div class="crumb" data-page-node-id="WCbAVGWmwnPMq6bJAMU6XE">旅游攻略 / <em data-page-node-id="lvHvdsxzgRHAhcKzfCutR1">成都 3 天 2 晚亲子悠闲攻略（带 5 岁娃实测）</em></div>
+        <div class="arti" data-page-node-id="dVYcIyFw78TXSFyfMGuLvE">
+          <h2 data-page-node-id="KKBgU3Ca5mSjHnkfsk0wSs">成都 3 天 2 晚亲子悠闲攻略（带 5 岁娃实测）</h2>
+          <div class="by" data-page-node-id="5SCMQTudbdNhyOuvVwaJPL">旅行家小王 · 发布于 2026-08-30 · 👁 1,204 · 关联景点 5 个</div>
+          <div class="ph" data-page-node-id="GC23xUlbcOv0eoeifNLNgl">攻略头图 · 图占位</div>
+          <div class="thumbs" style="margin-top:8px;">
+            <div class="thumb"><div class="ph">图 2 · 宽窄巷子</div></div>
+            <div class="thumb"><div class="ph">图 3 · 鹤鸣茶社</div></div>
+            <div class="thumb"><div class="ph">图 4 · 熊猫基地</div></div>
+            <div class="thumb"><div class="ph">图 5 · 锦里夜景</div></div>
+            <div class="thumb"><div class="ph">图 6 · 建设路小吃</div></div>
+            <div class="thumb"><div class="ph" style="background:#f1efe8;color:#999;">共 12 图 · 点击看大图</div></div>
+          </div>
+          <p data-page-node-id="O6jTu1SmwiRQIuBpZGvnMQ">带娃出门的核心原则：每天最多两个"大点"，中间夹公园和美食。我们住春熙路地铁口，去哪儿都方便……</p>
+          <div class="ph" style="height:130px;" data-page-node-id="GC23xUlbcOv0eoeifNLNgl2">正文插图 · 图 7 · 武侯祠红墙夹道 · 图占位</div>
+          <p data-page-node-id="MHxaQS4bweh42lCy7DXyA4">Day 1 路线是宽窄巷子 → 人民公园 → 武侯祠 → 锦里，全程顺路不折腾；大熊猫基地放在 Day 2 上午，一定赶 8:30 开园首批进场，熊猫最活跃……</p>
+          <div class="sec" data-page-node-id="bshwjamUDDkPGaGx4AunKj">关联景点 <small data-page-node-id="txkGUmMJ1mGjUDdOpyPNSS">点击直达详情页</small></div>
+          <div class="linkspot" data-page-node-id="E7b9YL7wYMW8WwBLhv4uGw">
+            <span class="lspot" data-page-node-id="OFP01OExkgWlI5Bf5RCM78">🏛️ 宽窄巷子</span><span class="lspot" data-page-node-id="LlBAUGGOwfHQd2LoGOjsrQ">🌳 人民公园</span><span class="lspot" data-page-node-id="3mAz5NiQGMDWRe7KIiXKGT">🏮 武侯祠博物馆</span><span class="lspot" data-page-node-id="09ecvq33mgrBIDBYOYxV6o">🏮 锦里古街</span><span class="lspot" data-page-node-id="J8qeDGsCmZXGIipcO8YdBp">🐼 大熊猫繁育研究基地</span>
           </div>
         </div>
       </div>
     </div>
-    <div class="note"><b>这页的交互：</b><br>1. 图文正文 + 底部"关联景点"胶囊，点击直达 ③ 景点详情——这是"攻略↔景点"双向打通的入口。<br>2. 头图和正文配图来自发布时上传（存本地文件目录）。</div>
+    <div class="note" data-page-node-id="Pk78sAjEuXa7ZGsJVNbOy1"><b data-page-node-id="XeEGotIpCVcYSCeutfcYif">这页的交互：</b><br data-page-node-id="eMyGkSuPSB28lIT9VBf4Zs">1. <b>多图展示</b>：头图 + 图集缩略图行（点缩略图看大图轮播）+ 正文内插图，全部来自发布时上传（存本地文件目录）。<br data-page-node-id="haynk5DIv4eet9QPX27KRx2">2. 底部"关联景点"胶囊点击直达 ③ 景点详情——这是"攻略↔景点"双向打通的入口。</div>
   </div>
 
   <!-- ═══ 页7 攻略编写 ═══ -->
-  <div class="page">
-    <div class="frame">
-      <div class="nav">
-        <span class="logo">🧭 旅行规划平台</span>
-        <span class="navlinks"><span class="nl">首页</span><span class="nl">旅游景点</span><span class="nl">线路规划助手</span><span class="nl on">旅游攻略</span><span class="nl">个人中心</span></span>
-        <span class="navuser">😊 阿茶（已登录）</span>
+  <div class="page" data-page-node-id="8pNtrOBlG5S3nTbpLJAsU0">
+    <div class="frame" data-page-node-id="HWGDkVUhiuqdVvW8k4wqqB">
+      <div class="nav" data-page-node-id="Oee2STMXQEG4UO7uVoDQmo">
+        <span class="logo" data-page-node-id="SMDQAsdHAqCMEr7hBvfaUX">🧭 旅行规划平台</span>
+        <span class="navlinks" data-page-node-id="PjkEe1sgjfZ8Tra3vtRPb2"><span class="nl" data-page-node-id="rijccqkapntC14UBDryPBT">首页</span><span class="nl" data-page-node-id="dikAAjQbGwDMLt2cLAW5O7">旅游景点</span><span class="nl" data-page-node-id="4OhrN9Xv7gXN4Ge2tDrzag">线路规划助手</span><span class="nl on" data-page-node-id="XQqrYIjHu9tXrzBAhED9Ua">旅游攻略</span><span class="nl" data-page-node-id="IPPaiRbIo6XCiCE1r2dtQX">个人中心</span></span>
+        <span class="navuser" data-page-node-id="1jnel0hdUc7EYKZ2E2wekN">😊 阿茶（已登录）</span>
       </div>
-      <div class="inner">
-        <div class="editor">
-          <div class="etool"><span class="eb"><b>B</b></span><span class="eb"><i>I</i></span><span class="eb">🖼️ 插图</span><span class="eb">🔗 关联景点</span><span class="eb">H1</span><span class="eb">H2</span></div>
-          <div class="ebody">标题：3 天逛吃成都，这份排队攻略让你少走弯路……<br><br>正文从这里开始写，支持加粗 / 斜体 / 插图 / 一级二级标题……</div>
+      <div class="inner" data-page-node-id="SxxHpdgTi0OXQMQYTFCuSW">
+        <div class="editor" data-page-node-id="VMkpjAeQON946GJ1LJd1pz">
+          <div class="etool" data-page-node-id="iLZ7iPSdAdYIRqOae6bNWB"><span class="eb" data-page-node-id="UobiYyBR5KMDqolYUS5B1J"><b data-page-node-id="LZuadAzOIEPF9lED6yUl2R">B</b></span><span class="eb" data-page-node-id="x5o6TeKMJJMMfWIbDZ06eQ"><i data-page-node-id="y7sfT0rnv5BvM3mZBwfPez">I</i></span><span class="eb" data-page-node-id="W9lBeLtYbUvYGoXS7DtIrk">🖼️ 插图</span><span class="eb" data-page-node-id="RzapVW1F888PX6LbFDSzi1">🔗 关联景点</span><span class="eb" data-page-node-id="TL0Bt86yTqrnp2M1KRl22T">H1</span><span class="eb" data-page-node-id="ifrSItNHUFSGHi83bvaRPa">H2</span></div>
+          <div class="ebody" data-page-node-id="dHd4zIzsZ4qjpxCur2iuvB">标题：3 天逛吃成都，这份排队攻略让你少走弯路……<br data-page-node-id="YBNFtGVzwtAdPnFm5GndNW"><br data-page-node-id="o1MqRJF5k4Q78YYPD2o6MB">正文从这里开始写，支持加粗 / 斜体 / 插图 / 一级二级标题……</div>
         </div>
-        <div class="sec" style="margin-top:14px;">关联景点 <small>搜索后点选，最多 10 个</small></div>
-        <div class="filters"><div class="finput">🔍 搜索景点名，如"宽窄巷子"</div><button class="btn sm hollow">+ 添加</button></div>
-        <div class="linkspot"><span class="lspot">🏛️ 宽窄巷子 ✕</span><span class="lspot">🐼 大熊猫繁育研究基地 ✕</span></div>
-        <div class="actions" style="margin-top:16px;"><button class="btn">发布攻略</button><button class="btn hollow">存草稿</button><span class="lock" style="margin-left:4px;">封面图必传，正文图 ≥1 张</span></div>
+        <div class="sec" style="margin-top:14px;">📷 照片 <small>单独上传入口 · 支持一次选多张 · 首张自动设为封面</small></div>
+        <div class="photobox">📥 点击或拖拽照片到此处上传（JPG/PNG，单张 ≤10MB，最多 30 张，可拖动调整顺序）</div>
+        <div class="thumbs">
+          <div class="thumb"><div class="ph">封面 · 春熙路</div><span class="x">✕</span></div>
+          <div class="thumb"><div class="ph">图 2 · 熊猫基地</div><span class="x">✕</span></div>
+          <div class="thumb"><div class="ph">图 3 · 锦里夜景</div><span class="x">✕</span></div>
+          <div class="thumb"><div class="ph">图 4 · 火锅</div><span class="x">✕</span></div>
+        </div>
+        <div class="sec" style="margin-top:14px;" data-page-node-id="BY0UXEBq02B6DwYnuMcBQt">关联景点 <small data-page-node-id="OPtlBHZ7UFEeEpgmhtIHub">搜索后点选，最多 10 个</small></div>
+        <div class="filters" data-page-node-id="63SgyGQeOeUoqPVHAQ0qQU"><div class="finput" data-page-node-id="kbxJPrzfRljTOb60YIP6zw">🔍 搜索景点名，如"宽窄巷子"</div><button class="btn sm hollow" data-page-node-id="PKFsLyvGCtv66RX9pWAynk">+ 添加</button></div>
+        <div class="linkspot" data-page-node-id="TghYUak553fJd8T6hWP7Cj"><span class="lspot" data-page-node-id="bRYXHGQnAPwkU8wj0bkTgW">🏛️ 宽窄巷子 ✕</span><span class="lspot" data-page-node-id="G8SenhQItxOkA3VRQi0aZj">🐼 大熊猫繁育研究基地 ✕</span></div>
+        <div class="actions" style="margin-top:16px;" data-page-node-id="mBuhT9nnlHwc5gABp0ozq1"><button class="btn" data-page-node-id="l1Wy4B9njnFLKlO55A0zb6">发布攻略</button><button class="btn hollow" data-page-node-id="GiF4MXxy1xeqez05H4RqEt">存草稿</button><span class="lock" style="margin-left:4px;" data-page-node-id="zdBSCWqAIwkd7AKAvo988z">照片 ≥1 张（首张为封面），发布前可随时增删排序</span></div>
       </div>
     </div>
-    <div class="note"><b>这页的交互：</b>富文本编辑（加粗/标题/插图）→ 选封面 → 关联景点（搜索选择）→ 发布/存草稿。发布后出现在 ⑤ 列表页顶部与"我的攻略"。</div>
+    <div class="note" data-page-node-id="EJzD2HDYECFdKMR89BmUbJ"><b data-page-node-id="c17nKAC4mjDfBfuij7fMGX">这页的交互：</b>富文本编辑（加粗/标题）→ <b>照片区单独上传多张图片</b>（首张自动设为封面，可拖拽排序、✕ 删除）→ 关联景点（搜索选择）→ 发布/存草稿。发布后照片以"头图+图集+正文插图"形式展示在 ⑥ 详情页。</div>
   </div>
 
   <!-- ═══ 页8 个人中心 ═══ -->
-  <div class="page">
-    <div class="frame">
-      <div class="nav">
-        <span class="logo">🧭 旅行规划平台</span>
-        <span class="navlinks"><span class="nl">首页</span><span class="nl">旅游景点</span><span class="nl">线路规划助手</span><span class="nl">旅游攻略</span><span class="nl on">个人中心</span></span>
-        <span class="navuser">😊 阿茶（已登录）</span>
+  <div class="page" data-page-node-id="pJAWfoKLb7VV6x7gnrACOm">
+    <div class="frame" data-page-node-id="Srm3OpqurWMEGeWrOsijqp">
+      <div class="nav" data-page-node-id="eHQ31b1VYoD1C66M2Ac2qp">
+        <span class="logo" data-page-node-id="P07Ilj8kUIY8pjsNaB3sCd">🧭 旅行规划平台</span>
+        <span class="navlinks" data-page-node-id="XYCKUwPj03cHNcdZIVNeAE"><span class="nl" data-page-node-id="nK5J2zpyBHqiQyrnuf5HBE">首页</span><span class="nl" data-page-node-id="S0c30SZFJZqNMSyGHkPlA8">旅游景点</span><span class="nl" data-page-node-id="nxR9pih4SjPPDdVbW9p5uX">线路规划助手</span><span class="nl" data-page-node-id="6mPmZzkupDkrexijyHfjqd">旅游攻略</span><span class="nl on" data-page-node-id="C21n9eHiKeklXWaj8tQOmt">个人中心</span></span>
+        <span class="navuser" data-page-node-id="TtDIp4tYCh63CJ8DA0jO56">😊 阿茶（已登录）</span>
       </div>
-      <div class="inner">
-        <div class="ucard">
-          <div class="avatar">😊</div>
-          <div><b>阿茶</b><br><small style="color:#888;font-size:12px;">注册于 2026-08-12 · 角色：普通用户</small></div>
-          <div class="ustat"><div><b>12</b><small>收藏景点</small></div><div><b>3</b><small>收藏攻略</small></div><div><b>2</b><small>发布攻略</small></div><div><b>5</b><small>规划次数</small></div></div>
+      <div class="inner" data-page-node-id="5WVhga3Fs7zHCNzrGjzAX6">
+        <div class="ucard" data-page-node-id="JD0iDaGUXc3u4G7LRkP9MZ">
+          <div class="avatar" data-page-node-id="3jE9q2kkzC2Ggvrvk7hvwM">😊</div>
+          <div data-page-node-id="2IeaydKgugmFGd93XTo0lG"><b data-page-node-id="O8c6wySNwEuV1xnm7wYaTh">阿茶</b><br data-page-node-id="B1qTtlc4MDfXeXTxFHxtTW"><small style="color:#888;font-size:12px;" data-page-node-id="oNLBT1ghW6Cw0cZwmnjlIQ">注册于 2026-08-12 · 角色：普通用户</small></div>
+          <div class="ustat" data-page-node-id="PN56CFcNdRghHA717mBRP7"><div data-page-node-id="S8TOZtiV7WzdVXRwiTbQGj"><b data-page-node-id="z9JW2AAO3Dxcq9YCdoLzDu">12</b><small data-page-node-id="hGWyjDgSExPdsmn3hkYD2A">收藏景点</small></div><div data-page-node-id="2VzdEYXBr8HdCm1DcHcPKZ"><b data-page-node-id="iNzmbTA3sBXsjLT4FcdGMD">3</b><small data-page-node-id="wq0ePwddX2zT4rKHk8FIbj">收藏攻略</small></div><div data-page-node-id="Ea1Z1THNNZO5fKQoeCRK7j"><b data-page-node-id="JdsXAqsOXUqrfH9kS5BAxh">2</b><small data-page-node-id="6nixm5gzWCBz4THrnxL1XB">发布攻略</small></div><div data-page-node-id="lyDb3wd5H43JeyRxReaotI"><b data-page-node-id="sMZnH5EHwUW7b0c2XAakuB">5</b><small data-page-node-id="0WljHcpu54hKOzO4MTwzGd">规划次数</small></div></div>
         </div>
-        <div class="subtabs"><span class="subtab on">♡ 收藏的景点（12）</span><span class="subtab">♡ 收藏的攻略（3）</span><span class="subtab">✍️ 我发布的攻略（2）</span></div>
-        <div class="sgrid" style="grid-template-columns:repeat(3,1fr);">
-          <div class="gcard"><div class="ph">宽窄巷子 · 图占位</div><div class="gi"><b>宽窄巷子</b><small>成都 · 收藏于 08-28</small><div class="row"><span class="free">免费</span><span>♥ 已收藏</span></div></div></div>
-          <div class="gcard"><div class="ph sea">西湖 · 图占位</div><div class="gi"><b>杭州西湖</b><small>杭州 · 收藏于 08-20</small><div class="row"><span class="free">免费</span><span>♥ 已收藏</span></div></div></div>
-          <div class="gcard"><div class="ph">大熊猫基地 · 图占位</div><div class="gi"><b>大熊猫繁育研究基地</b><small>成都 · 收藏于 08-15</small><div class="row"><span class="price">¥55 起</span><span>♥ 已收藏</span></div></div></div>
+        <div class="subtabs" data-page-node-id="9QMHcMojuiExUALaxf5XrP"><span class="subtab on" data-page-node-id="mIypta4bvGoX1ptoCYKfPu">♡ 收藏的景点（12）</span><span class="subtab" data-page-node-id="J6Jo0KOctaf8ifGj5PPXml">♡ 收藏的攻略（3）</span><span class="subtab" data-page-node-id="Ngl5v9wtA6hZ0YSJmLqw1i">✍️ 我发布的攻略（2）</span></div>
+        <div class="sgrid" style="grid-template-columns:repeat(3,1fr);" data-page-node-id="4jFdqbsxAKB5kzBZBmQYgq">
+          <div class="gcard" data-page-node-id="hG8HvA2sHZt1Q3C2KSRYdz"><div class="ph" data-page-node-id="FLoIzjrNEQUoU8mUytH70X">宽窄巷子 · 图占位</div><div class="gi" data-page-node-id="bH1YcEzWxLZEoUK4prxDvX"><b data-page-node-id="bss9vAVKBTvldYZZGVpGYI">宽窄巷子</b><small data-page-node-id="e0eE1fW1Fs9dXDjgouHDvU">成都 · 收藏于 08-28</small><div class="row" data-page-node-id="ZSofI6OqniCpJwmx04bUNm"><span class="free" data-page-node-id="GoBJAUErA4jpuVvfnsod2u">免费</span><span data-page-node-id="aNMQeKsr9SLKF3ctOLp8wm">♥ 已收藏</span></div></div></div>
+          <div class="gcard" data-page-node-id="fox9scBQ9Ei5D9d1vnqRjT"><div class="ph sea" data-page-node-id="LEPcEJ15gT91OZaPl6zN0L">西湖 · 图占位</div><div class="gi" data-page-node-id="NfAQNmCkq3nWXEDuYMAt5C"><b data-page-node-id="6AsfYFxhgN1k6tlbK8BH6C">杭州西湖</b><small data-page-node-id="qgQISsantEU0Md02FgoJb8">杭州 · 收藏于 08-20</small><div class="row" data-page-node-id="0uE9pNKAhFuPvbYyEy0Mu8"><span class="free" data-page-node-id="DqjKjneUrAJcuJVBjgiHNE">免费</span><span data-page-node-id="62Jey8rOqcpKfgp1KopJL6">♥ 已收藏</span></div></div></div>
+          <div class="gcard" data-page-node-id="oVXargb5dekZKsMas781e2"><div class="ph" data-page-node-id="NGsxfAUlxyMmOGPQFMdJdA">大熊猫基地 · 图占位</div><div class="gi" data-page-node-id="kyVMNauo4H201gv8Yf8WBY"><b data-page-node-id="LBp1JHCpIOQi2ahMqlOyad">大熊猫繁育研究基地</b><small data-page-node-id="H6UhEYIMGOXjlZN7nAaC3b">成都 · 收藏于 08-15</small><div class="row" data-page-node-id="xI6Ic02uCVOGdeUFNYA2i5"><span class="price" data-page-node-id="2aHxwLAz9Qzon6POkpJVIN">¥55 起</span><span data-page-node-id="l1gmXq6A5eZGLNMo6kKecT">♥ 已收藏</span></div></div></div>
         </div>
       </div>
     </div>
-    <div class="note"><b>这页的交互：</b>① 收藏两个子页（景点/攻略）+ 我发布的攻略；② 点已收藏卡片可取消收藏；③ 昵称可修改；④ "规划次数"来自助手页的历史记录（登录后自动累计）。游客访问本页 → 直接弹登录框。</div>
+    <div class="note" data-page-node-id="jtHsiDx4t5OXKHfJ4SzqEW"><b data-page-node-id="V3ypRKS8fLVV9H1F4a0BcQ">这页的交互：</b>① 收藏两个子页（景点/攻略）+ 我发布的攻略；② 点已收藏卡片可取消收藏；③ 昵称可修改；④ "规划次数"来自助手页的历史记录（登录后自动累计）。游客访问本页 → 直接弹登录框。</div>
   </div>
 
   <!-- ═══ 页9 管理员后台 ═══ -->
-  <div class="page">
-    <div class="frame">
-      <div class="bar"><b>🛡️ 管理员后台</b><span>独立账密登录（与前台账号体系同一张 users 表，角色=admin）· 当前：admin</span></div>
-      <div class="admin">
-        <div class="aside">
-          <div class="at">—— 管理模块（8）——</div>
-          <div class="ai2 on">👥 用户管理</div>
-          <div class="ai2">🏛️ 旅游景点管理</div>
-          <div class="ai2">♡ 景点收藏</div>
-          <div class="ai2">💬 景点评论</div>
-          <div class="ai2">✍️ 旅游攻略</div>
-          <div class="ai2">🖼️ 攻略图片</div>
-          <div class="ai2">🔗 攻略关联景点</div>
-          <div class="ai2">🤖 AI 使用记录</div>
+  <div class="page" data-page-node-id="Y6iJ1AoSAYBRunm3uVTDEu">
+    <div class="frame" data-page-node-id="L7Ri5b1577Hw9UJYm1osaU">
+      <div class="bar" data-page-node-id="7ACskqPlVIXCUnBQdI1Z9n"><b data-page-node-id="mkiuEd7m5kkuoSG8pNMUBV">🛡️ 管理员后台</b><span data-page-node-id="QgoDECs6esg1rP6OpLWgMO">独立账密登录（与前台账号体系同一张 users 表，角色=admin）· 当前：admin</span></div>
+      <div class="admin" data-page-node-id="6LimN1qvgXMxGMbfZ6TdAi">
+        <div class="aside" data-page-node-id="snyRhwHoVGNuttcAjpr02n">
+          <div class="at" data-page-node-id="CVm1FscLeU3Kq00oiNaoMI">—— 管理模块（8）——</div>
+          <div class="ai2 on" data-page-node-id="YAwM6IqsgbfXWQYh5nljHx">👥 用户管理</div>
+          <div class="ai2" data-page-node-id="PkyoyqOOWlzlBA6DSuhWrm">🏛️ 旅游景点管理</div>
+          <div class="ai2" data-page-node-id="g6gjX4qW1zgDRvgCKRTLTr">♡ 景点收藏</div>
+          <div class="ai2" data-page-node-id="OB0L49zPHJpE5KkFhh6kQQ">💬 景点评论</div>
+          <div class="ai2" data-page-node-id="wBl2xUed8m5uF2dgTwyCe3">✍️ 旅游攻略</div>
+          <div class="ai2" data-page-node-id="syCTZLTJ0pLs82v7thMGX8">🖼️ 攻略图片</div>
+          <div class="ai2" data-page-node-id="9exY86AS6QDLp5iy14Orgh">🔗 攻略关联景点</div>
+          <div class="ai2" data-page-node-id="lzf72eUTSHt3l1zSsMJaK9">🤖 AI 使用记录</div>
         </div>
-        <div class="amain">
-          <div class="statrow">
-            <div class="stat"><b>86</b><small>注册用户</small></div>
-            <div class="stat"><b>3,214</b><small>景点数据</small></div>
-            <div class="stat"><b>128</b><small>攻略</small></div>
-            <div class="stat"><b>1,042</b><small>AI 规划次数</small></div>
+        <div class="amain" data-page-node-id="gcryUXIi0vKARSbjdVJnvg">
+          <div class="statrow" data-page-node-id="iZDrMnT9QPd26DKuND9JM0">
+            <div class="stat" data-page-node-id="e67kv0hzw49qVBPPH95JEY"><b data-page-node-id="xAFiIAa0zmTyQ03i5HiRis">86</b><small data-page-node-id="gtOAGGSXuWBCxPCI14gYam">注册用户</small></div>
+            <div class="stat" data-page-node-id="isuq7GPzHkflWljgw7prGV"><b data-page-node-id="lOpdcBnhU2iSjX5cWZbbZB">3,214</b><small data-page-node-id="GEpHdEKybys8Lc9txxEbmr">景点数据</small></div>
+            <div class="stat" data-page-node-id="Q36OcDjWzyy2y2ib88FfUk"><b data-page-node-id="O9KE73dAiR8edje8iQFCRn">128</b><small data-page-node-id="yoakUB0figq1lxAtcG7oeT">攻略</small></div>
+            <div class="stat" data-page-node-id="tEMeBrIRVGYrz698PI9vCu"><b data-page-node-id="xkErpxOcxQB9tcCZndeK6f">1,042</b><small data-page-node-id="i5QQBfq0zW3iA9ZIrFoFHt">AI 规划次数</small></div>
           </div>
-          <table>
-            <tr><th>用户名</th><th>昵称</th><th>角色</th><th>注册时间</th><th>收藏数</th><th>操作</th></tr>
-            <tr><td>acha_2026</td><td>阿茶</td><td>用户</td><td>2026-08-12</td><td>12</td><td><span class="mb">详情</span> <span class="mb danger">禁用</span></td></tr>
-            <tr><td>walker_w</td><td>旅行家小王</td><td>用户</td><td>2026-08-10</td><td>35</td><td><span class="mb">详情</span> <span class="mb danger">禁用</span></td></tr>
-            <tr><td>momo_z</td><td>Momo</td><td>用户</td><td>2026-08-09</td><td>7</td><td><span class="mb">详情</span> <span class="mb danger">禁用</span></td></tr>
-            <tr><td>admin</td><td>管理员</td><td><b style="color:#1a6e50;">admin</b></td><td>2026-08-01</td><td>—</td><td><span class="mb">详情</span></td></tr>
+          <table data-page-node-id="NNYgZQhBu40tthAbea0B2B">
+            <tr data-page-node-id="3tam1zvLLp1vSuz8JOCSNk"><th data-page-node-id="EOsqCwOPSGvExhbANhFTmD">用户名</th><th data-page-node-id="7pLhPqA5MMEL4Yk2eb5uRF">昵称</th><th data-page-node-id="Gdp26YQsaREXW7zglyLQBs">角色</th><th data-page-node-id="M5f0NfsrPNv9z9odMK9aEh">注册时间</th><th data-page-node-id="l1kKhOdC6hrLau0iWqkIRG">收藏数</th><th data-page-node-id="YQmJtmsFGCaAIEWPJgbFmE">操作</th></tr>
+            <tr data-page-node-id="Zx0y7NDkz7pMbrM0XZo38D"><td data-page-node-id="ep2vtcCTxgQiGczO0GxDwI">acha_2026</td><td data-page-node-id="M0qXOAaB6kxrCYkVqxSpXV">阿茶</td><td data-page-node-id="HUpGe5bYCoaFo1AmeKWyki">用户</td><td data-page-node-id="Vyp9m5ZpHfCD1QrW6ASutO">2026-08-12</td><td data-page-node-id="3WhrFn92uiRlyAgmlhr8II">12</td><td data-page-node-id="0kfD5rZj4Drr1hTHbgPADh"><span class="mb" data-page-node-id="gHxCTpx8EQXNNPGGT4yIRI">详情</span> <span class="mb danger" data-page-node-id="59XHGDNYHjoKAoHkzJim6t">禁用</span></td></tr>
+            <tr data-page-node-id="eGXlgfOI9TSozNUD2BUa7c"><td data-page-node-id="bEkKCtxr5MXkSEAAE2rtVo">walker_w</td><td data-page-node-id="UbG3VGK8jCA20ZG2bisHmC">旅行家小王</td><td data-page-node-id="nAL4if0fhkzZbiYHvLQQiy">用户</td><td data-page-node-id="qbnA4NGi7v96kwSlENSqW7">2026-08-10</td><td data-page-node-id="7G7OUifToZNR4lbvDdgCAe">35</td><td data-page-node-id="aqy5JOTLIlJDyS8aNHebVH"><span class="mb" data-page-node-id="w5Nd8vLJqJTxB1VMDz4d8K">详情</span> <span class="mb danger" data-page-node-id="us3QUEoB5Ft8tUkDVnzDEV">禁用</span></td></tr>
+            <tr data-page-node-id="2j2xKfilrLCzAQ7cKatXDV"><td data-page-node-id="z2rhUp1eyuBlFImq3HbFDH">momo_z</td><td data-page-node-id="6NQ0g31nh6VXkdDcwiXBRU">Momo</td><td data-page-node-id="fysj3vWUguFrax9S5UGZwq">用户</td><td data-page-node-id="fUVWgX21pYVXg1d10mFQ1O">2026-08-09</td><td data-page-node-id="G3QWfi38wASajWNMpAeDHa">7</td><td data-page-node-id="9tRdspquXQvrGT2GbGi0ZY"><span class="mb" data-page-node-id="JE6y4mrzflbd4eiFjAPGVf">详情</span> <span class="mb danger" data-page-node-id="Rd9Yz7pr0WuDXjBl0mvXDA">禁用</span></td></tr>
+            <tr data-page-node-id="yoC7vRA8WkhRf5bG91rTWj"><td data-page-node-id="uwyXRXrzDxpkDbxyjbGWQ8">admin</td><td data-page-node-id="JstevBgfZulCCddVHAFemF">管理员</td><td data-page-node-id="X7wpNTOe01Ckonrv3Czpg2"><b style="color:#1a6e50;" data-page-node-id="wMtKXqTy8l1xRVxwm7cT0c">admin</b></td><td data-page-node-id="GW1onX2IWEHT4O0lvSSAlJ">2026-08-01</td><td data-page-node-id="gHHWdsWv3sXOAlxyTR5QcL">—</td><td data-page-node-id="0Qk9ocAcah0CY3ISNQIBpL"><span class="mb" data-page-node-id="9msRk8B9AQACcC2a7MDSA3">详情</span></td></tr>
           </table>
-          <div class="lock" style="margin-top:12px;">🤖 AI 使用记录模块展示的是<b>总结整理后的会话摘要</b>（每场规划的诉求→结论），不堆原始聊天记录。</div>
+          <div class="lock" style="margin-top:12px;" data-page-node-id="qTtafQLYV2Dwmw1NpeLyYC">🤖 AI 使用记录模块展示的是<b data-page-node-id="UVr6xkuqJD6lzkjRID9Lfm">总结整理后的会话摘要</b>（每场规划的诉求→结论），不堆原始聊天记录。</div>
         </div>
       </div>
     </div>
-    <div class="note"><b>这页的交互：</b>① 独立登录页（管理员账密）进入，普通用户登录后访问不了；② 8 个管理模块对应数据库 9 张表的管理操作，全部增删改查；③ 顶部统计卡 = 各表数据量一眼看全。</div>
+    <div class="note" data-page-node-id="Wj66P3P3clEuOtPD5VrrI8"><b data-page-node-id="ah3fLTENlxqRjenjTJHfXd">这页的交互：</b>① 独立登录页（管理员账密）进入，普通用户登录后访问不了；② 8 个管理模块对应数据库 9 张表的管理操作，全部增删改查；③ 顶部统计卡 = 各表数据量一眼看全。</div>
   </div>
 
   <!-- ═══ 页10 登录注册 ═══ -->
-  <div class="page">
-    <div class="frame">
-      <div class="inner">
-        <div class="authwrap">
-          <div class="authbox">
-            <h3>🧭 登录 旅行规划平台</h3>
-            <div class="subtabs"><span class="subtab on">登录</span><span class="subtab">注册</span></div>
-            <div class="finput">用户名</div>
-            <div class="finput" type="password">密码</div>
-            <button class="btn">登 录</button>
-            <div class="authsw">还没有账号？<em>立即注册</em>（用户名 + 密码，10 秒搞定）</div>
+  <div class="page" data-page-node-id="X9lnXjCaYNB1RlvPRq2DHJ">
+    <div class="frame" data-page-node-id="WKVDO0mZb3XNo5bTA9aj7f">
+      <div class="inner" data-page-node-id="D147AR2AZOiHy9DHNEQ87N">
+        <div class="authwrap" data-page-node-id="Wl4Lm62MY3jQE7E3FZBj62">
+          <div class="authbox" data-page-node-id="pjgTD0TnAn8ukduHAyvNZM">
+            <h3 data-page-node-id="nLKNSNa0bT8H3qBVvLk8E9">🧭 登录 旅行规划平台</h3>
+            <div class="subtabs" data-page-node-id="AOMiIdPClLqsA3nsoB6AlC"><span class="subtab on" data-page-node-id="tSsXOQKtbJibz87rx7Y0Mw">登录</span><span class="subtab" data-page-node-id="4cZStXfvDBxamWG8ujoRqE">注册</span></div>
+            <div class="finput" data-page-node-id="JsuUbYQCJZj43AxERWIZF0">用户名</div>
+            <div class="finput" type="password" data-page-node-id="Kit8FsyEPCkozxhb76Jmdd">密码</div>
+            <button class="btn" data-page-node-id="xFORUw5Wk1FyKcJm4fV0Oc">登 录</button>
+            <div class="authsw" data-page-node-id="lVxTnA8Lr5fu5TXzh5QCSS">还没有账号？<em data-page-node-id="5fBaegiXT2CQ1POEopIM86">立即注册</em>（用户名 + 密码，10 秒搞定）</div>
           </div>
         </div>
       </div>
     </div>
-    <div class="note"><b>这页的交互：</b>① 弹窗式（也可独立页，开发时定）；② 注册=用户名+密码，密码 bcrypt 加密存储，管理员也看不到原密码；③ 登录后右上角变成用户昵称，收藏/评论/发攻略/存历史全部解锁；④ 管理员后台另有独立登录入口。</div>
+    <div class="note" data-page-node-id="691woFJandZD4FvoNU83Mw"><b data-page-node-id="7zxf9ksJC0KCoqAwU8q5ap">这页的交互：</b>① 弹窗式（也可独立页，开发时定）；② 注册=用户名+密码，密码 bcrypt 加密存储，管理员也看不到原密码；③ 登录后右上角变成用户昵称，收藏/评论/发攻略/存历史全部解锁；④ 管理员后台另有独立登录入口。</div>
   </div>
 
-  <footer>配套文档：docs/PROJECT_BRIEF.md v1.0（正式定稿）· 开发顺序：v0.5 数据底座 → v0.6 有门有脸 → v0.7 图上谈兵 → v0.8 游记笔墨 → v0.9 各就各位 → v1.0 整装正式版 · 逐页提修改意见，全部确认后开工。</footer>
+  <footer data-page-node-id="uVvLoPCn3sxPv89oUuFZcy">配套文档：docs/PROJECT_BRIEF.md v1.0（正式定稿）· 开发顺序：v0.5 数据底座 → v0.6 有门有脸 → v0.7 图上谈兵 → v0.8 游记笔墨 → v0.9 各就各位 → v1.0 整装正式版 · 逐页提修改意见，全部确认后开工。</footer>
 </div>
 <script>
   function show(i){document.querySelectorAll('.tab').forEach((t,k)=>t.classList.toggle('on',k===i));document.querySelectorAll('.page').forEach((p,k)=>p.classList.toggle('on',k===i));}
