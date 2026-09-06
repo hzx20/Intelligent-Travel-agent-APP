@@ -5,5 +5,6 @@
 # 系统与依赖杂物
 node_modules/
 __pycache__/
+.pytest_cache/
 .DS_Store
 .workbuddy/

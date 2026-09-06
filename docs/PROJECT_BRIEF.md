@@ -1,6 +1,6 @@
 # 智能旅行规划平台 — 项目初步说明文档
 
-> 版本：v0.1（待确认稿，确认后升级 v1.0 并同步更新 PROJECT_PLAN.md 里程碑）
+> 版本：v0.2（技术栈已按"主流方案替换"指令更新：FastAPI + Vue3 + LangChain；其余内容与 v0.1 待确认稿一致，第四节 3 个决策仍待你确认）
 > 日期：2026-09-06
 > 说明：本文档是开发依据；你确认或批注修改后，才进入"页面效果图"环节；效果图确认后才写代码。
 
@@ -27,15 +27,16 @@
 
 | 层 | 选型 | 是什么/为什么 |
 |---|---|---|
-| 前端界面 | React 18 + Vite | 目前最主流的网页搭建组合：React 负责"页面长什么样"，Vite 负责"开发时秒开、发布时打包" |
-| 页面跳转 | React Router | 管理首页/景点/攻略等页面之间的切换 |
+| 前端界面 | Vue 3 + Vite | 目前最主流的网页搭建组合之一：Vue 负责"页面长什么样"，Vite 负责"开发时秒开、发布时打包" |
+| 页面跳转 | Vue Router + Pinia | Vue Router 管理页面切换；Pinia 管理页面之间共享的数据（如登录状态、收藏列表） |
 | 地图呈现 | 高德 JS API 2.0 | 在网页上画真实地图、按顺序标数字点连线（你的核心需求） |
-| 后端服务 | Node.js + Express | 服务器程序，负责接收页面请求、查数据库、调 AI |
-| 数据库 | SQLite（better-sqlite3 驱动） | 单文件数据库，**零安装零配置**，数据存在一个 .db 文件里；个人平台规模完全够用 |
-| 登录认证 | JWT + bcrypt | JWT = 登录后发一张"电子手环"，后续请求凭手环识别身份；bcrypt = 密码加密存储，连管理员也看不到你的原密码 |
-| AI 能力 | 智谱 GLM-4-Flash（已调通） | 行程对话生成 + 攻略辅助，免费额度 |
+| 后端服务 | Python + FastAPI | 服务器程序，负责接收页面请求、查数据库、调 AI；FastAPI 是当下 Python 世界最热门的接口框架，自带可交互的接口文档页 |
+| AI 能力 | LangChain + 智谱 GLM-4-Flash（已调通） | LangChain 是连接大模型的"万能插座"主流方案：换模型、加记忆、加工具都不用重写代码；底层仍走智谱免费额度 |
+| 数据库 | SQLite + SQLAlchemy 2.0 | 单文件数据库**零安装零配置**，数据存在一个 .db 文件里；SQLAlchemy 是 Python 官方生态最主流的数据库操作库，将来想换更强数据库只改一行配置 |
+| 缓存/会话 | JWT + cachetools（进程内缓存） | 本机无 Docker 跑不了 Redis 的临时替代：JWT 管登录手环，cachetools 管短期缓存；**上云部署时无缝升级 Redis**，代码接口已预留 |
 | 地图/天气数据 | 高德开放平台（已调通） | POI 搜索、路线规划、天气，免费额度 |
-| 运行形态 | 本机一键启动（前端+后端一个命令拉起） | 浏览器打开 localhost 即用；想给朋友用再补公网部署 |
+| 接口测试 | pytest | Python 世界事实标准的测试工具，现有 M1/M2 测试已全部迁移 |
+| 运行形态 | 本机一键启动（前端+后端两个命令拉起） | 浏览器打开 localhost 即用；想给朋友用再补公网部署 |
 
 ## 1.3 核心功能模块总览（对应上面六板块，展开关键点）
 
@@ -55,10 +56,11 @@
 | 项 | 要求 | 你的现状 |
 |---|---|---|
 | 操作系统 | Windows 10/11 | ✅ Windows |
-| Node.js | ≥ 18（建议 22） | ✅ 已装 Node 22 |
-| npm 镜像 | npmmirror 加速 | ✅ 已配置 |
+| Python | ≥ 3.11（FastAPI 后端用） | ✅ 已装 3.13，虚拟环境就绪 |
+| Node.js | ≥ 18（Vite 前端开发服务用） | ✅ 已装 Node 22 |
+| npm/pip 镜像 | npmmirror / 清华 pip 镜像加速 | ✅ 已配置，Python 依赖已装完 |
 | 数据库软件 | **无需安装**（SQLite 是文件） | ✅ 零负担 |
-| API 钥匙 | 智谱 + 高德 | ✅ 已调通，存 .env |
+| API 钥匙 | 智谱 + 高德 | ✅ 已调通，存 .env（Python 版直接复用同一份） |
 
 ## 2.2 系统要求
 
@@ -69,8 +71,9 @@
 ## 2.3 安装依赖（开发时我来执行，仅列出清单）
 
 ```
-前端：react, react-dom, react-router-dom, @amap/amap-jsapi-loader（高德地图加载器）
-后端：express, better-sqlite3, bcryptjs, jsonwebtoken, cors, multer（图片上传）
+前端：vue, vue-router, pinia, @amap/amap-jsapi-loader（高德地图加载器）
+后端（已装好）：fastapi, uvicorn, langchain, langchain-openai, pydantic-settings,
+       cachetools, sqlalchemy（v0.5 数据库阶段加装）, pytest, httpx
 ```
 
 ## 2.4 数据库配置与表结构（SQLite 单文件 `data/platform.db`）
