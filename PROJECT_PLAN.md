@@ -1,6 +1,6 @@
 # 智能旅行规划 Agent — 项目总体规划
 
-> 版本：v2.5（规划文档自身版本；产品里程碑版本见第 8 节）
+> 版本：v2.6（规划文档自身版本；产品里程碑版本见第 8 节）
 > 创建日期：2026-09-06
 > 维护规则：本文档为项目"宪法"，只做追加和版本化修订，不做静默修改
 > 配套文档：PRD（待定稿）、docs/SESSION_LOG.md（会话记忆锚点，待建）
@@ -272,3 +272,4 @@ AI 助手的一次对话窗口有容量上限（类比：一张桌子的大小�
 | 2026-09-06 | v2.3 | 参考需求清单对靶（用户提供"Python+LangGraph 智能旅游规划系统"完整功能清单，用户拍板"参考方向"）：①功能层面清单 6 项用户功能 + 5 项管理功能**基本全覆盖**（后台 8 模块超出清单）；②技术栈不照搬——Django/MySQL/DeepSeek/爬虫为"实现手段差异"，保持 FastAPI + SQLite（SQLAlchemy 预留 MySQL）+ 智谱（可切 DeepSeek）+ 高德官方接口（优于爬虫，稳定合规）；③**LangGraph 引入**为功能级增强：AI 规划编排为多节点状态图 + 流式输出，归入 v0.7；④Neo4j 知识图谱**列入远景待办**（用户确认；清单仅标题提及、正文技术列表无；不排进版本序列，触发条件=上推荐引擎/3 层以上关系推理，届时只替换 LangGraph 检索节点实现，其余架构不动，详见 SESSION_LOG 待办清单）。第 5 节技术选型表、第 8 节 v0.7 行同步；docs/SESSION_LOG.md 建档 |
 | 2026-09-06 | v2.4 | **v0.5「数据底座」完成**（用户"继续"放行效果图，直接开工）：①SQLAlchemy 2.0 全套 8 表建库（users/spots/favorites/comments/guides/guide_images/guide_spots/ai_plans，对齐 BRIEF 8 后台模块），SQLite 落 backend/data/（已 gitignore），换 MySQL 只改连接串；②高德 v5 POI 官方接口采集 5 城 530 条真实景点（免费比 41.5%、有图 99.4%、坐标 100%、amap_id 零重复），免费标签按类型粗判+后台可改；③用户系统三接口（/api/auth/register、/login、/me）：PBKDF2 10 万次迭代哈希 + PyJWT HS256 token（7 天），当前用户依赖 get_current_user 供后续收藏等接口复用；④pytest 新增 6 项全过（模型关系/密码/token/POI 解析/认证流）。打 tag v0.5-data。下一步 v0.6「有门有脸」（前端工程启动） |
 | 2026-09-06 | v2.5 | **GitHub 上传闭环 + v0.6 第一批完成**：①用户建仓 github.com/hzx20/Intelligent-Travel-agent-APP，28 commit + 6 tag 一次推送成功；**工作流约定生效：每完成一版必 commit+push**（已写入长期记忆）；②后端新增景点只读接口 4 个（列表筛选分页/热门Top4/猜你喜欢登录版+游客版/详情含收藏数+评论），猜你喜欢池 36 条分 3 页与原型口径对齐；③前端工程 frontend/ 手写搭建（Vue 3.5 + vue-router 4 + Vite 6，npmmirror 装依赖，dev 代理 /api→8000）；④三个页面真数据渲染：首页（轮播自动播+热门推荐+猜你喜欢翻页）、景点列表（三筛选+12 条/页分页）、详情（大图+收藏人数+高德来源跳转+评论）；⑤vite build 通过、4 接口真数据冒烟通过、pytest 15 项全过。收藏/评论写操作与后台属 v0.6 第二批 |
+| 2026-09-06 | v2.6 | **v0.6 第二批完成：收藏/评论写功能 + 推送通道破障**：①后端写接口——POST /api/spots/{id}/favorite 切换式收藏（返回最新 favorited+count）、POST /{id}/comments 发表评论（1-500 字 strip 校验+可选 1-5 星，修掉纯空格入库漏洞）；详情接口带 favorited 字段（get_current_user_optional 可选登录依赖）；②前端——详情页收藏按钮（红心切换+人数实时变）+ 评论编辑器（星选+发布+新评论置顶）+ 登录弹窗全局化（store 状态任意页面唤起）；③pytest 18 项全过、uvicorn 真数据全链路冒烟 PASS（注册→收藏开→关→再收→评论→详情核验）；④**推送通道破障**：用户 FlClash 截图定位（系统代理模式）→ netstat 挖出真实端口 7890 → 固化 http.proxy + 静默凭据，确立"push 后 ls-remote 对比 SHA 终验"纪律（写入用户级长期记忆）。下一步 v0.6 收尾：个人中心（我的收藏/攻略）与管理后台 |
