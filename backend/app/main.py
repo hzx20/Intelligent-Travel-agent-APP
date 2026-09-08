@@ -19,6 +19,7 @@ from app.db.database import init_db
 from app.routers.admin import router as admin_router
 from app.routers.auth import router as auth_router
 from app.routers.guides import router as guides_router
+from app.routers.map import router as map_router
 from app.routers.me import router as me_router
 from app.routers.planner import router as planner_router
 from app.routers.spots import router as spots_router
@@ -33,6 +34,7 @@ init_db()
 app.include_router(auth_router)
 app.include_router(spots_router)
 app.include_router(guides_router)
+app.include_router(map_router)
 app.include_router(me_router)
 app.include_router(admin_router)
 app.include_router(planner_router)

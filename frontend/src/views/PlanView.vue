@@ -72,6 +72,18 @@ function markerLink(s) {
   return `https://uri.amap.com/marker?position=${s.lng},${s.lat}&name=${encodeURIComponent(s.name)}&src=travel-planner&coordinate=gaode`
 }
 
+/** 静态地图：把坐标拼给后端 /api/map/static（key 只在后端，前端拿到的就是一张图） */
+function mapPoints(spots) {
+  return (spots || []).filter(s => s.lng && s.lat).map(s => `${s.lng},${s.lat}`).join(';')
+}
+function mapUrl(pts, size = '640*300', zoom = 12) {
+  return pts ? `/api/map/static?points=${pts}&size=${size}&zoom=${zoom}` : ''
+}
+const allSpots = computed(() =>
+  (result.value?.itinerary?.days || []).flatMap(d => d.spots || []).filter(s => s.lng && s.lat)
+)
+const allPoints = computed(() => mapPoints(allSpots.value))
+
 async function loadHistory() {
   if (!user.value) return
   try { history.value = (await api.get('/api/plan/history')).items } catch { /* 游客忽略 */ }
@@ -145,11 +157,27 @@ onMounted(loadHistory)
             </span>
           </div>
 
+          <!-- 行程路线总览（静态地图：后端代理，key 不外泄） -->
+          <div v-if="allPoints" class="map-card">
+            <div class="map-title">
+              🗺️ 行程路线总览
+              <small>按顺序连线 · 点击图片可开高德导航</small>
+            </div>
+            <a v-if="amapNav(allSpots)" :href="amapNav(allSpots)" target="_blank" rel="noopener">
+              <img class="map-img" :src="mapUrl(allPoints, '640*300', 11)" alt="行程路线图"
+                   @error="$event.target.closest('.map-card').style.display = 'none'" />
+            </a>
+            <img v-else class="map-img" :src="mapUrl(allPoints, '640*300', 11)" alt="行程路线图"
+                 @error="$event.target.closest('.map-card').style.display = 'none'" />
+          </div>
+
           <!-- 按天行程 -->
           <div v-for="day in result.itinerary.days" :key="day.day" class="day-card">
             <div class="day-head">第 {{ day.day }} 天
               <a v-if="amapNav(day.spots)" class="nav-link" :href="amapNav(day.spots)" target="_blank" rel="noopener">🧭 高德导航全程 →</a>
             </div>
+            <img v-if="mapPoints(day.spots)" class="day-map" :src="mapUrl(mapPoints(day.spots), '260*130', 13)"
+                 alt="当日路线" @error="$event.target.style.display = 'none'" />
             <div v-for="(s, i) in day.spots" :key="i" class="spot-row">
               <span class="spot-idx">{{ i + 1 }}</span>
               <div class="spot-info">
@@ -209,6 +237,11 @@ onMounted(loadHistory)
 .lk { color: var(--green); cursor: pointer; }
 .weather { background: var(--green-soft); border: 1px solid var(--green-border); border-radius: 10px; padding: 8px 12px; font-size: 12.5px; margin-bottom: 12px; }
 .w-item { margin-right: 10px; }
+.map-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; background: #fff; }
+.map-title { font-weight: 700; font-size: 13.5px; margin-bottom: 8px; }
+.map-title small { font-weight: 400; font-size: 11.5px; color: var(--text-sub); margin-left: 6px; }
+.map-img { width: 100%; border-radius: 8px; display: block; border: 1px solid var(--line); }
+.day-map { width: 100%; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--line); }
 .day-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
 .day-head { font-weight: 700; font-size: 13.5px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 .nav-link { font-size: 12px; color: var(--green); }

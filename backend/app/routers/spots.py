@@ -23,6 +23,8 @@ class SpotItem(BaseModel):
     is_free: bool
     price: Optional[float] = None
     image_url: str
+    lng: Optional[float] = None  # v0.7：给静态地图用（详情页单点图、行程图标点）
+    lat: Optional[float] = None
 
     model_config = {"from_attributes": True}
 

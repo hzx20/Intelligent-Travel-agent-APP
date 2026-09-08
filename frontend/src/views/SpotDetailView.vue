@@ -95,6 +95,21 @@ onMounted(load)
         <p class="desc">{{ detail.description || '景区简介待补充（后台可编辑）。' }}</p>
       </div>
 
+      <!-- 位置地图（静态图，后端代理生成，key 不外泄） -->
+      <div v-if="detail.spot.lng && detail.spot.lat" class="panel">
+        <div class="pos-title">📍 位置 <small>静态地图 · 红点为景区位置</small></div>
+        <a
+          :href="`https://uri.amap.com/marker?position=${detail.spot.lng},${detail.spot.lat}&name=${encodeURIComponent(detail.spot.name)}&src=travel-planner&coordinate=gaode`"
+          target="_blank" rel="noopener"
+        >
+          <img
+            class="pos-map" alt="景区位置图"
+            :src="`/api/map/static?points=${detail.spot.lng},${detail.spot.lat}&size=640*240&zoom=14&label=0&path=0`"
+            @error="$event.target.closest('.panel').style.display = 'none'"
+          />
+        </a>
+      </div>
+
       <div class="sec">游客评论 <small>{{ detail.comments.length }} 条</small></div>
 
       <!-- 发表评论 -->
@@ -154,6 +169,9 @@ onMounted(load)
 }
 .tags { font-size: 12.5px; color: #888; margin-top: 10px; }
 .desc { font-size: 13.5px; line-height: 2; margin-top: 8px; color: #333; }
+.pos-title { font-weight: 700; font-size: 13.5px; margin-bottom: 8px; }
+.pos-title small { font-weight: 400; font-size: 11.5px; color: var(--text-sub); margin-left: 6px; }
+.pos-map { width: 100%; border-radius: 8px; display: block; border: 1px solid var(--line); }
 .editor textarea {
   width: 100%; border: 1.5px solid #ccc; border-radius: 10px;
   padding: 10px 12px; font-size: 13.5px; resize: vertical; font-family: inherit;
