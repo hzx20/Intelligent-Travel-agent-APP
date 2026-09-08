@@ -30,6 +30,7 @@ export const api = {
   get: (url) => request('GET', url),
   post: (url, body) => request('POST', url, body),
   patch: (url, body) => request('PATCH', url, body),
+  del: (url) => request('DELETE', url),
   raw: (method, url) => request(method, url),
 }
 

@@ -29,6 +29,7 @@ async function submit() {
       <router-link to="/">首页</router-link>
       <router-link to="/spots">旅游景点</router-link>
       <router-link to="/plan">线路规划助手</router-link>
+      <router-link to="/guides">旅游攻略</router-link>
       <router-link v-if="user" to="/me">个人中心</router-link>
       <router-link v-if="user?.is_admin" to="/admin">管理后台</router-link>
     </div>

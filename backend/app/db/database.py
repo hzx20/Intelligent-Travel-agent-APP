@@ -31,9 +31,29 @@ def get_db():
         db.close()
 
 
+def _add_missing_columns():
+    """老库补列：SQLite 的 ALTER TABLE 只支持加列，这里按需补齐（幂等）。
+
+    为什么需要：v0.8 给 guides 表新增 views / is_draft 两列，而 create_all
+    对"表已存在"的情况不会自动加列；不补的话查询会报 no such column。
+    """
+    from sqlalchemy import inspect, text
+
+    insp = inspect(engine)
+    if "guides" not in insp.get_table_names():
+        return
+    existing = {c["name"] for c in insp.get_columns("guides")}
+    with engine.begin() as conn:
+        if "views" not in existing:
+            conn.execute(text("ALTER TABLE guides ADD COLUMN views INTEGER DEFAULT 0"))
+        if "is_draft" not in existing:
+            conn.execute(text("ALTER TABLE guides ADD COLUMN is_draft BOOLEAN DEFAULT 0"))
+
+
 def init_db():
-    """建库建表（幂等：已存在的表跳过）。"""
+    """建库建表（幂等：已存在的表跳过，缺的列自动补齐）。"""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     from app.db import models  # noqa: F401 确保模型注册到 Base.metadata
 
     Base.metadata.create_all(engine)
+    _add_missing_columns()

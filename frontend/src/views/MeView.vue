@@ -1,10 +1,12 @@
 <script setup>
 /** 个人中心：资料卡（改昵称）+ 我的收藏 / 我发布的攻略 两个 tab */
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import SpotCard from '../components/SpotCard.vue'
 import { api } from '../api'
 import { useAuth } from '../store/auth'
 
+const router = useRouter()
 const { user, openLogin } = useAuth()
 const profile = ref(null)
 const tab = ref('favorites') // favorites | guides
@@ -83,11 +85,19 @@ onMounted(() => {
 
       <!-- 攻略 -->
       <div v-else>
-        <p v-if="!guides.length" class="empty">还没有发布攻略（攻略编写功能随 v0.8「游记笔墨」开放）</p>
+        <div class="gbar">
+          <span class="hint">共 {{ guides.length }} 篇（含草稿，草稿仅自己可见）</span>
+          <button class="btn-write" @click="router.push('/guides/new')">✍️ 写攻略</button>
+        </div>
+        <p v-if="!guides.length" class="empty">还没有发布攻略，点右上角「写攻略」开始第一篇 ✍️</p>
         <div v-else class="glist">
-          <div v-for="g in guides" :key="g.id" class="gitem">
-            <b>{{ g.title }}</b>
-            <small>{{ g.city || '未填城市' }} · {{ g.created_at }}</small>
+          <div v-for="g in guides" :key="g.id" class="gitem" @click="router.push(`/guides/${g.id}`)">
+            <b>
+              {{ g.title }}
+              <span v-if="g.is_draft" class="draft">草稿</span>
+            </b>
+            <small>{{ g.city || '未填城市' }} · {{ g.created_at }} · 👁 {{ g.views }}</small>
+            <span class="lk" @click.stop="router.push(`/guides/${g.id}/edit`)">编辑</span>
           </div>
         </div>
       </div>
@@ -119,8 +129,23 @@ onMounted(() => {
 }
 .tabs span.on { background: var(--green); border-color: var(--green); color: #fff; }
 .glist { display: flex; flex-direction: column; gap: 10px; }
-.gitem { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+.gitem {
+  background: #fff; border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 16px; cursor: pointer;
+}
+.gitem:hover { border-color: var(--green-border); }
 .gitem small { color: var(--text-sub); margin-left: 10px; }
+.gbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.gbar .hint { font-size: 12px; color: var(--text-sub); }
+.btn-write {
+  border: none; border-radius: 9px; padding: 7px 15px;
+  font-size: 13px; background: var(--green); color: #fff;
+}
+.gitem .lk { margin-left: 10px; font-size: 12.5px; }
+.draft {
+  font-size: 11px; color: #b7791f; background: #fdf3e2;
+  border: 1px solid #f0dcb8; border-radius: 20px; padding: 1px 8px; margin-left: 6px;
+}
 .lk { color: var(--green); }
 @media (max-width: 640px) { .p-edit { margin-left: 0; } .profile { flex-wrap: wrap; } }
 </style>

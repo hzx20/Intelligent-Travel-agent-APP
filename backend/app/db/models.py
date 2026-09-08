@@ -116,6 +116,8 @@ class Guide(Base):
     content: Mapped[str] = mapped_column(Text)
     city: Mapped[str] = mapped_column(String(30), default="", index=True)
     cover_image: Mapped[str] = mapped_column(String(500), default="")
+    views: Mapped[int] = mapped_column(Integer, default=0)  # v0.8：浏览量（详情页每次打开 +1）
+    is_draft: Mapped[bool] = mapped_column(Boolean, default=False)  # v0.8：草稿不进公开列表
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(default=utcnow, onupdate=utcnow)
 

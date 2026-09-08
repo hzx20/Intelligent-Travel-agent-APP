@@ -26,6 +26,8 @@ class GuideItem(BaseModel):
     city: str
     cover_image: str
     created_at: str
+    views: int = 0
+    is_draft: bool = False  # v0.8：草稿标记（个人中心可见，公开列表不可见）
 
     model_config = {"from_attributes": True}
 
@@ -103,6 +105,7 @@ def my_guides(db: Session = Depends(get_db), user: User = Depends(get_current_us
         GuideItem(
             id=g.id, title=g.title, city=g.city,
             cover_image=g.cover_image, created_at=_fmt(g.created_at),
+            views=g.views or 0, is_draft=g.is_draft,
         )
         for g in guides
     ]

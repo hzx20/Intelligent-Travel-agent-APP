@@ -101,3 +101,32 @@
 【遗留问题】
 - 无已知 bug；curl 探测 FlClash 显示 000 但 git 实推可通（探测方式差异，以 git 实推为准）
 - 后台服务跨 Bash 命令不可靠存活（冒烟范式：同命令内起服务+测试）
+
+---
+
+## 2026-09-08 v0.8「游记笔墨」完成 + 天气 adcode 精确化（v0.7 收尾一半）
+
+【项目状态】v0.6 ✅ / v0.7 核心两批 ✅ / **v0.8 ✅ / v0.9 ✅**；剩 v0.7 收尾（内嵌地图）→ v1.0 冲刺
+
+【本轮产出】
+- **后端**：新增 `backend/app/routers/guides.py`（6 个接口）；`models.py` 给 guides 加 `views`/`is_draft`；`database.py` 加 `_add_missing_columns()` 老库补列迁移（SQLite ALTER TABLE，幂等）
+- **天气**：`services/weather.py` 加城市→adcode 解析（本地字典 + 高德行政区域查询兜底 + 内存缓存 + 别名归一化），graph 的 weather_node 自动吃到精确 adcode
+- **前端**：新增三页 `GuidesView` / `GuideDetailView` / `GuideEditView`；路由 + 导航 + 个人中心攻略 tab 打通（写攻略/编辑/草稿标记）
+- **验证**：pytest 新增 6 项全过；`tools/smoke_v08.py` 真库冒烟 22 项全过（走真实 app.db、不起服务、不走代理——范式可复用）；vite build 通过
+- **文档**：PROJECT_PLAN 升 v2.10（v0.6～v0.9 版本表补齐完成标记）
+
+【已定决策】
+- 攻略图片用**外链 URL**（未做本地上传）：原型虽有上传，但本机无文件存储服务；编辑器提供"用关联景点图片填充"一键取高德真实图，绕过图床需求
+- 草稿 `is_draft`：仅作者/管理员可见、不进公开列表（对齐原型"存草稿"）
+- 浏览量 `views`：非作者每次打开 +1，作者自己预览不计数
+- 首页**不加**攻略区块（原型首页只有热门景区 + 猜你喜欢，保持一致；入口走导航栏）
+
+【待办清单】
+1. 内嵌高德 JS 地图（**需用户在高德控制台确认 key 是否含"Web端(JS API)"平台权限**；现有 key 是 Web 服务类型，两种 key 不通用）
+2. v1.0 冲刺：全链路真实数据走查 + 边界修补 + tag v1.0
+3. 用户注册后需提权才能进后台（tools/make_admin.py 用户名）
+4. push 前照例确认 FlClash
+
+【遗留问题】
+- 新增 `tools/smoke_v08.py` 会真实注册/删除临时用户，清理逻辑已内置（按 username 精确删除）
+- pytest 中 test_m2（真调 LLM，约 100s）与 test_v07_graph（约 42s）较慢，全量跑需后台执行或分文件跑
