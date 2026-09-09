@@ -15,6 +15,7 @@ const guides = ref([])
 const loading = ref(true)
 const nickname = ref('')
 const nickMsg = ref('')
+const error = ref('')
 
 async function loadAll() {
   loading.value = true
@@ -23,6 +24,9 @@ async function loadAll() {
     nickname.value = profile.value.nickname
     favs.value = await api.get('/api/me/favorites')
     guides.value = await api.get('/api/me/guides')
+    error.value = ''
+  } catch (e) {
+    error.value = e.message || '加载失败'
   } finally {
     loading.value = false
   }
@@ -47,6 +51,7 @@ onMounted(() => {
 <template>
   <div class="wrap">
     <p v-if="!user" class="empty">请先登录后访问个人中心</p>
+    <p v-if="error" class="empty">⚠️ 加载失败：{{ error }}<br /><small>先确认后端已启动（双击「启动网站.bat」），再刷新页面重试</small></p>
     <p v-else-if="loading" class="loading">加载中…</p>
     <template v-else>
       <!-- 资料卡 -->

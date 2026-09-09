@@ -14,6 +14,7 @@ const guessPage = ref(1)
 const guessTotal = ref(0)
 const guessPages = computed(() => Math.max(1, Math.ceil(guessTotal.value / 12)))
 const cur = ref(0)
+const error = ref('')     // 后端不可达时给个明白话，别让用户对着白屏猜
 let timer = null
 
 async function loadGuess(p) {
@@ -41,6 +42,8 @@ onMounted(async () => {
     timer = setInterval(() => {
       if (carousel.value.length > 1) cur.value = (cur.value + 1) % carousel.value.length
     }, 5000)
+  } catch (e) {
+    error.value = e.message || '加载失败'
   } finally {
     loading.value = false
   }
@@ -82,5 +85,6 @@ onBeforeUnmount(() => clearInterval(timer))
       <span class="pg" @click="guessGo(guessPage + 1)">下一页 ›</span>
     </div>
   </div>
+  <p v-else-if="error" class="empty">⚠️ 数据加载失败：{{ error }}<br /><small>先确认后端已启动（双击「启动网站.bat」），再刷新页面重试</small></p>
   <p v-else class="loading">加载中…</p>
 </template>

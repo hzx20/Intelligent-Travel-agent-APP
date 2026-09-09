@@ -133,3 +133,24 @@ img { display: block; }
 /* 空态/加载 */
 .empty { text-align: center; color: var(--text-sub); padding: 40px 0; font-size: 13px; }
 .loading { text-align: center; color: var(--text-sub); padding: 30px 0; font-size: 13px; }
+
+/* 移动端汉堡菜单：窄屏导航默认收起，点 ☰ 展开（否则手机上无法切换页面） */
+.nav-toggle {
+  display: none; background: none; border: none;
+  font-size: 19px; color: var(--green); padding: 2px 6px; line-height: 1;
+}
+@media (max-width: 640px) {
+  .nav { gap: 8px; }
+  .nav .logo { margin-right: auto; font-size: 15px; }
+  .nav-toggle { display: block; }
+  .nav .links.open {
+    display: flex; flex-direction: column; gap: 0;
+    position: absolute; top: 56px; left: 0; right: 0;
+    padding: 6px 6% 10px; background: #fff;
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, .07);
+  }
+  .nav .links.open a { padding: 11px 0; font-size: 14.5px; border-bottom: 1px dashed var(--line); }
+  .nav .links.open a:last-child { border-bottom: none; }
+  .nav .links.open a.router-link-active { background: var(--green-soft); color: var(--green); }
+}

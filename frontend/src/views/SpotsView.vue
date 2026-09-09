@@ -15,6 +15,7 @@ const page = ref(1)
 const pageSize = 12
 const pages = ref(1)
 const loading = ref(true)
+const error = ref('')
 const searched = ref('')
 
 async function load(p = 1) {
@@ -30,6 +31,10 @@ async function load(p = 1) {
     total.value = r.total
     page.value = r.page
     pages.value = Math.max(1, Math.ceil(r.total / pageSize))
+    error.value = ''
+  } catch (e) {
+    error.value = e.message || '加载失败'
+    items.value = []
   } finally {
     loading.value = false
   }
@@ -63,7 +68,8 @@ onMounted(() => load(1))
     </div>
     <div class="count">筛选结果：{{ city }} · {{ isFree === 'all' ? '门票不限' : (isFree === 'free' ? '免费' : '收费') }} —— 共 {{ total }} 条</div>
 
-    <p v-if="loading" class="loading">加载中…</p>
+    <p v-if="error" class="empty">⚠️ 加载失败：{{ error }}<br /><small>先确认后端已启动（双击「启动网站.bat」），再刷新页面重试</small></p>
+    <p v-else-if="loading" class="loading">加载中…</p>
     <p v-else-if="!items.length" class="empty">没有符合条件的景点，换个关键词试试？</p>
     <div v-else class="grid-3">
       <SpotCard v-for="s in items" :key="s.id" :spot="s" />

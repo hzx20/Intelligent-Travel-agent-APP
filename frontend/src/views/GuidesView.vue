@@ -20,6 +20,7 @@ const page = ref(1)
 const pageSize = 10
 const pages = ref(1)
 const loading = ref(true)
+const error = ref('')
 
 async function load(p = 1) {
   loading.value = true
@@ -32,6 +33,10 @@ async function load(p = 1) {
     total.value = r.total
     page.value = r.page
     pages.value = Math.max(1, Math.ceil(r.total / pageSize))
+    error.value = ''
+  } catch (e) {
+    error.value = e.message || '加载失败'
+    items.value = []
   } finally {
     loading.value = false
   }
@@ -76,7 +81,8 @@ onMounted(() => load(1))
       <button class="btn-write" @click="writeGuide">✍️ 写攻略{{ user ? '' : '（登录后开放）' }}</button>
     </div>
 
-    <p v-if="loading" class="loading">加载中…</p>
+    <p v-if="error" class="empty">⚠️ 加载失败：{{ error }}<br /><small>先确认后端已启动（双击「启动网站.bat」），再刷新页面重试</small></p>
+    <p v-else-if="loading" class="loading">加载中…</p>
     <p v-else-if="!items.length" class="empty">
       {{ searched || city !== '全部城市' ? '没有符合条件的攻略，换个关键词试试' : '还没有攻略，来写第一篇吧 ✍️' }}
     </p>

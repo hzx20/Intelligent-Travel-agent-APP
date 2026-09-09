@@ -6,6 +6,9 @@ const { user, showLogin, loginMode, login, register, logout, openLogin } = useAu
 const form = reactive({ username: '', nickname: '', password: '' })
 const err = ref('')
 const busy = ref(false)
+const menuOpen = ref(false) // 移动端汉堡菜单展开状态
+
+function closeMenu() { menuOpen.value = false }
 
 async function submit() {
   err.value = ''
@@ -24,14 +27,14 @@ async function submit() {
 
 <template>
   <nav class="nav">
-    <router-link to="/" class="logo">🧭 旅行规划平台</router-link>
-    <div class="links">
-      <router-link to="/">首页</router-link>
-      <router-link to="/spots">旅游景点</router-link>
-      <router-link to="/plan">线路规划助手</router-link>
-      <router-link to="/guides">旅游攻略</router-link>
-      <router-link v-if="user" to="/me">个人中心</router-link>
-      <router-link v-if="user?.is_admin" to="/admin">管理后台</router-link>
+    <router-link to="/" class="logo" @click="closeMenu">🧭 旅行规划平台</router-link>
+    <div class="links" :class="{ open: menuOpen }">
+      <router-link to="/" @click="closeMenu">首页</router-link>
+      <router-link to="/spots" @click="closeMenu">旅游景点</router-link>
+      <router-link to="/plan" @click="closeMenu">线路规划助手</router-link>
+      <router-link to="/guides" @click="closeMenu">旅游攻略</router-link>
+      <router-link v-if="user" to="/me" @click="closeMenu">个人中心</router-link>
+      <router-link v-if="user?.is_admin" to="/admin" @click="closeMenu">管理后台</router-link>
     </div>
     <span class="user">
       <template v-if="user">
@@ -42,6 +45,7 @@ async function submit() {
         <span class="lk" @click="openLogin('register')">注册</span>
       </template>
     </span>
+    <button class="nav-toggle" :aria-expanded="menuOpen" @click="menuOpen = !menuOpen">☰</button>
   </nav>
 
   <router-view />
@@ -70,7 +74,7 @@ async function submit() {
   display: flex; align-items: center; justify-content: center; z-index: 50;
 }
 .modal {
-  width: 320px; background: #fff; border-radius: 14px; padding: 22px;
+  width: 320px; max-width: 88%; background: #fff; border-radius: 14px; padding: 22px;
   display: flex; flex-direction: column; gap: 12px;
 }
 .tabs { display: flex; gap: 6px; margin-bottom: 4px; }
