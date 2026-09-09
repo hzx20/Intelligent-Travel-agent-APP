@@ -40,4 +40,7 @@ def test_generate_itinerary(name, req):
         for item in d["items"]:
             assert item.get("poi"), f"Day{i + 1} {item.get('time')} 应有 poi 字段"
             assert item.get("time"), f"Day{i + 1} 应有时间"
+        # 形状契约（v1.0 验收教训）：下游核实/前端只认 spots/name，缺了就是空行程
+        assert d.get("spots"), f"Day{i + 1} 应有 spots（items/poi 自动转换）"
+        assert all(s.get("name") for s in d["spots"]), f"Day{i + 1} spots 每项应有 name"
     assert it.get("budget_summary") and "总计" in it["budget_summary"], "应有预算汇总"

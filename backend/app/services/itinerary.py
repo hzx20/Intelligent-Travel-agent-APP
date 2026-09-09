@@ -44,6 +44,26 @@ SYSTEM_PROMPT = """你是资深旅行行程设计师。根据用户需求生成�
 6. 只输出 JSON。"""
 
 
+def _to_spot_days(it: dict) -> dict:
+    """输出形状统一：days[].items[]（地点名在 poi）→ days[].spots[]（地点名在 name）。
+
+    下游的 M3 地图核实、前端行程面板、历史方案都以 spots/name 为契约。
+    缺了这一步会出现"行程已生成但每天是空的"（v1.0 验收抓到的真缺陷）。
+    没写 poi 的条目（如纯休息）不进 spots，避免核实环节拿空名乱匹配。
+    """
+    for day in it.get("days") or []:
+        if day.get("spots"):
+            continue  # 已经是 spots 形状（如重跑/历史数据），不重复加工
+        spots = []
+        for item in day.get("items") or []:
+            name = str(item.get("poi") or item.get("name") or "").strip()
+            if not name:
+                continue
+            spots.append({**item, "name": name})
+        day["spots"] = spots
+    return it
+
+
 async def generate_itinerary(collected):
     """生成行程 JSON。入参与出参结构和 Node 版一致。"""
     messages = [
@@ -83,11 +103,11 @@ async def generate_itinerary(collected):
         fixed = extract_json(fix_reply)
         fixed_days = fixed.get("days")
         if isinstance(fixed_days, list) and len(fixed_days) == expect_days:
-            return fixed
+            return _to_spot_days(fixed)
         raise RuntimeError(f"行程天数校验失败：应为 {expect_days} 天")
 
     if days is None or any(
         not isinstance(d.get("items"), list) or len(d.get("items")) == 0 for d in days
     ):
         raise RuntimeError("行程结构异常：某天没有安排")
-    return it
+    return _to_spot_days(it)

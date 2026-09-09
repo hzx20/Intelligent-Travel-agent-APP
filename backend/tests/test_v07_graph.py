@@ -27,14 +27,89 @@ def _seed_db(db):
     db.commit()
 
 
+def _mem_db():
+    """独立内存库：核实测试不碰真实开发库（以前直接删真库杭州景点再补假数据，属污染）。"""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
+
+    from app.db.database import Base
+
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
+    Base.metadata.create_all(engine)
+    return sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)()
+
+
+FAKE_PLAN_ITEMS_SHAPE = {
+    "title": "杭州两日",
+    "summary": "湖畔古刹慢游",
+    "days": [
+        {"day": 1, "theme": "湖畔漫步", "items": [
+            {"time": "09:00", "activity": "漫步湖边", "poi": "西湖", "type": "景点",
+             "transfer": "从酒店出发", "cost_estimate": 0, "note": "早点去人少"},
+            {"time": "14:00", "activity": "回酒店午休", "poi": "", "type": "自由活动",
+             "transfer": "步行", "cost_estimate": 0, "note": ""},
+            {"time": "16:00", "activity": "逛虚构景点", "poi": "不存在的景点XYZ", "type": "景点",
+             "transfer": "打车", "cost_estimate": 0, "note": ""},
+        ]},
+        {"day": 2, "theme": "古刹钟声", "items": [
+            {"time": "09:30", "activity": "礼佛", "poi": "灵隐寺", "type": "景点",
+             "transfer": "公交", "cost_estimate": 75, "note": ""},
+        ]},
+    ],
+    "budget_summary": {"总计": 75},
+    "assumptions": [],
+}
+
+
+def test_generate_shape_regression_items_to_spots(monkeypatch):
+    """回归测试（v1.0 验收抓到的真缺陷）：
+
+    M2 生成的行程是 days[].items[]（地点名在 poi），下游核实/前端/历史都认
+    days[].spots[]（地点名在 name）。缺了形状转换会出现"行程已生成但每天是空的"。
+    这里用假 LLM 复现原始形状，跑通 生成 → 归一 → 核实 全链。
+    """
+    import asyncio
+
+    from app.services import itinerary as itinerary_module
+
+    async def fake_chat(messages, temperature=0.5, timeout_ms=60000):
+        import json as _json
+        return _json.dumps(FAKE_PLAN_ITEMS_SHAPE, ensure_ascii=False)
+
+    monkeypatch.setattr(itinerary_module, "chat", fake_chat)
+
+    collected = {"destination": "杭州", "days": 2, "preference": "安静"}
+    it = asyncio.run(itinerary_module.generate_itinerary(collected))
+
+    # 归一：每天必有非空 spots，地点名落在 name，时间等字段保留
+    for day in it["days"]:
+        assert day.get("spots"), f"第 {day.get('day')} 天 spots 不应为空（items 必须转成 spots）"
+    d1 = it["days"][0]["spots"]
+    assert [s["name"] for s in d1] == ["西湖", "不存在的景点XYZ"], "空 poi 条目应被丢弃"
+    assert d1[0]["time"] == "09:00", "time 等原始字段应保留"
+
+    # 核实：db 命中 + 虚构地点同城替换，且全部带真实坐标（地图标点靠它）
+    db = _mem_db()
+    try:
+        _seed_db(db)
+        new_itin, logs = map_verify.verify_itinerary_spots(it, "杭州", db, amap_enabled=False)
+        actions = {l["spot"]: l["action"] for l in logs}
+        assert actions["西湖"] == "db"
+        assert actions["不存在的景点XYZ"] == "replaced"
+        all_spots = [s for day in new_itin["days"] for s in day["spots"]]
+        assert len(all_spots) == 3, "第2天灵隐寺也应在列"
+        assert all(s.get("lng") and s.get("lat") for s in all_spots), "全部地点必须带坐标"
+    finally:
+        db.close()
+
+
 def test_verify_db_hit_and_substitute():
     """本地命中走 db；查无此地替换为同城景点；日志齐全。"""
-    from app.db.database import SessionLocal, init_db
-
-    init_db()
-    db = SessionLocal()
+    db = _mem_db()
     try:
-        db.query(Spot).filter(Spot.city == "杭州").delete()
         _seed_db(db)
         itinerary = {
             "days": [
@@ -60,13 +135,8 @@ def test_verify_db_hit_and_substitute():
 
 def test_verify_unverified_when_no_substitute():
     """库空且关高德 → 保留原名并标记 unverified（不崩）。"""
-    from app.db.database import SessionLocal, init_db
-
-    init_db()
-    db = SessionLocal()
+    db = _mem_db()
     try:
-        db.query(Spot).filter(Spot.city == "杭州").delete()
-        db.commit()
         new_itin, logs = map_verify.verify_itinerary_spots(
             {"days": [{"day": 1, "spots": [{"name": "神秘景点"}]}]},
             "杭州", db, amap_enabled=False,
@@ -174,6 +244,10 @@ def test_plan_stream_saves_history_when_logged_in(client):
                 saved = data
     assert saved is not None, "登录用户完整规划应返回 plan_id"
     assert saved["itinerary"]["days"], "行程应有天数结构"
+    for day in saved["itinerary"]["days"]:
+        assert day.get("spots"), (
+            f"第 {day.get('day')} 天 spots 不应为空——items/poi 必须转成 spots/name 再核实"
+        )
     assert any("核实" in l for l in
                [e for e in resp.text.split('{"node"') ]), "过程日志应含地图核实节点"
 

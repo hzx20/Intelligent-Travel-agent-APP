@@ -58,6 +58,8 @@ def _amap_search(client: httpx.Client, name: str, city: str) -> dict | None:
 
 def _db_lookup(db, name: str, city: str) -> dict | None:
     """本地库精确/前缀匹配（已核实的真实 POI）。"""
+    if not name:  # 空名防御：like "%%" 会命中全城，属于乱匹配
+        return None
     spot = (
         db.query(Spot)
         .filter(Spot.city == city, Spot.name.like(f"%{name}%"))

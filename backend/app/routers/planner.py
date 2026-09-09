@@ -103,11 +103,15 @@ async def plan_stream(
         }
         final: dict = {}
         try:
-            # graph.stream 逐节点产出更新；每个节点开始/结束推一条过程日志
+            # graph.stream 逐节点产出更新；每个节点只把【新增】的过程日志推给前端
+            # （节点 updates 里的 logs 是从头累计的全量，直接全发会每节点重复一遍）
+            emitted = 0
             async for chunk in graph.astream(state):
                 for node_name, updates in chunk.items():
-                    for log in updates.get("logs") or []:
+                    new_logs = (updates.get("logs") or [])[emitted:]
+                    for log in new_logs:
                         yield _sse("log", {"node": node_name, "message": log})
+                    emitted += len(new_logs)
                     final.update(updates)
                     # 澄清未完成：把追问文本打字机式推给前端
                     if node_name == "clarify" and not updates.get("done"):

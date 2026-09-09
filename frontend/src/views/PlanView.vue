@@ -185,7 +185,7 @@ onMounted(loadHistory)
                   {{ s.name }}
                   <span v-if="s.replacedNote" class="v-badge replace">已替换</span>
                 </b>
-                <small>{{ s.address || s.district || '' }}</small>
+                <small>{{ s.time ? s.time + ' · ' : '' }}{{ s.address || s.district || '' }}</small>
               </div>
               <a v-if="markerLink(s)" class="mini-map" :href="markerLink(s)" target="_blank" rel="noopener">📍 高德</a>
             </div>
