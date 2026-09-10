@@ -21,6 +21,21 @@ STATIC_URL = "https://restapi.amap.com/v3/staticmap"
 LABELS = "ABCDEFGHIJKLMNOPQRST"  # 静态地图标记只支持单字符编号
 MAX_POINTS = 20
 
+
+@router.get("/config")
+def map_config():
+    """给前端下发 JS 地图钥匙（v1.1 动态地图）。
+
+    说明：JS key 与安全密钥本来就会出现在浏览器加载的地图脚本请求里，
+    属于"公开钥匙"，下发不算泄密；真正的服务端 key（POI/天气/静态图）依然只留在后端。
+    未配置时返回空串，前端据此显示"地图未配置"的引导，而不是白屏。
+    """
+    return {
+        "js_key": settings.amap_js_key,
+        "security_code": settings.amap_js_security_code,
+        "enabled": bool(settings.amap_js_key),
+    }
+
 # 简单内存缓存：同样参数只下载一次（图片小、变化少，进程重启即失效）
 _cache: dict[str, bytes] = {}
 CACHE_MAX = 80

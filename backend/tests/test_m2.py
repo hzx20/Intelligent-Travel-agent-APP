@@ -44,3 +44,9 @@ def test_generate_itinerary(name, req):
         assert d.get("spots"), f"Day{i + 1} 应有 spots（items/poi 自动转换）"
         assert all(s.get("name") for s in d["spots"]), f"Day{i + 1} spots 每项应有 name"
     assert it.get("budget_summary") and "总计" in it["budget_summary"], "应有预算汇总"
+    # v1.1 解说契约：推荐理由 / 方案对比 / 决策依据（界面上"为什么这么排"全靠这三项）
+    assert any((d.get("reason") or "").strip() for d in it["days"]), "至少一天要有推荐理由"
+    alts = it.get("alternatives") or []
+    assert len(alts) >= 1 and all((a.get("option") or "").strip() for a in alts), "应给出方案对比"
+    assert any(a.get("chosen") for a in alts), "方案对比要标明最终选了哪个"
+    assert len(it.get("decision_basis") or []) >= 1, "应给出决策依据"

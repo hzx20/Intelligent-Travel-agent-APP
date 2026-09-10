@@ -26,6 +26,13 @@ class StreamIn(BaseModel):
     user_input: str = Field(min_length=1, max_length=500)
     prev_collected: dict = Field(default_factory=dict)
     session_id: str = Field(default="", max_length=50)
+    messages: list[dict] = Field(default_factory=list)  # v1.1 对话快照 [{role,text,logs}]
+
+
+class SnapshotIn(BaseModel):
+    """v1.1 历史快照更新：聊天内容与地图视角（中心/缩放）。"""
+    messages: list[dict] | None = None
+    map_state: dict | None = None
 
 
 def _sse(event: str, data: dict) -> str:
@@ -51,11 +58,15 @@ def plan_history(
     for p in rows:
         intent = json.loads(p.intent_json or "{}")
         result = json.loads(p.result_json or "{}")
+        spots = sum(len(d.get("spots") or []) for d in result.get("days") or [])
         items.append({
             "id": p.id,
             "session_id": p.session_id,
             "city": intent.get("destination") or intent.get("city") or "未知城市",
             "days": len(result.get("days") or []),
+            "title": p.title or result.get("title") or "",
+            "summary": p.summary or result.get("summary") or "",
+            "spots": spots,
             "created_at": p.created_at.strftime("%Y-%m-%d %H:%M"),
         })
     return {"items": items}
@@ -81,8 +92,49 @@ def plan_detail(
         "intent": json.loads(p.intent_json or "{}"),
         "verify_logs": json.loads(p.process_json or "[]"),
         "itinerary": json.loads(p.result_json or "{}"),
+        "chat": json.loads(p.chat_json or "[]"),
+        "map_state": json.loads(p.map_json or "{}"),
         "created_at": p.created_at.strftime("%Y-%m-%d %H:%M"),
     }
+
+
+def _ensure_own_plan(plan_id: int, db: Session, user) -> AiPlan:
+    """取本人规划记录，不存在/不是自己的统一 404（不暴露他人记录存在性）。"""
+    from fastapi import HTTPException
+
+    p = db.get(AiPlan, plan_id)
+    if p is None or p.user_id != user.id:
+        raise HTTPException(404, "记录不存在")
+    return p
+
+
+@router.patch("/{plan_id}/snapshot")
+def update_snapshot(
+    plan_id: int,
+    body: SnapshotIn,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user_optional),
+):
+    """v1.1：更新某条规划的对话/地图快照（仅本人）。
+
+    前端在生成完成与地图拖动/缩放停稳后调用，把"当时的样子"持续写回，
+    历史列表点击时即可原样还原。
+    """
+    from fastapi import HTTPException
+
+    if user is None:
+        raise HTTPException(401, "登录后可保存快照")
+    p = _ensure_own_plan(plan_id, db, user)
+    if body.messages is not None:
+        p.chat_json = json.dumps(body.messages[-60:], ensure_ascii=False)  # 防膨胀，留最近60条
+    if body.map_state is not None:
+        state = {
+            "center": body.map_state.get("center") or [],
+            "zoom": body.map_state.get("zoom"),
+        }
+        p.map_json = json.dumps(state, ensure_ascii=False)
+    db.commit()
+    return {"ok": True}
 
 
 @router.post("/stream")
@@ -122,15 +174,19 @@ async def plan_stream(
                             await asyncio.sleep(0.03)
             done = bool(final.get("done"))
             plan_id = None
-            # 登录用户：需求收集完整且生成了行程 → 落库 ai_plans
+            # 登录用户：需求收集完整且生成了行程 → 落库 ai_plans（含对话快照）
             if user is not None and done and final.get("itinerary"):
+                it = final.get("itinerary") or {}
                 record = AiPlan(
                     user_id=user.id,
                     session_id=body.session_id or "",
                     status="completed",
                     intent_json=json.dumps(final.get("collected") or {}, ensure_ascii=False),
                     process_json=json.dumps(final.get("verify_logs") or [], ensure_ascii=False),
-                    result_json=json.dumps(final.get("itinerary") or {}, ensure_ascii=False),
+                    result_json=json.dumps(it, ensure_ascii=False),
+                    title=str(it.get("title") or "")[:100],
+                    summary=str(it.get("summary") or "")[:300],
+                    chat_json=json.dumps(body.messages or [], ensure_ascii=False),
                 )
                 db.add(record)
                 db.commit()

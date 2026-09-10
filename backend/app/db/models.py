@@ -149,6 +149,11 @@ class AiPlan(Base):
     intent_json: Mapped[str] = mapped_column(Text, default="{}")  # 澄清后的需求（城市/天数/偏好等）
     process_json: Mapped[str] = mapped_column(Text, default="[]")  # 规划过程（LangGraph 节点轨迹）
     result_json: Mapped[str] = mapped_column(Text, default="{}")  # 最终行程
+    # v1.1 快照：历史记录要能"完整回到当时"——聊天内容 + 地图视角一起存
+    title: Mapped[str] = mapped_column(String(100), default="")    # 行程标题（历史列表展示用）
+    summary: Mapped[str] = mapped_column(String(300), default="")  # 一句话摘要（历史列表展示用）
+    chat_json: Mapped[str] = mapped_column(Text, default="[]")     # 对话快照 [{role,text,logs}]
+    map_json: Mapped[str] = mapped_column(Text, default="{}")      # 地图状态 {center,zoom}
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
 
     user: Mapped["User"] = relationship(back_populates="ai_plans")

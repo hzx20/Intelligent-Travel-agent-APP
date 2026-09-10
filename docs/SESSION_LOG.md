@@ -252,3 +252,33 @@
 【教训】
 - 跨模块数据契约必须有"接缝处"测试：喂真实上游形状，而不是自己造输入喂自己
 - 测试禁止对真实开发库做破坏性写操作（哪怕"只是测试数据"）
+
+## 2026-09-10 · v1.1 地图活了：动态地图 + 有理有据的助手 + 历史快照
+
+【用户验收要求（原话四条）】
+1. 左侧聊天 + 主区域改可交互动态地图（缩放/拖动/打点/路线，随对话实时更新），不要静态图
+2. 助手回复要有推荐理由、方案对比、决策依据
+3. 历史对话与地图状态一起存快照
+4. 历史列表有信息（时间/标题/摘要），点击完整还原聊天 + 地图状态
+
+【底图决策】用户拍板：高德官方「Web端(JS API)」key（与现有 Web 服务 key 不通用，用户去申请中）。
+代码已按此实现；key 未配置时优雅降级（黄色提示条 + 行程列表照常），key 到位即亮。
+
+【实现】
+- 前端 utils/amap.js：按需加载官方脚本；securityJsCode 先挂 window 再加载（官方要求）；
+  key 由后端 GET /api/map/config 下发（JS key 本属公开钥匙，服务端 key 仍只留后端）
+- PlanView 全面重写：左 400px 聊天（含历史快照列表/返回对话）+ 右动态地图
+  （编号标记按天配色、Polyline 路线 showDir、InfoWindow 带导航链接、点击地图打参考点、
+  分日筛选 chips、清除打点、天气 chip、底部行程卡 + 核实报告、MISSING_KEY 降级引导）
+- 助手解说：M2 提示词新增 reason / alternatives / decision_basis 字段（一次调用顺便拿到，
+  不加钱不加时），前端 composeReply 拼完整解说打字机输出
+- 快照：ai_plans 加 title/summary/chat_json/map_json（老库自动补列）；
+  PATCH /api/plan/{id}/snapshot 本人限定，聊天截最近 60 条防膨胀；
+  触发时机 = 生成完成（聊天+地图）/ 地图拖动缩放停稳（防抖 1s 只存地图）
+- 历史还原：详情返回 chat + map_state；有视角则 setZoomAndCenter 原样还原，无则 setFitView；
+  升级前的旧记录（无快照）用行程内容补一份对话，不白屏
+- 版本 0.12.0；新测试 test_v11_snapshot.py 3 条
+
+【坑位备忘】
+- AMap 覆盖物 DOM 拿不到 Vue scoped 属性 → 标记/信息窗样式必须放非 scoped 的 <style> 块
+- attachClick 打点与行程标记共存：行程 overlays 与用户 pinMarkers 分开管理，切换方案各自清理

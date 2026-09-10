@@ -15,6 +15,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 class Settings(BaseSettings):
     zhipu_api_key: str = ""
     amap_api_key: str = ""
+    # 动态地图（Web端 JS API）专用钥匙：与上面的 Web 服务 key 不通用，v1.1 新增
+    amap_js_key: str = ""
+    amap_js_security_code: str = ""
     # 模型名保持 glm-4-flash，与 Node 版一致
     glm_model: str = "glm-4-flash"
 
