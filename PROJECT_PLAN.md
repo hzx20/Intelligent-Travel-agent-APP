@@ -1,6 +1,6 @@
 # 智能旅行规划 Agent — 项目总体规划
 
-> 版本：v2.16（规划文档自身版本；产品里程碑版本见第 8 节）
+> 版本：v2.17（规划文档自身版本；产品里程碑版本见第 8 节）
 > 创建日期：2026-09-06
 > 维护规则：本文档为项目"宪法"，只做追加和版本化修订，不做静默修改
 > 配套文档：PRD（待定稿）、docs/SESSION_LOG.md（会话记忆锚点，待建）
@@ -285,3 +285,4 @@ AI 助手的一次对话窗口有容量上限（类比：一张桌子的大小�
 | 2026-09-09 | v2.14 | **v1.0.1 热修（用户浏览器验收抓到）**：①AI 行程每天空白——M2 生成 `days[].items[]`（地点在 poi）与 M3 核实/前端/历史所读 `days[].spots[]`（地点在 name）契约断裂，核实循环 0 次产出"0 个地点过检"；新增 `_to_spot_days()` 统一形状（空 poi 丢弃、原字段保留）；②SSE 过程日志每节点整段重发改为只推新增；③测试治理——核实用例由真实库改内存库（原先会删光杭州景点不还原），`fetch_pois.py --city 杭州` 回补 100 条至 530；新增 items→spots 全链回归测试，test_m2 / SSE 落库用例补逐天 spots 断言；测试 44/44 通过 |
 | 2026-09-10 | v2.15 | **v1.1 动态地图 + 快照系统**（用户提出四条验收要求）：①规划页主区域换高德 JS 官方地图（utils/amap.js 加载器，key 由 /api/map/config 下发，未配置优雅降级），编号标记+分日彩色路线+InfoWindow+点击打点，随对话实时绘制；②M2 提示词新增 reason/alternatives/decision_basis 字段，前端 composeReply 拼出含推荐理由、方案对比、决策依据的完整解说（打字机输出）；③ai_plans 加 title/summary/chat_json/map_json 四列（_add_missing_columns 迁移），新增 PATCH /api/plan/{id}/snapshot（本人限定的聊天+地图视角持续写回，聊天截最近60条），历史列表带标题/摘要/地点数；④新测试 test_v11_snapshot.py 3 条（归属权 401/404、存还原、列表字段）；前端 vite build 通过 |
 | 2026-09-10 | v2.16 | **历史方案删除（用户提出）**：①服务端 `DELETE /api/plan/{id}` 软删除（status=deleted，列表/详情/快照写回全部 404）+ `POST /api/plan/{id}/restore` 撤销，均本人限定（他人 404、游客 401）——用软删而非物理删就是为了能撤销；②前端删除入口为悬停/常驻（触屏）🗑 图标，`@click.stop` 不触发进入会话；③二次确认就地展开（非系统弹窗）；④删除后自动刷新列表，若删的是当前查看项则清空编辑区并自动选中相邻记录，无剩余则空状态；⑤深色轻量 toast + 8 秒撤销倒计时（恢复后自动重新打开该方案）；测试 test_v11_delete.py 4 条；后端 0.12.1 |
+| 2026-09-10 | v2.17 | **出行难度 + 交通可达性纳入核心评估维度（用户提出）**：①M2 提示词新增 per-day `difficulty{level,basis[]}`、`transit{modes[],combo,stations[],parking}`、`timing{walk_min,ride_min,wait_min,transfers,peak_buffer_min,total_min}` 与 per-item `access{mode,min,note}`、行程级 `traffic{total_min,cost,difficulty_overall,peak_note}`；②`_ensure_traffic()` 兜底归一化（漏字段按步行量/换乘推算难度、耗时封顶、合计自洽、清洗"就近站点："这类提示词残留前缀），老行程数据同样可展示；③历史列表带 `difficulty/travel_min/traffic_cost`，支持跨目的地横向比较；④界面：难度徽章+依据标签、交通方式 chips+推荐组合+站点/停车、在途耗时条（步行/车程/候车/换乘/高峰波动）、景点接驳角标；⑤顺带修隐藏 bug：模型偶发在 items 里塞嵌套数组会导致整次规划崩溃（`_to_spot_days`/`_ensure_traffic` 均已过滤非字典元素）；测试 test_v11_traffic.py 6 条 + test_m2 补交通契约断言；后端 0.13.0 |

@@ -50,3 +50,17 @@ def test_generate_itinerary(name, req):
     assert len(alts) >= 1 and all((a.get("option") or "").strip() for a in alts), "应给出方案对比"
     assert any(a.get("chosen") for a in alts), "方案对比要标明最终选了哪个"
     assert len(it.get("decision_basis") or []) >= 1, "应给出决策依据"
+    # v1.1 出行难度 / 交通可达性 / 在途耗时（兜底后必须齐全且自洽）
+    from app.services.itinerary import DIFFICULTY_LEVELS
+
+    for i, d in enumerate(it["days"]):
+        assert d["difficulty"]["level"] in DIFFICULTY_LEVELS, f"Day{i + 1} 难度等级非法"
+        assert d["difficulty"]["basis"], f"Day{i + 1} 要有难度依据"
+        assert (d["transit"]["modes"] or []) and d["transit"]["combo"], f"Day{i + 1} 要有交通方式与组合"
+        t = d["timing"]
+        assert t["total_min"] == t["walk_min"] + t["ride_min"] + t["wait_min"], "耗时合计应自洽"
+        assert 0 < t["total_min"] <= 570, f"Day{i + 1} 在途耗时应落在合理区间（实为 {t['total_min']}）"
+        assert t["peak_buffer_min"] > 0, "要给高峰波动"
+    tf = it["traffic"]
+    assert tf["difficulty_overall"] in DIFFICULTY_LEVELS
+    assert tf["total_min"] == sum(d["timing"]["total_min"] for d in it["days"]), "全程耗时 = 各天之和"

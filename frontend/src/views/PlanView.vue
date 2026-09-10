@@ -42,6 +42,17 @@ const spotTotal = computed(() => days.value.reduce((n, d) => n + (d.spots || [])
 function colorOf(day) {
   return DAY_COLORS[(day - 1) % DAY_COLORS.length]
 }
+/** 难度配色：轻松绿 / 适中黄 / 较费体力红 */
+const DIFF_COLORS = { 轻松: '#1a6e50', 适中: '#b7950b', 较费体力: '#c0392b' }
+function diffColor(level) {
+  return DIFF_COLORS[level] || '#7a8a80'
+}
+/** 分钟 → "1小时20分" */
+function fmtMin(m) {
+  const n = Number(m) || 0
+  if (!n) return '0 分'
+  return n >= 60 ? `${Math.floor(n / 60)} 小时 ${n % 60} 分` : `${n} 分`
+}
 function scrollBottom() {
   nextTick(() => { if (chatBox.value) chatBox.value.scrollTop = chatBox.value.scrollHeight })
 }
@@ -73,6 +84,22 @@ function composeReply(it) {
     lines.push('🧭 决策依据：')
     basis.forEach((b) => lines.push(`· ${b}`))
   }
+  // 出行难度与交通可达性（v1.1 核心评估维度，方便横向比较不同目的地）
+  const tf = it.traffic || {}
+  if (tf.total_min || tf.cost) {
+    lines.push('')
+    lines.push(`🚦 全程在途约 ${fmtMin(tf.total_min)}，交通费约 ${tf.cost || 0} 元，整体难度「${tf.difficulty_overall || '—'}」`)
+    if (tf.peak_note) lines.push(`　 高峰波动：${tf.peak_note}`)
+  }
+  ds.forEach((d) => {
+    const t = d.timing || {}
+    if (!t.total_min && !(d.transit || {}).combo) return
+    lines.push(
+      `· 第${d.day}天 ${d.theme || ''}：难度 ${(d.difficulty || {}).level || '—'}，` +
+      `在途约 ${fmtMin(t.total_min)}（步行 ${t.walk_min || 0}／车程 ${t.ride_min || 0}／候车 ${t.wait_min || 0} 分，换乘 ${t.transfers || 0} 次）`
+    )
+    if ((d.transit || {}).combo) lines.push(`　 交通：${d.transit.combo}`)
+  })
   const asm = it.assumptions || []
   if (asm.length) {
     lines.push('')
@@ -421,7 +448,14 @@ onMounted(() => { loadHistory(); initMap() })
                       @click.stop="pendingDelete = h.id">🗑</button>
             </div>
             <div class="hist-summary">{{ h.summary || '（无摘要）' }}</div>
-            <div class="hist-time">{{ h.created_at }}</div>
+            <div class="hist-time">
+              {{ h.created_at }}
+              <span v-if="h.difficulty" class="hist-diff" :style="{ background: diffColor(h.difficulty) }">
+                {{ h.difficulty }}
+              </span>
+              <span v-if="h.travel_min" class="hist-travel">⏱ 在途 {{ fmtMin(h.travel_min) }}</span>
+              <span v-if="h.traffic_cost" class="hist-travel">🎫 交通 {{ h.traffic_cost }} 元</span>
+            </div>
             <!-- 二次确认：就地展开，不用系统弹窗挡住视线 -->
             <div v-if="pendingDelete === h.id" class="hist-confirm" @click.stop>
               确定删除「{{ h.title || '这条方案' }}」？删除后 8 秒内可撤销。
@@ -510,6 +544,26 @@ onMounted(() => { loadHistory(); initMap() })
                 <span class="dot big" :style="{ background: colorOf(d.day) }"></span>
                 第{{ d.day }}天 · {{ d.theme || '' }}
                 <span class="day-count">{{ (d.spots || []).length }} 个点</span>
+                <span class="diff-badge" :style="{ background: diffColor(d.difficulty?.level) }">
+                  {{ d.difficulty?.level || '难度待评估' }}
+                </span>
+              </div>
+              <div v-if="d.difficulty?.basis?.length" class="diff-basis">
+                <span class="basis-tag" v-for="(b, bi) in d.difficulty.basis" :key="bi">{{ b }}</span>
+              </div>
+              <div class="transit-row" v-if="d.transit">
+                <span class="mode-chip" v-for="(m, mi) in (d.transit.modes || [])" :key="mi">{{ m }}</span>
+                <span class="combo">{{ d.transit.combo }}</span>
+                <div v-if="(d.transit.stations || []).length" class="sub">🚉 {{ d.transit.stations.join(' · ') }}</div>
+                <div v-if="d.transit.parking" class="sub">🅿️ {{ d.transit.parking }}</div>
+              </div>
+              <div class="timing-row" v-if="d.timing">
+                ⏱ 在途 {{ fmtMin(d.timing.total_min) }}
+                <span>步行 {{ d.timing.walk_min }}′</span>
+                <span>车程 {{ d.timing.ride_min }}′</span>
+                <span>候车 {{ d.timing.wait_min }}′</span>
+                <span>换乘 {{ d.timing.transfers }} 次</span>
+                <span class="peak">高峰 +{{ d.timing.peak_buffer_min }}′</span>
               </div>
               <div v-if="d.reason" class="day-reason">💡 {{ d.reason }}</div>
               <div v-for="(s, i) in d.spots" :key="i" class="spot-row">
@@ -518,6 +572,9 @@ onMounted(() => { loadHistory(); initMap() })
                   <b>{{ s.name }}<span v-if="s.replacedNote" class="v-badge">已替换</span></b>
                   <small>{{ s.time ? s.time + ' · ' : '' }}{{ s.address || s.district || '' }}</small>
                 </div>
+                <span v-if="s.access?.mode" class="access-chip" :title="s.access.note || ''">
+                  {{ s.access.mode }}<template v-if="s.access.min"> {{ s.access.min }}′</template>
+                </span>
                 <a v-if="s.lng && s.lat" class="mini-map" target="_blank" rel="noopener"
                    :href="`https://uri.amap.com/marker?position=${s.lng},${s.lat}&name=${encodeURIComponent(s.name)}&src=travel-planner&coordinate=gaode`">📍 高德</a>
               </div>
@@ -563,7 +620,9 @@ onMounted(() => { loadHistory(); initMap() })
 .hist-title { font-size: 13px; font-weight: 700; }
 .hist-meta { font-weight: 400; font-size: 11.5px; color: var(--text-sub); margin-left: 6px; }
 .hist-summary { font-size: 12px; color: #555; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hist-time { font-size: 11px; color: #999; margin-top: 2px; }
+.hist-time { font-size: 11px; color: #999; margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.hist-diff { color: #fff; border-radius: 6px; padding: 1px 6px; font-size: 10.5px; }
+.hist-travel { color: #6a7d6a; }
 .back-live { padding: 7px 16px; font-size: 12px; background: var(--green-soft); color: var(--green); border-bottom: 1px solid var(--line); }
 .back-live .lk { cursor: pointer; font-weight: 700; margin-left: 8px; }
 .chat-box { flex: 1; overflow-y: auto; padding: 14px 16px; min-height: 0; }
@@ -610,6 +669,17 @@ onMounted(() => { loadHistory(); initMap() })
 .day-title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 7px; }
 .day-count { font-weight: 400; font-size: 11.5px; color: var(--text-sub); }
 .day-reason { font-size: 12px; color: #55605a; background: var(--green-soft); border-radius: 8px; padding: 6px 10px; margin: 6px 0 2px; line-height: 1.6; }
+/* 出行难度 / 交通可达性 / 在途耗时 */
+.diff-badge { margin-left: auto; color: #fff; border-radius: 999px; padding: 1px 10px; font-size: 11px; font-weight: 600; }
+.diff-basis { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0 2px; }
+.basis-tag { background: #f2f5f2; border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; font-size: 11px; color: #5c6a60; }
+.transit-row { margin: 6px 0 2px; font-size: 11.5px; color: #4d5a52; }
+.mode-chip { display: inline-block; background: var(--green-soft); border: 1px solid var(--green-border, #cfe0d3); color: var(--green); border-radius: 6px; padding: 1px 8px; font-size: 11px; margin-right: 5px; }
+.transit-row .combo { color: #55605a; }
+.transit-row .sub { color: #7a8a80; margin-top: 2px; }
+.timing-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0 4px; font-size: 11.5px; color: #4d5a52; background: #f7f9f7; border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; }
+.timing-row .peak { margin-left: auto; color: #b7950b; }
+.access-chip { font-size: 10.5px; color: #6a7d6a; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; white-space: nowrap; }
 .spot-row { display: flex; gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--line); }
 .spot-row:last-child { border: none; }
 .spot-idx { width: 20px; height: 20px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }

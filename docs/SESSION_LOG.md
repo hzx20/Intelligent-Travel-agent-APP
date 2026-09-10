@@ -301,3 +301,25 @@
 
 【测试】test_v11_delete.py 4 条：归属权（401/404 且不误删他人数据）、删后列表详情快照全 404、
 撤销后内容与聊天快照完好、撤销同样要权限
+
+## 2026-09-10 · 出行难度 + 交通可达性纳入核心评估维度（后端 0.13.0）
+
+【需求】四条：①每条线路标难度等级并说明依据（步行距离/爬升台阶/路况/换乘次数/是否需预约）
+②明确可用交通方式与推荐组合 + 就近站点或停车条件 ③给在途耗时（步行接驳/候车/换乘）与高峰波动
+④结构化字段与行程一同展示，让用户能直接比较不同目的地的交通成本与时间成本
+
+【实现】
+- M2 提示词新增：per-day `difficulty{level,basis}`、`transit{modes,combo,stations,parking}`、
+  `timing{walk_min,ride_min,wait_min,transfers,peak_buffer_min,total_min}`；
+  per-item `access{mode,min,note}`；行程级 `traffic{total_min,cost,difficulty_overall,peak_note}`
+- `_ensure_traffic()` 兜底归一化：漏字段按步行量/换乘推算难度、耗时按常识封顶（步行/车程≤240、
+  候车≤90、换乘≤8、高峰≤60）、合计恒等于三项之和、清洗"就近站点："这类照抄提示词的前缀
+- 历史列表加 difficulty/travel_min/traffic_cost（跨目的地横向比较靠它）
+- 界面：难度徽章（轻松绿/适中黄/较费体力红）+ 依据标签、交通方式 chips + 组合 + 站点/停车、
+  在途耗时条（步行/车程/候车/换乘/高峰）、景点接驳角标；助手文字回复也带全程在途与交通费
+
+【关键教训（实测）】
+- 第一版提示词没给换算口径，模型吐出"步行300分钟/候车120分钟/一天在途8小时"这种离谱数字——
+  结构化字段必须同时给**量纲口径与合理区间**，再加封顶，否则展示出来就是误导
+- 顺带修隐藏 bug：模型偶发在 items 里塞嵌套数组，`item.get()` 直接崩、整次规划 500；
+  `_to_spot_days` 与 `_ensure_traffic` 现在都只吃字典元素（test_malformed_items_do_not_crash 永久守住）

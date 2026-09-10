@@ -59,6 +59,7 @@ def plan_history(
         intent = json.loads(p.intent_json or "{}")
         result = json.loads(p.result_json or "{}")
         spots = sum(len(d.get("spots") or []) for d in result.get("days") or [])
+        traffic = result.get("traffic") or {}
         items.append({
             "id": p.id,
             "session_id": p.session_id,
@@ -67,6 +68,10 @@ def plan_history(
             "title": p.title or result.get("title") or "",
             "summary": p.summary or result.get("summary") or "",
             "spots": spots,
+            # v1.1 出行难度/交通可达性：历史列表直接可见，方便横向比较不同目的地
+            "difficulty": traffic.get("difficulty_overall") or "",
+            "travel_min": int(traffic.get("total_min") or 0),
+            "traffic_cost": int(traffic.get("cost") or 0),
             "created_at": p.created_at.strftime("%Y-%m-%d %H:%M"),
         })
     return {"items": items}
