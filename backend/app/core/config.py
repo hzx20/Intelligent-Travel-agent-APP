@@ -32,3 +32,22 @@ settings = Settings()
 
 if not settings.zhipu_api_key:
     raise RuntimeError("缺少 ZHIPU_API_KEY：请确认项目根目录 .env 文件存在且包含该钥匙")
+
+
+def _bypass_proxy_for_cn_apis():
+    """国内 API（智谱/高德）一律直连，绕过系统代理。
+
+    为什么：环境里常驻 FlClash 代理（给 GitHub 用），但智谱/高德是国内服务，
+    走代理纯屬绕路——代理一抖（FlClash 假死是常态），AI 生成和高德核实就跟着超时。
+    httpx / langchain-openai 都遵守 NO_PROXY 约定，进程内改环境变量即可全局生效。
+    """
+    import os
+
+    domains = "open.bigmodel.cn,restapi.amap.com,webapi.amap.com"
+    current = os.environ.get("NO_PROXY", os.environ.get("no_proxy", ""))
+    merged = f"{current},{domains}" if current else domains
+    os.environ["NO_PROXY"] = merged
+    os.environ["no_proxy"] = merged
+
+
+_bypass_proxy_for_cn_apis()

@@ -47,6 +47,14 @@ const DIFF_COLORS = { 轻松: '#1a6e50', 适中: '#b7950b', 较费体力: '#c039
 function diffColor(level) {
   return DIFF_COLORS[level] || '#7a8a80'
 }
+/** 住宿五维评估维度（与后端权重一致） */
+const STAY_DIMS = [
+  { key: 'value', label: '性价比' },
+  { key: 'transit', label: '交通' },
+  { key: 'dining', label: '餐饮配套' },
+  { key: 'safety', label: '安全' },
+  { key: 'comfort', label: '舒适' },
+]
 /** 分钟 → "1小时20分" */
 function fmtMin(m) {
   const n = Number(m) || 0
@@ -100,6 +108,16 @@ function composeReply(it) {
     )
     if ((d.transit || {}).combo) lines.push(`　 交通：${d.transit.combo}`)
   })
+  // 住宿推荐（v1.1）：优先推荐 + 各档对比
+  const stays = it.stays || []
+  if (stays.length) {
+    const pick = it.stay_pick || {}
+    lines.push('')
+    lines.push(`🏨 住宿：优先推荐「${pick.name || stays[0].name}」${pick.why ? '——' + pick.why : ''}`)
+    stays.forEach((s) => {
+      lines.push(`· ${s.name}（${s.type || '—'}，${s.price_range}，综合 ${s.score_total} 分）：${s.reason || '—'}｜适合 ${s.fit || '通用'}｜适配 ${s.stage || '全程'}`)
+    })
+  }
   const asm = it.assumptions || []
   if (asm.length) {
     lines.push('')
@@ -455,6 +473,7 @@ onMounted(() => { loadHistory(); initMap() })
               </span>
               <span v-if="h.travel_min" class="hist-travel">⏱ 在途 {{ fmtMin(h.travel_min) }}</span>
               <span v-if="h.traffic_cost" class="hist-travel">🎫 交通 {{ h.traffic_cost }} 元</span>
+              <span v-if="h.stay_range" class="hist-travel">🏨 {{ h.stay_range }}</span>
             </div>
             <!-- 二次确认：就地展开，不用系统弹窗挡住视线 -->
             <div v-if="pendingDelete === h.id" class="hist-confirm" @click.stop>
@@ -579,6 +598,39 @@ onMounted(() => { loadHistory(); initMap() })
                    :href="`https://uri.amap.com/marker?position=${s.lng},${s.lat}&name=${encodeURIComponent(s.name)}&src=travel-planner&coordinate=gaode`">📍 高德</a>
               </div>
             </div>
+            <!-- 住宿推荐：五维评分 + 综合分 + 优先推荐 -->
+            <div v-if="(result.itinerary.stays || []).length" class="stay-block">
+              <div class="stay-head">🏨 住宿推荐（按综合分排序）</div>
+              <div v-for="s in result.itinerary.stays" :key="s.name" class="stay-card" :class="{ pick: s.recommended }">
+                <div class="stay-top">
+                  <b>{{ s.name }}</b>
+                  <span class="stay-type">{{ s.type }}</span>
+                  <span class="stay-price">{{ s.price_range }}</span>
+                  <span v-if="s.recommended" class="stay-pick-badge">★ 优先推荐</span>
+                </div>
+                <div class="stay-scores">
+                  <div class="score-line" v-for="dim in STAY_DIMS" :key="dim.key">
+                    <span class="dim-name">{{ dim.label }}</span>
+                    <span class="bar"><i :style="{ width: (s.scores?.[dim.key] || 0) * 10 + '%' }"></i></span>
+                    <span class="score-num">{{ s.scores?.[dim.key] ?? '—' }}</span>
+                  </div>
+                </div>
+                <div class="stay-dist" v-if="s.distance">
+                  ✈️ 机场 {{ s.distance.airport_min || '—' }} 分
+                  · 🚄 车站 {{ s.distance.station_min || '—' }} 分
+                  · 📍 主要景点 {{ s.distance.spots_min || '—' }} 分
+                </div>
+                <div class="stay-pc" v-if="(s.pros || []).length || (s.cons || []).length">
+                  <span v-for="(p, pi) in s.pros" :key="'p' + pi" class="pro">＋ {{ p }}</span>
+                  <span v-for="(c, ci) in s.cons" :key="'c' + ci" class="con">－ {{ c }}</span>
+                </div>
+                <div class="stay-reason" v-if="s.reason">{{ s.reason }}</div>
+                <div class="stay-meta">👤 适合：{{ s.fit }} · 📅 适配：{{ s.stage }}</div>
+              </div>
+              <div v-if="result.itinerary.stay_pick?.why" class="stay-why">
+                💡 最终建议：{{ result.itinerary.stay_pick.why }}
+              </div>
+            </div>
             <details class="vlog">
               <summary>地图核实报告（{{ (result.verify_logs || []).length }} 条）</summary>
               <div v-for="(l, i) in result.verify_logs" :key="i" class="v-line">
@@ -680,6 +732,28 @@ onMounted(() => { loadHistory(); initMap() })
 .timing-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0 4px; font-size: 11.5px; color: #4d5a52; background: #f7f9f7; border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; }
 .timing-row .peak { margin-left: auto; color: #b7950b; }
 .access-chip { font-size: 10.5px; color: #6a7d6a; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; white-space: nowrap; }
+/* 住宿推荐卡片 */
+.stay-block { margin: 12px 0 6px; }
+.stay-head { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+.stay-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+.stay-card.pick { border-color: var(--green); background: var(--green-soft); }
+.stay-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.stay-top b { font-size: 13px; }
+.stay-type { font-size: 11px; color: var(--text-sub); border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; }
+.stay-price { font-size: 12px; color: var(--green); font-weight: 600; }
+.stay-pick-badge { margin-left: auto; background: var(--green); color: #fff; border-radius: 999px; padding: 1px 10px; font-size: 11px; font-weight: 600; }
+.stay-scores { margin: 8px 0 2px; }
+.score-line { display: grid; grid-template-columns: 62px 1fr 26px; align-items: center; gap: 8px; margin: 3px 0; }
+.dim-name { font-size: 11px; color: #5c6a60; }
+.bar { display: block; background: #e7ece7; height: 6px; border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+.score-num { font-size: 11px; color: #5c6a60; text-align: right; }
+.stay-dist, .stay-meta { font-size: 11.5px; color: #7a8a80; margin-top: 5px; }
+.stay-pc { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+.stay-pc .pro { font-size: 11.5px; color: #1a6e50; background: var(--green-soft); border-radius: 6px; padding: 1px 7px; }
+.stay-pc .con { font-size: 11.5px; color: #a94438; background: #fbeeec; border-radius: 6px; padding: 1px 7px; }
+.stay-reason { font-size: 12px; color: #4d5a52; margin-top: 6px; line-height: 1.6; }
+.stay-why { font-size: 12.5px; font-weight: 600; color: var(--green); background: var(--green-soft); border-radius: 8px; padding: 7px 10px; margin-top: 4px; line-height: 1.6; }
 .spot-row { display: flex; gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--line); }
 .spot-row:last-child { border: none; }
 .spot-idx { width: 20px; height: 20px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }

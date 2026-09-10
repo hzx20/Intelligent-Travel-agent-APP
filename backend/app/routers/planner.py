@@ -68,10 +68,11 @@ def plan_history(
             "title": p.title or result.get("title") or "",
             "summary": p.summary or result.get("summary") or "",
             "spots": spots,
-            # v1.1 出行难度/交通可达性：历史列表直接可见，方便横向比较不同目的地
+            # v1.1 出行难度/交通可达性/住宿：历史列表直接可见，方便横向比较不同目的地
             "difficulty": traffic.get("difficulty_overall") or "",
             "travel_min": int(traffic.get("total_min") or 0),
             "traffic_cost": int(traffic.get("cost") or 0),
+            "stay_range": _stay_range(result),
             "created_at": p.created_at.strftime("%Y-%m-%d %H:%M"),
         })
     return {"items": items}
@@ -98,6 +99,19 @@ def plan_detail(
         "map_state": json.loads(p.map_json or "{}"),
         "created_at": p.created_at.strftime("%Y-%m-%d %H:%M"),
     }
+
+
+def _stay_range(result: dict) -> str:
+    """从行程里取优先推荐住宿的价格区间（历史列表展示用）。"""
+    stays = result.get("stays") or []
+    pick_name = (result.get("stay_pick") or {}).get("name") or ""
+    for s in stays:
+        if isinstance(s, dict) and s.get("name") == pick_name:
+            return str(s.get("price_range") or "")
+    for s in stays:
+        if isinstance(s, dict) and s.get("recommended"):
+            return str(s.get("price_range") or "")
+    return ""
 
 
 def _ensure_own_plan(plan_id: int, db: Session, user) -> AiPlan:

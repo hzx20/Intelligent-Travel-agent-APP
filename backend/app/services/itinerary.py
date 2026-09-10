@@ -50,6 +50,23 @@ SYSTEM_PROMPT = """你是资深旅行行程设计师。根据用户需求生成�
       ]
     }
   ],
+  "stays": [
+    {
+      "name": "住宿名称或商圈+档次（如 春熙路商圈中端酒店）",
+      "area": "所在区域（如 锦江区）",
+      "type": "经济连锁|中端酒店|高端酒店|特色民宿",
+      "price_min": 数字（淡季每晚低价，元）,
+      "price_max": 数字（旺季每晚高价，元）,
+      "scores": {"value": 1-10（性价比）, "transit": 1-10（交通便利）, "dining": 1-10（餐饮生活配套）, "safety": 1-10（安全）, "comfort": 1-10（居住舒适）},
+      "distance": {"airport_min": 数字（到机场分钟）, "station_min": 数字（到主要火车站分钟）, "spots_min": 数字（到当天主要景点分钟）},
+      "pros": ["优点1", "优点2"],
+      "cons": ["不足1"],
+      "reason": "推荐理由（1-2句，要具体：为什么住这里）",
+      "fit": "适合人群（如 情侣/带娃家庭/预算敏感型）",
+      "stage": "适配行程阶段（如 全程 / 第1-2天 / 返程前一晚）"
+    }
+  ],
+  "stay_pick": {"name": "优先推荐的那一个（必须是 stays 里的）", "why": "一句话结论：综合了哪几项、为什么它最合适"},
   "traffic": {
     "total_min": 数字（全程在途总耗时，分钟，含步行/车程/候车换乘）,
     "cost": 数字（全程交通花费，元）,
@@ -79,7 +96,10 @@ SYSTEM_PROMPT = """你是资深旅行行程设计师。根据用户需求生成�
    耗时要把步行接驳、候车、换乘分开算，并给出高峰时段的波动范围；
    数字必须自洽：步行按 5 公里/小时折（5 公里≈60 分钟，不是 300 分钟）；
    候车是"等车"的时间、不是坐车时间；三项加起来通常不超过 240 分钟；
-9. 只输出 JSON。"""
+9. stays 必须给 3 个不同档次（经济/中端/高端或民宿），覆盖不同预算；
+   五项评分 1-10 且要和理由对得上（说"交通最方便"就不能给交通低分）；
+   距离、价格、适合人群、适配阶段都要给具体值，不许空话；
+10. 只输出 JSON。"""
 
 
 def _to_spot_days(it: dict) -> dict:
@@ -211,6 +231,96 @@ def _ensure_traffic(it: dict) -> dict:
     return it
 
 
+# 住宿五维评估（维度键, 中文名, 权重）：性价比与交通各占 1/4，安全 1/5，配套与舒适各 0.15
+STAY_DIMS = (
+    ("value", "性价比", 0.25),
+    ("transit", "交通便利", 0.25),
+    ("dining", "餐饮配套", 0.15),
+    ("safety", "安全性", 0.20),
+    ("comfort", "舒适度", 0.15),
+)
+
+
+def _score10(v, default: int = 7) -> int:
+    """1-10 分，越界夹住（模型偶有给 0 或 100）。"""
+    return max(1, min(10, _as_int(v, default)))
+
+
+def _default_stay(city: str) -> dict:
+    """模型没给住宿时的兜底条目：不编造酒店名，只给选址思路。"""
+    return {
+        "name": f"{city or '目的地'}核心商圈／地铁站周边（待选）",
+        "area": city, "type": "待定",
+        "price_min": 0, "price_max": 0, "price_range": "价格待询",
+        "scores": {k: 7 for k, _l, _w in STAY_DIMS},
+        "distance": {"airport_min": 0, "station_min": 0, "spots_min": 0},
+        "pros": [], "cons": [],
+        "reason": "本次未给出具体住宿，建议优先选核心商圈或地铁站周边，兼顾通勤与吃饭",
+        "fit": "通用", "stage": "全程", "score_total": 7.0,
+    }
+
+
+def _ensure_stays(it: dict) -> dict:
+    """补齐住宿推荐：五维评分、综合分、优先推荐（幂等）。
+
+    综合分由代码按权重算并用于排序；★ 徽章跟随最终建议（stay_pick）——
+    模型了解用户语境，可以选分数第二的更合适档位，但徽章与建议绝不允许自相矛盾。
+    """
+    city = str(it.get("city") or "").strip()
+    stays: list[dict] = []
+    for s in [x for x in (it.get("stays") or []) if isinstance(x, dict)]:
+        name = str(s.get("name") or "").strip()
+        if not name:
+            continue
+        sc = s.get("scores") or {}
+        dist = s.get("distance") or {}
+        lo = _as_int(s.get("price_min"))
+        hi = _as_int(s.get("price_max"), lo)
+        if hi < lo:
+            lo, hi = hi, lo
+        stay = {
+            "name": name,
+            "area": str(s.get("area") or ""),
+            "type": str(s.get("type") or "住宿"),
+            "price_min": lo,
+            "price_max": hi,
+            "price_range": f"{lo}-{hi} 元/晚" if (lo or hi) else "价格待询",
+            "scores": {k: _score10(sc.get(k)) for k, _l, _w in STAY_DIMS},
+            "distance": {k: _as_int(dist.get(k))
+                         for k in ("airport_min", "station_min", "spots_min")},
+            "pros": [str(x) for x in (s.get("pros") or []) if str(x).strip()],
+            "cons": [str(x) for x in (s.get("cons") or []) if str(x).strip()],
+            "reason": str(s.get("reason") or ""),
+            "fit": str(s.get("fit") or "通用"),
+            "stage": str(s.get("stage") or "全程"),
+        }
+        stay["score_total"] = round(
+            sum(stay["scores"][k] * w for k, _l, w in STAY_DIMS), 2
+        )
+        stays.append(stay)
+
+    if not stays:
+        stays = [_default_stay(city)]
+    stays.sort(key=lambda x: x["score_total"], reverse=True)
+
+    pick = it.get("stay_pick") or {}
+    name = str(pick.get("name") or "").strip()
+    if name not in {s["name"] for s in stays}:
+        name = stays[0]["name"]  # 指向不存在的条目时，以综合分最高者为准
+    # ★ 徽章跟随最终建议（模型了解用户语境，可选分数第二的更合适档位），
+    #   但绝不允许"徽章是 A、最终建议是 B"这种自相矛盾的展示
+    for s in stays:
+        s["recommended"] = (s["name"] == name)
+
+    why = str(pick.get("why") or "").strip()
+    it["stays"] = stays
+    it["stay_pick"] = {
+        "name": name,
+        "why": why or f"综合评分最高（{stays[0]['score_total']} 分）：性价比、交通与安全最均衡",
+    }
+    return it
+
+
 async def generate_itinerary(collected):
     """生成行程 JSON。入参与出参结构和 Node 版一致。"""
     messages = [
@@ -220,8 +330,10 @@ async def generate_itinerary(collected):
             "content": f"【用户需求】{json.dumps(collected, ensure_ascii=False)}\n请生成行程 JSON。",
         },
     ]
-    reply = await chat(messages, temperature=0.7, timeout_ms=120000)
+    reply = await chat(messages, temperature=0.7, timeout_ms=240000)
     it = extract_json(reply)
+    # 城市补上（客房兜底文案要用；历史记录里也便于一眼看出是哪座城）
+    it["city"] = str(it.get("city") or collected.get("destination") or collected.get("city") or "")
 
     # 结构校验：天数一致、每日有安排
     try:
@@ -245,16 +357,17 @@ async def generate_itinerary(collected):
                 },
             ],
             temperature=0.4,
-            timeout_ms=120000,
+            timeout_ms=240000,
         )
         fixed = extract_json(fix_reply)
+        fixed["city"] = str(fixed.get("city") or it.get("city") or "")
         fixed_days = fixed.get("days")
         if isinstance(fixed_days, list) and len(fixed_days) == expect_days:
-            return _ensure_traffic(_to_spot_days(fixed))
+            return _ensure_stays(_ensure_traffic(_to_spot_days(fixed)))
         raise RuntimeError(f"行程天数校验失败：应为 {expect_days} 天")
 
     if days is None or any(
         not isinstance(d.get("items"), list) or len(d.get("items")) == 0 for d in days
     ):
         raise RuntimeError("行程结构异常：某天没有安排")
-    return _ensure_traffic(_to_spot_days(it))
+    return _ensure_stays(_ensure_traffic(_to_spot_days(it)))
