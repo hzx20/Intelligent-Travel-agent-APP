@@ -264,6 +264,82 @@ async function loadHistory() {
   try { history.value = (await api.get('/api/plan/history')).items } catch { /* 游客忽略 */ }
 }
 
+// ================= 删除历史方案（含二次确认与撤销） =================
+const UNDO_SECONDS = 8
+const pendingDelete = ref(null)   // 等待二次确认的条目 id
+const toast = ref(null)           // {text, planId, seconds}
+let toastTimer = null
+let undoCountdown = null
+
+function clearToast() {
+  clearTimeout(toastTimer); clearInterval(undoCountdown)
+  toastTimer = null; undoCountdown = null
+  toast.value = null
+}
+
+/** 清空当前编辑区（删除的是正在看的那条时用）。
+ *  keepLive=true 表示删的是历史条目、实时对话还在 → 保住 liveSnapshot，别一起清掉 */
+function clearWorkspace({ keepLive = false } = {}) {
+  result.value = null
+  messages.value = []
+  logs.value = []
+  collected.value = {}
+  currentPlanId = null
+  if (!keepLive) liveSnapshot = null
+  historyView.value = false
+  activeDay.value = 0
+  drawPlan(true)   // 无行程时只清标记与路线
+}
+
+function showUndoToast(title, planId) {
+  clearToast()
+  toast.value = { text: `已删除「${title}」`, planId, seconds: UNDO_SECONDS }
+  undoCountdown = setInterval(() => {
+    if (!toast.value) return
+    toast.value.seconds -= 1
+    if (toast.value.seconds <= 0) clearToast()
+  }, 1000)
+  toastTimer = setTimeout(clearToast, UNDO_SECONDS * 1000 + 200)
+}
+
+async function confirmDelete(h, ev) {
+  ev?.stopPropagation?.()
+  const idx = history.value.findIndex((x) => x.id === h.id)
+  const title = h.title || `${h.city} ${h.days}天`
+  // currentPlanId 精确指向"当前打开的方案"：命中才需要清场（避免删别的条目把当前会话冲掉）
+  const wasViewing = currentPlanId === h.id
+  const isLivePlan = wasViewing && !historyView.value
+  pendingDelete.value = null
+  try {
+    await api.del(`/api/plan/${h.id}`)
+    await loadHistory()
+    if (wasViewing) {
+      // 正在看的就是被删的那条 → 清空编辑区，再自动选中相邻记录
+      clearWorkspace({ keepLive: !isLivePlan })
+      const rest = history.value
+      const next = rest[Math.min(idx, rest.length - 1)]
+      if (next) await loadPlan(next.id)
+    }
+    showUndoToast(title, h.id)
+  } catch (e) {
+    alert(`删除失败：${e.message}`)
+  }
+}
+
+/** 撤销：8 秒窗口内把记录恢复回来并重新打开 */
+async function undoDelete() {
+  if (!toast.value?.planId) return
+  const id = toast.value.planId
+  clearToast()
+  try {
+    await api.post(`/api/plan/${id}/restore`)
+    await loadHistory()
+    await loadPlan(id)
+  } catch (e) {
+    alert(`撤销失败：${e.message}`)
+  }
+}
+
 /** 旧记录（升级前保存、无聊天快照）也能打开：用行程内容补一份对话 */
 function stubChat(p) {
   const it = p.itinerary || {}
@@ -281,7 +357,8 @@ function stubChat(p) {
 async function loadPlan(id) {
   try {
     const p = await api.get(`/api/plan/${id}`)
-    if (!historyView.value) {
+    // 只在第一次离开实时对话时暂存（切历史条目之间、删除后重建都不覆盖，避免把实时对话弄丢）
+    if (!historyView.value && !liveSnapshot) {
       liveSnapshot = { messages: messages.value, result: result.value, logs: logs.value, collected: collected.value }
     }
     historyView.value = true
@@ -335,13 +412,24 @@ onMounted(() => { loadHistory(); initMap() })
         <!-- 历史快照列表：时间/标题/摘要，点击完整还原 -->
         <div v-if="showHistory" class="hist-list">
           <p v-if="!history.length" class="hist-empty">还没有保存过的方案。生成一次行程就会自动存进来。</p>
-          <div v-for="h in history" :key="h.id" class="hist-item" @click="loadPlan(h.id)">
+          <div v-for="h in history" :key="h.id" class="hist-item" @click="pendingDelete === h.id ? null : loadPlan(h.id)">
             <div class="hist-title">
               {{ h.title || `${h.city} ${h.days}天` }}
               <span class="hist-meta">{{ h.city }} · {{ h.days }}天 · {{ h.spots }}个地点</span>
+              <!-- 删除入口：悬停出现，点击不触发进入会话 -->
+              <button v-if="pendingDelete !== h.id" class="hist-del" title="删除这条方案"
+                      @click.stop="pendingDelete = h.id">🗑</button>
             </div>
             <div class="hist-summary">{{ h.summary || '（无摘要）' }}</div>
             <div class="hist-time">{{ h.created_at }}</div>
+            <!-- 二次确认：就地展开，不用系统弹窗挡住视线 -->
+            <div v-if="pendingDelete === h.id" class="hist-confirm" @click.stop>
+              确定删除「{{ h.title || '这条方案' }}」？删除后 8 秒内可撤销。
+              <div class="confirm-btns">
+                <button class="mini" @click="pendingDelete = null">取消</button>
+                <button class="mini danger" @click="confirmDelete(h, $event)">删除</button>
+              </div>
+            </div>
           </div>
         </div>
         <div v-if="historyView" class="back-live">
@@ -407,6 +495,12 @@ onMounted(() => { loadHistory(); initMap() })
           <small>滚轮缩放 · 按住拖动 · 点地图任意处打参考点（点标记可删）</small>
         </div>
 
+        <!-- 删除后的轻量提示（含撤销入口） -->
+        <div v-if="toast" class="toast">
+          <span>{{ toast.text }}</span>
+          <button class="undo" @click="undoDelete">撤销（{{ toast.seconds }}s）</button>
+        </div>
+
         <!-- 行程卡 + 核实报告 -->
         <div v-if="result" class="bottom-panel">
           <div class="panel-scroll">
@@ -455,8 +549,17 @@ onMounted(() => { loadHistory(); initMap() })
 .hist-toggle:hover { border-color: var(--green); color: var(--green); }
 .hist-list { max-height: 260px; overflow-y: auto; border-bottom: 1px solid var(--line); background: #fafbf9; }
 .hist-empty { padding: 14px 16px; font-size: 12.5px; color: var(--text-sub); }
-.hist-item { padding: 10px 16px; border-bottom: 1px dashed var(--line); cursor: pointer; }
+.hist-item { padding: 10px 16px; border-bottom: 1px dashed var(--line); cursor: pointer; position: relative; }
 .hist-item:hover { background: var(--green-soft); }
+.hist-del { position: absolute; right: 12px; top: 8px; border: none; background: transparent; font-size: 13px; cursor: pointer; opacity: 0; transition: opacity .15s; padding: 2px 4px; border-radius: 6px; }
+.hist-item:hover .hist-del { opacity: .7; }
+.hist-del:hover { opacity: 1; background: #fde9e9; }
+/* 触屏没有 hover：删除入口常驻显示 */
+@media (hover: none) { .hist-del { opacity: .6; } }
+.hist-confirm { margin-top: 8px; background: #fff8e6; border: 1px solid #e8d9a0; border-radius: 8px; padding: 8px 10px; font-size: 12px; color: #7a6520; cursor: default; line-height: 1.6; }
+.confirm-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+.mini { border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 3px 12px; font-size: 12px; cursor: pointer; }
+.mini.danger { background: #c0392b; border-color: #c0392b; color: #fff; }
 .hist-title { font-size: 13px; font-weight: 700; }
 .hist-meta { font-weight: 400; font-size: 11.5px; color: var(--text-sub); margin-left: 6px; }
 .hist-summary { font-size: 12px; color: #555; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -495,6 +598,9 @@ onMounted(() => { loadHistory(); initMap() })
 .dot.big { width: 11px; height: 11px; }
 .map-empty-hint { position: absolute; top: 46%; left: 50%; transform: translate(-50%,-50%); text-align: center; color: #6a7d6a; font-size: 14px; line-height: 2; pointer-events: none; background: rgba(255,255,255,.8); padding: 14px 22px; border-radius: 12px; z-index: 4; }
 .map-empty-hint small { font-size: 11.5px; color: #8a9a8a; }
+.toast { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); background: rgba(33,43,38,.94); color: #fff; border-radius: 10px; padding: 8px 14px; font-size: 12.5px; display: flex; align-items: center; gap: 12px; z-index: 30; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.toast .undo { background: transparent; border: 1px solid rgba(255,255,255,.6); color: #fff; border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer; }
+.toast .undo:hover { background: rgba(255,255,255,.16); }
 
 /* 行程卡浮层 */
 .bottom-panel { position: absolute; left: 10px; right: 10px; bottom: 10px; background: rgba(255,255,255,.97); border: 1px solid var(--line); border-radius: 12px; z-index: 5; max-height: 46%; display: flex; }

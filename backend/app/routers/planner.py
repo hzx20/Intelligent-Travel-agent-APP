@@ -78,14 +78,11 @@ def plan_detail(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user_optional),
 ):
-    """单条历史规划详情（仅本人可见）。"""
+    """单条历史规划详情（仅本人可见，已删除的打不开）。"""
     if user is None:
         from fastapi import HTTPException
         raise HTTPException(401, "登录后可查看历史规划")
-    p = db.get(AiPlan, plan_id)
-    if p is None or p.user_id != user.id:
-        from fastapi import HTTPException
-        raise HTTPException(404, "记录不存在")
+    p = _ensure_alive_plan(plan_id, db, user)
     return {
         "id": p.id,
         "status": p.status,
@@ -108,6 +105,55 @@ def _ensure_own_plan(plan_id: int, db: Session, user) -> AiPlan:
     return p
 
 
+def _ensure_alive_plan(plan_id: int, db: Session, user) -> AiPlan:
+    """在 _ensure_own_plan 基础上再挡一道：已软删的记录一律 404。"""
+    from fastapi import HTTPException
+
+    p = _ensure_own_plan(plan_id, db, user)
+    if p.status == "deleted":
+        raise HTTPException(404, "记录不存在")
+    return p
+
+
+@router.delete("/{plan_id}")
+def delete_plan(
+    plan_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user_optional),
+):
+    """v1.1 删除历史方案（仅本人）。
+
+    软删除：标记 status='deleted'，立刻从列表与详情中消失（列表只查 completed）。
+    为什么不是物理删除？——用户可能手抖，软删才能支持"撤销"；
+    恢复窗口由前端控制（8 秒内可撤销），超时后这条记录不会再出现在任何接口里。
+    """
+    from fastapi import HTTPException
+
+    if user is None:
+        raise HTTPException(401, "登录后可删除历史方案")
+    p = _ensure_own_plan(plan_id, db, user)
+    p.status = "deleted"
+    db.commit()
+    return {"ok": True, "id": plan_id}
+
+
+@router.post("/{plan_id}/restore")
+def restore_plan(
+    plan_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user_optional),
+):
+    """撤销删除：把软删记录恢复回 completed（仅本人）。"""
+    from fastapi import HTTPException
+
+    if user is None:
+        raise HTTPException(401, "登录后可恢复历史方案")
+    p = _ensure_own_plan(plan_id, db, user)
+    p.status = "completed"
+    db.commit()
+    return {"ok": True, "id": plan_id}
+
+
 @router.patch("/{plan_id}/snapshot")
 def update_snapshot(
     plan_id: int,
@@ -124,7 +170,7 @@ def update_snapshot(
 
     if user is None:
         raise HTTPException(401, "登录后可保存快照")
-    p = _ensure_own_plan(plan_id, db, user)
+    p = _ensure_alive_plan(plan_id, db, user)  # 已删除的不再接受写回
     if body.messages is not None:
         p.chat_json = json.dumps(body.messages[-60:], ensure_ascii=False)  # 防膨胀，留最近60条
     if body.map_state is not None:
