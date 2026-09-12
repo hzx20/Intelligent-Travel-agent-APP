@@ -289,6 +289,7 @@ async function send() {
             typeOut(composeReply(r.itinerary))
             saveSnapshot()
             loadHistory()
+            fetchHotels()
           }
         },
       },
@@ -300,6 +301,37 @@ async function send() {
   } finally {
     busy.value = false
     scrollBottom()
+  }
+}
+
+// ---- 真实酒店（高德官方数据 + OTA 平台跳转）----
+const hotels = ref({ loading: false, ok: false, items: [], note: '' })
+let hotelsAnchor = ''
+
+/** 按出行人数给"大床 vs 双床"建议；用户没提人数就不生成（产品口径） */
+function partyAdvice(p) {
+  const s = String(p || '').trim()
+  if (!s) return null
+  if (/小孩|儿童|娃|婴儿/.test(s)) return `家庭房，或大床房＋加床（多数酒店可免费加婴儿床，预订前电话确认）`
+  if (/3人|三人|四人|朋友|闺蜜|同事/.test(s)) return `双床房（每人一床最省心）`
+  if (/情侣|夫妻|蜜月/.test(s)) return `大床房（氛围更好；习惯分床就选双床）`
+  return `双床房为主；同行人数若超过 2 人建议双床＋加床`
+}
+
+async function fetchHotels() {
+  if (!result.value) return
+  const anchor = (days.value.flatMap((d) => d.spots || []).find((s) => s.lng && s.lat))
+  if (!anchor) return
+  const key = `${anchor.lng.toFixed(4)},${anchor.lat.toFixed(4)}`
+  if (key === hotelsAnchor && hotels.value.items.length) return  // 同一行程不重复拉
+  hotelsAnchor = key
+  const city = encodeURIComponent(collected.value.destination || collected.value.city || '')
+  hotels.value = { ...hotels.value, loading: true }
+  try {
+    const r = await api.get(`/api/hotels?lng=${anchor.lng}&lat=${anchor.lat}&city=${city}`)
+    hotels.value = { loading: false, ok: r.ok, items: r.items || [], note: r.note || '' }
+  } catch {
+    hotels.value = { loading: false, ok: false, items: [], note: '酒店数据加载失败（不影响行程）' }
   }
 }
 
@@ -420,6 +452,7 @@ async function loadPlan(id) {
     } else {
       drawPlan(true)
     }
+    fetchHotels()
     scrollBottom()
   } catch (e) { alert(e.message) }
 }
@@ -631,6 +664,36 @@ onMounted(() => { loadHistory(); initMap() })
                 💡 最终建议：{{ result.itinerary.stay_pick.why }}
               </div>
             </div>
+            <!-- 真实酒店（高德官方数据 + OTA 平台跳转） -->
+            <div v-if="hotels.loading || hotels.items.length || hotels.note" class="hotel-block">
+              <div class="stay-head">🏨 住在景点附近
+                <span class="src-note">真实数据来源：{{ hotels.items[0]?.source || '高德地图开放平台' }} · 房价房型点平台按钮看实时</span>
+              </div>
+              <div v-if="partyAdvice(collected.party)" class="party-tip">
+                👥 你说「{{ collected.party }}」→ 建议订：{{ partyAdvice(collected.party) }}
+              </div>
+              <p v-if="hotels.loading" class="empty-p">正在搜附近的真实酒店…</p>
+              <p v-else-if="!hotels.items.length" class="empty-p">{{ hotels.note || '暂无酒店数据' }}</p>
+              <div class="hotel-scroll" v-else>
+                <div v-for="h in hotels.items" :key="h.name + h.address" class="hotel-card">
+                  <img v-if="h.photo" class="hotel-img" :src="h.photo" alt="酒店实拍"
+                       @error="$event.target.style.display = 'none'" />
+                  <div v-else class="hotel-img hotel-img-empty">🏨</div>
+                  <div class="hotel-name" :title="h.name">{{ h.name }}</div>
+                  <div class="hotel-sub">{{ h.address }}</div>
+                  <div class="hotel-sub">
+                    <span v-if="h.rating">⭐ {{ h.rating }}</span>
+                    <span v-if="h.cost"> · 人均约 ¥{{ h.cost }}</span>
+                    <span v-if="h.distance_m"> · {{ h.distance_m >= 1000 ? (h.distance_m / 1000).toFixed(1) + ' km' : h.distance_m + ' 米' }}</span>
+                  </div>
+                  <div class="hotel-links">
+                    <a class="lk-chip" :href="h.links.ctrip" target="_blank" rel="noopener">携程查价</a>
+                    <a class="lk-chip dim" :href="h.links.qunar" target="_blank" rel="noopener">去哪儿</a>
+                    <a class="lk-chip dim" :href="h.links.tongcheng" target="_blank" rel="noopener">同程</a>
+                  </div>
+                </div>
+              </div>
+            </div>
             <details class="vlog">
               <summary>地图核实报告（{{ (result.verify_logs || []).length }} 条）</summary>
               <div v-for="(l, i) in result.verify_logs" :key="i" class="v-line">
@@ -754,6 +817,19 @@ onMounted(() => { loadHistory(); initMap() })
 .stay-pc .con { font-size: 11.5px; color: #a94438; background: #fbeeec; border-radius: 6px; padding: 1px 7px; }
 .stay-reason { font-size: 12px; color: #4d5a52; margin-top: 6px; line-height: 1.6; }
 .stay-why { font-size: 12.5px; font-weight: 600; color: var(--green); background: var(--green-soft); border-radius: 8px; padding: 7px 10px; margin-top: 4px; line-height: 1.6; }
+/* 真实酒店卡片（高德数据 + OTA 跳转） */
+.hotel-block { margin: 12px 0 6px; }
+.src-note { font-weight: 400; font-size: 11px; color: var(--text-sub); margin-left: 6px; }
+.party-tip { font-size: 12px; color: #55605a; background: var(--green-soft); border-radius: 8px; padding: 6px 10px; margin: 6px 0; line-height: 1.6; }
+.hotel-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px; }
+.hotel-card { min-width: 218px; max-width: 218px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; flex-shrink: 0; background: #fff; }
+.hotel-img { width: 100%; height: 96px; object-fit: cover; border-radius: 8px; display: block; background: #f0f3f0; }
+.hotel-img-empty { display: flex; align-items: center; justify-content: center; font-size: 30px; }
+.hotel-name { font-size: 12.5px; font-weight: 700; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hotel-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hotel-links { display: flex; gap: 6px; margin-top: 6px; }
+.lk-chip { font-size: 11px; color: #fff; background: var(--green); border-radius: 6px; padding: 2px 8px; text-decoration: none; white-space: nowrap; }
+.lk-chip.dim { background: #fff; color: var(--green); border: 1px solid var(--green); }
 .spot-row { display: flex; gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--line); }
 .spot-row:last-child { border: none; }
 .spot-idx { width: 20px; height: 20px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
