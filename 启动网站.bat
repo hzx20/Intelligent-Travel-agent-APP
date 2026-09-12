@@ -11,13 +11,12 @@ start "TP-Backend(8000)" cmd /k ""C:\Users\i\.workbuddy\binaries\python\envs\def
 
 cd /d "%~dp0frontend"
 
-rem —— 自动定位当前 Node 版本（WorkBuddy 升级会更换版本目录，写死路径会失效）——
-rem 规则：扫描版本目录，取"node.exe 和 npm 都齐全"的最新一个；找不到就报错提示
+rem ---- Auto-detect current Node version (WorkBuddy upgrades may rename the folder) ----
 set "NODE_BASE=C:\Users\i\.workbuddy\binaries\node\versions"
 set "NODE_VER="
 for /f "delims=" %%i in ('dir /b /ad /o-n "%NODE_BASE%"') do if not defined NODE_VER if exist "%NODE_BASE%\%%i\node.exe" if exist "%NODE_BASE%\%%i\node_modules\npm\bin\npm-cli.js" set "NODE_VER=%%i"
 if not defined NODE_VER (
-  echo [错误] 没找到可用的 Node，请告诉 AI 排查。
+  echo [ERROR] No usable Node found. Please ask AI to investigate.
   pause
   exit /b 1
 )
