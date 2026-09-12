@@ -86,12 +86,13 @@ def test_hotels_amap_down_graceful(monkeypatch):
 # ---------- POST /api/hotels/match（住宿推荐 × 高德真实数据 匹配） ----------
 
 def _fake_text_search(monkeypatch):
-    """按关键词返回：锦江宾馆有数据，其余搜不到。"""
+    """按关键词返回：锦江宾馆有数据，其余搜不到；周边搜索（无 keywords）返回空。"""
     calls = []
 
     def _get(url, params=None, timeout=None):
         calls.append(params)
-        if params["keywords"] == "锦江宾馆":
+        kw = (params or {}).get("keywords") or ""
+        if kw == "锦江宾馆":
             return types.SimpleNamespace(status_code=200, json=lambda: {"status": "1", "pois": [
                 {"name": "锦江宾馆", "address": "人民南路二段80号", "location": "104.055,30.650",
                  "photos": [{"url": "https://img.example/jj.jpg"}], "business": {"rating": "4.6"}},

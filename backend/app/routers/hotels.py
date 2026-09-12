@@ -141,43 +141,58 @@ def _haversine_m(lng1: float, lat1: float, lng2: float, lat2: float) -> int:
     return int(2 * r * asin(sqrt(a)))
 
 
+def _amap_text_poi(name: str, city: str) -> dict | None:
+    """按住宿名搜高德 POI，三级策略提高命中率：
+
+    1. 原名 + 住宿类型过滤；2. 去掉城市前缀 + 类型过滤；3. 原名不限类型。
+    （AI 起的名偶有"福州悦华酒店"vs 高德"悦华酒店"这类差异，单次搜索容易脱靶）
+    """
+    attempts = [(name, TYPE_LODGING)]
+    stripped = name.replace(city, "", 1).strip() if city else ""
+    if stripped and stripped != name:
+        attempts.append((stripped, TYPE_LODGING))
+    attempts.append((name, ""))
+    for kw, types in attempts:
+        params = {
+            "key": settings.amap_api_key,
+            "keywords": kw,
+            "region": city or "",
+            "city_limit": "true",
+            "page_size": 1,
+            "show_fields": "photos,business",
+        }
+        if types:
+            params["types"] = types
+        try:
+            resp = httpx.get(TEXT_URL, params=params, timeout=10)
+            data = resp.json()
+        except (httpx.HTTPError, ValueError):
+            continue
+        pois = [p for p in (data.get("pois") or []) if isinstance(p, dict)] if data.get("status") == "1" else []
+        if pois:
+            return pois[0]
+    return None
+
+
 @router.post("/match")
 def match_stay_names(body: MatchIn):
     """把 AI 推荐的住宿名逐个匹配到高德真实 POI（实拍图/评分/真实距离）。
 
-    匹配不到的返回 null（AI 常写"某某商圈中端酒店"这类概念名，属正常），
-    前端对 null 的条目自动降级为无图无评分卡片。
+    匹配不到的返回 null——前端会把这类"概念名"卡片隐藏，并用锚点周边的
+    真实酒店补位（每家都带自己的实拍图，绝不张冠李戴）。
     """
     names = [n.strip() for n in body.names if isinstance(n, str) and n.strip()][:6]
     if not names:
-        return {"ok": True, "matches": {}}
+        return {"ok": True, "matches": {}, "nearby": []}
     anchor = f"{body.lng:.4f},{body.lat:.4f}" if (body.lng is not None and body.lat is not None) else "none"
     key = f"match:{body.city}:{anchor}:{'|'.join(names)}"
     if key in CACHE:
         return CACHE[key]
 
     matches: dict[str, dict | None] = {}
+    matched_names: set[str] = set()
     for name in names:
-        poi = None
-        try:
-            resp = httpx.get(
-                TEXT_URL,
-                params={
-                    "key": settings.amap_api_key,
-                    "keywords": name,
-                    "region": body.city or "",
-                    "city_limit": "true",
-                    "types": TYPE_LODGING,
-                    "page_size": 1,
-                    "show_fields": "photos,business",
-                },
-                timeout=10,
-            )
-            data = resp.json()
-            pois = [p for p in (data.get("pois") or []) if isinstance(p, dict)] if data.get("status") == "1" else []
-            poi = pois[0] if pois else None
-        except (httpx.HTTPError, ValueError):
-            poi = None
+        poi = _amap_text_poi(name, body.city)
         if not poi or not poi.get("name"):
             matches[name] = None
         else:
@@ -186,8 +201,23 @@ def match_stay_names(body: MatchIn):
                 item["distance_m"] = str(_haversine_m(body.lng, body.lat, item["lng"], item["lat"]))
             item["links"] = _platform_links(item["name"], body.city)
             matches[name] = item
+            matched_names.add(item["name"])
         time.sleep(REQUEST_INTERVAL)  # 个人 key QPS=3
 
-    payload = {"ok": True, "matches": matches}
+    # 用锚点周边真实酒店补位（保证板块里的卡片都带自己的实拍图）
+    nearby = []
+    seen = set(matched_names)
+    if body.lng is not None and body.lat is not None:
+        for p in _fetch_amap(body.lng, body.lat, 3000):
+            item = _to_item(p)
+            if not item["name"] or item["name"] in seen or not item["photo"]:
+                continue
+            item["links"] = _platform_links(item["name"], body.city)
+            nearby.append(item)
+            seen.add(item["name"])
+            if len(nearby) >= 4:
+                break
+
+    payload = {"ok": True, "matches": matches, "nearby": nearby}
     CACHE[key] = payload
     return payload
