@@ -62,6 +62,7 @@ SYSTEM_PROMPT = """你是资深旅行行程设计师。根据用户需求生成�
       "pros": ["优点1", "优点2"],
       "cons": ["不足1"],
       "reason": "推荐理由（1-2句，要具体：为什么住这里）",
+      "near": "与核心景区的距离（如 距三坊七巷步行约500米 / 地铁2号线3站直达景区）",
       "fit": "适合人群（如 情侣/带娃家庭/预算敏感型）",
       "stage": "适配行程阶段（如 全程 / 第1-2天 / 返程前一晚）"
     }
@@ -99,7 +100,10 @@ SYSTEM_PROMPT = """你是资深旅行行程设计师。根据用户需求生成�
 9. stays 必须给 3 个不同档次（经济/中端/高端或民宿），覆盖不同预算；
    五项评分 1-10 且要和理由对得上（说"交通最方便"就不能给交通低分）；
    距离、价格、适合人群、适配阶段都要给具体值，不许空话；
-10. 只输出 JSON。"""
+10. **住宿与景区的距离是选宿核心考量**：位置必须靠近当天核心景区或交通枢纽，
+    near 写明具体距离（步行多久/几站地铁）；离景区远的住宿必须说明补偿优势
+    （如性价比显著更高）；stay_pick 的 why 要体现距离权衡；
+11. 只输出 JSON。"""
 
 
 def _to_spot_days(it: dict) -> dict:
@@ -256,7 +260,7 @@ def _default_stay(city: str) -> dict:
         "distance": {"airport_min": 0, "station_min": 0, "spots_min": 0},
         "pros": [], "cons": [],
         "reason": "本次未给出具体住宿，建议优先选核心商圈或地铁站周边，兼顾通勤与吃饭",
-        "fit": "通用", "stage": "全程", "score_total": 7.0,
+        "near": "", "fit": "通用", "stage": "全程", "score_total": 7.0,
     }
 
 
@@ -291,6 +295,7 @@ def _ensure_stays(it: dict) -> dict:
             "pros": [str(x) for x in (s.get("pros") or []) if str(x).strip()],
             "cons": [str(x) for x in (s.get("cons") or []) if str(x).strip()],
             "reason": str(s.get("reason") or ""),
+            "near": str(s.get("near") or ""),
             "fit": str(s.get("fit") or "通用"),
             "stage": str(s.get("stage") or "全程"),
         }

@@ -281,7 +281,7 @@ async function send() {
             typeOut(composeReply(r.itinerary))
             saveSnapshot()
             loadHistory()
-            fetchHotels()
+            fetchStayMatches()
           }
         },
       },
@@ -296,9 +296,9 @@ async function send() {
   }
 }
 
-// ---- 真实酒店（高德官方数据 + OTA 平台跳转）----
-const hotels = ref({ loading: false, ok: false, items: [], note: '' })
-let hotelsAnchor = ''
+// ---- 住宿推荐 × 高德真实数据（实拍图/评分/真距 + OTA 平台跳转）----
+const stayMatches = ref({})     // 住宿名 → 高德真实 POI（匹配不到为 null）
+let matchKey = ''
 
 /** 按出行人数给"大床 vs 双床"建议；用户没提人数就不生成（产品口径） */
 function partyAdvice(p) {
@@ -310,20 +310,41 @@ function partyAdvice(p) {
   return `双床房为主；同行人数若超过 2 人建议双床＋加床`
 }
 
-async function fetchHotels() {
-  if (!result.value) return
-  const anchor = (days.value.flatMap((d) => d.spots || []).find((s) => s.lng && s.lat))
-  if (!anchor) return
-  const key = `${anchor.lng.toFixed(4)},${anchor.lat.toFixed(4)}`
-  if (key === hotelsAnchor && hotels.value.items.length) return  // 同一行程不重复拉
-  hotelsAnchor = key
-  const city = encodeURIComponent(collected.value.destination || collected.value.city || '')
-  hotels.value = { ...hotels.value, loading: true }
+function stayMatch(name) {
+  return stayMatches.value[name] || null
+}
+
+function stayLinks(s) {
+  const m = stayMatch(s.name)
+  if (m?.links) return m.links
+  const kw = encodeURIComponent(`${collected.value.destination || collected.value.city || ''} ${s.name}`.trim())
+  return {
+    ctrip: `https://hotels.ctrip.com/hotels/list?keyword=${kw}`,
+    qunar: 'https://hotel.qunar.com/',
+    tongcheng: 'https://www.ly.com/hotel',
+  }
+}
+
+function fmtDist(m) {
+  const n = Number(m)
+  return !n ? '' : n >= 1000 ? (n / 1000).toFixed(1) + ' km' : Math.round(n) + ' 米'
+}
+
+async function fetchStayMatches() {
+  const names = (result.value?.itinerary?.stays || []).map((s) => s.name).filter(Boolean).slice(0, 6)
+  if (!names.length) return
+  const anchor = days.value.flatMap((d) => d.spots || []).find((s) => s.lng && s.lat)
+  const city = collected.value.destination || collected.value.city || ''
+  const key = `${city}|${names.join('|')}|${anchor ? anchor.lng.toFixed(4) + ',' + anchor.lat.toFixed(4) : 'none'}`
+  if (key === matchKey) return  // 同一行程不重复匹配
+  matchKey = key
   try {
-    const r = await api.get(`/api/hotels?lng=${anchor.lng}&lat=${anchor.lat}&city=${city}`)
-    hotels.value = { loading: false, ok: r.ok, items: r.items || [], note: r.note || '' }
+    const r = await api.post('/api/hotels/match', {
+      city, lng: anchor?.lng ?? null, lat: anchor?.lat ?? null, names,
+    })
+    stayMatches.value = r.matches || {}
   } catch {
-    hotels.value = { loading: false, ok: false, items: [], note: '酒店数据加载失败（不影响行程）' }
+    stayMatches.value = {}   // 匹配失败不影响行程卡片本身
   }
 }
 
@@ -444,7 +465,7 @@ async function loadPlan(id) {
     } else {
       drawPlan(true)
     }
-    fetchHotels()
+    fetchStayMatches()
     scrollBottom()
   } catch (e) { alert(e.message) }
 }
@@ -626,16 +647,29 @@ onMounted(() => { loadHistory(); initMap() })
                    :href="`https://uri.amap.com/marker?position=${s.lng},${s.lat}&name=${encodeURIComponent(s.name)}&src=travel-planner&coordinate=gaode`">📍 高德</a>
               </div>
             </div>
-            <!-- 住宿推荐：价格/距离/优缺点/适配人群 + 优先推荐 -->
+            <!-- 住宿推荐：AI 推荐 × 高德真实数据（实拍/评分/真距）+ OTA 平台跳转 -->
             <div v-if="(result.itinerary.stays || []).length" class="stay-block">
-              <div class="stay-head">🏨 住宿推荐</div>
+              <div class="stay-head">🏨 住宿推荐
+                <span class="src-note">位置/实拍图来自高德真实数据 · 房价与房型点平台按钮看实时 · 距离景区远近是选宿考量之一</span>
+              </div>
+              <div v-if="partyAdvice(collected.party)" class="party-tip">
+                👥 你说「{{ collected.party }}」→ 建议订：{{ partyAdvice(collected.party) }}
+              </div>
               <div v-for="s in result.itinerary.stays" :key="s.name" class="stay-card" :class="{ pick: s.recommended }">
+                <img v-if="stayMatch(s.name)?.photo" class="stay-img" :src="stayMatch(s.name).photo" alt="酒店实拍"
+                     @error="$event.target.style.display = 'none'" />
                 <div class="stay-top">
                   <b>{{ s.name }}</b>
                   <span class="stay-type">{{ s.type }}</span>
                   <span class="stay-price">{{ s.price_range }}</span>
                   <span v-if="s.recommended" class="stay-pick-badge">★ 优先推荐</span>
                 </div>
+                <div class="hotel-sub" v-if="stayMatch(s.name)?.address">📍 {{ stayMatch(s.name).address }}</div>
+                <div class="hotel-sub" v-if="stayMatch(s.name)?.rating || stayMatch(s.name)?.distance_m">
+                  <span v-if="stayMatch(s.name)?.rating">⭐ {{ stayMatch(s.name).rating }}</span>
+                  <span v-if="stayMatch(s.name)?.distance_m"> · 距核心景点 {{ fmtDist(stayMatch(s.name).distance_m) }}</span>
+                </div>
+                <div class="stay-near" v-if="s.near">🧭 {{ s.near }}</div>
                 <div class="stay-dist" v-if="s.distance">
                   ✈️ 机场 {{ s.distance.airport_min || '—' }} 分
                   · 🚄 车站 {{ s.distance.station_min || '—' }} 分
@@ -647,39 +681,14 @@ onMounted(() => { loadHistory(); initMap() })
                 </div>
                 <div class="stay-reason" v-if="s.reason">{{ s.reason }}</div>
                 <div class="stay-meta">👤 适合：{{ s.fit }} · 📅 适配：{{ s.stage }}</div>
+                <div class="hotel-links">
+                  <a class="lk-chip" :href="stayLinks(s).ctrip" target="_blank" rel="noopener">携程查价</a>
+                  <a class="lk-chip dim" :href="stayLinks(s).qunar" target="_blank" rel="noopener">去哪儿</a>
+                  <a class="lk-chip dim" :href="stayLinks(s).tongcheng" target="_blank" rel="noopener">同程</a>
+                </div>
               </div>
               <div v-if="result.itinerary.stay_pick?.why" class="stay-why">
                 💡 最终建议：{{ result.itinerary.stay_pick.why }}
-              </div>
-            </div>
-            <!-- 真实酒店（高德官方数据 + OTA 平台跳转） -->
-            <div v-if="hotels.loading || hotels.items.length || hotels.note" class="hotel-block">
-              <div class="stay-head">🏨 住在景点附近
-                <span class="src-note">真实数据来源：{{ hotels.items[0]?.source || '高德地图开放平台' }} · 房价房型点平台按钮看实时</span>
-              </div>
-              <div v-if="partyAdvice(collected.party)" class="party-tip">
-                👥 你说「{{ collected.party }}」→ 建议订：{{ partyAdvice(collected.party) }}
-              </div>
-              <p v-if="hotels.loading" class="empty-p">正在搜附近的真实酒店…</p>
-              <p v-else-if="!hotels.items.length" class="empty-p">{{ hotels.note || '暂无酒店数据' }}</p>
-              <div class="hotel-scroll" v-else>
-                <div v-for="h in hotels.items" :key="h.name + h.address" class="hotel-card">
-                  <img v-if="h.photo" class="hotel-img" :src="h.photo" alt="酒店实拍"
-                       @error="$event.target.style.display = 'none'" />
-                  <div v-else class="hotel-img hotel-img-empty">🏨</div>
-                  <div class="hotel-name" :title="h.name">{{ h.name }}</div>
-                  <div class="hotel-sub">{{ h.address }}</div>
-                  <div class="hotel-sub">
-                    <span v-if="h.rating">⭐ {{ h.rating }}</span>
-                    <span v-if="h.cost"> · 人均约 ¥{{ h.cost }}</span>
-                    <span v-if="h.distance_m"> · {{ h.distance_m >= 1000 ? (h.distance_m / 1000).toFixed(1) + ' km' : h.distance_m + ' 米' }}</span>
-                  </div>
-                  <div class="hotel-links">
-                    <a class="lk-chip" :href="h.links.ctrip" target="_blank" rel="noopener">携程查价</a>
-                    <a class="lk-chip dim" :href="h.links.qunar" target="_blank" rel="noopener">去哪儿</a>
-                    <a class="lk-chip dim" :href="h.links.tongcheng" target="_blank" rel="noopener">同程</a>
-                  </div>
-                </div>
               </div>
             </div>
             <details class="vlog">
@@ -800,11 +809,8 @@ onMounted(() => { loadHistory(); initMap() })
 .hotel-block { margin: 12px 0 6px; }
 .src-note { font-weight: 400; font-size: 11px; color: var(--text-sub); margin-left: 6px; }
 .party-tip { font-size: 12px; color: #55605a; background: var(--green-soft); border-radius: 8px; padding: 6px 10px; margin: 6px 0; line-height: 1.6; }
-.hotel-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px; }
-.hotel-card { min-width: 218px; max-width: 218px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; flex-shrink: 0; background: #fff; }
-.hotel-img { width: 100%; height: 96px; object-fit: cover; border-radius: 8px; display: block; background: #f0f3f0; }
-.hotel-img-empty { display: flex; align-items: center; justify-content: center; font-size: 30px; }
-.hotel-name { font-size: 12.5px; font-weight: 700; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stay-img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; display: block; margin-bottom: 8px; background: #f0f3f0; }
+.stay-near { font-size: 11.5px; color: var(--green); margin-top: 4px; }
 .hotel-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hotel-links { display: flex; gap: 6px; margin-top: 6px; }
 .lk-chip { font-size: 11px; color: #fff; background: var(--green); border-radius: 6px; padding: 2px 8px; text-decoration: none; white-space: nowrap; }

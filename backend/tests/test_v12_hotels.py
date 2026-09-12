@@ -81,3 +81,51 @@ def test_hotels_amap_down_graceful(monkeypatch):
     assert r.status_code == 200, "高德挂了也不能 500"
     body = r.json()
     assert body["ok"] is False and body["items"] == [] and body["note"]
+
+
+# ---------- POST /api/hotels/match（住宿推荐 × 高德真实数据 匹配） ----------
+
+def _fake_text_search(monkeypatch):
+    """按关键词返回：锦江宾馆有数据，其余搜不到。"""
+    calls = []
+
+    def _get(url, params=None, timeout=None):
+        calls.append(params)
+        if params["keywords"] == "锦江宾馆":
+            return types.SimpleNamespace(status_code=200, json=lambda: {"status": "1", "pois": [
+                {"name": "锦江宾馆", "address": "人民南路二段80号", "location": "104.055,30.650",
+                 "photos": [{"url": "https://img.example/jj.jpg"}], "business": {"rating": "4.6"}},
+            ]})
+        return types.SimpleNamespace(status_code=200, json=lambda: {"status": "1", "pois": []})
+
+    monkeypatch.setattr(httpx, "get", _get)
+    monkeypatch.setattr(hotels_router.time, "sleep", lambda s: None)  # 测试不等 QPS 间隔
+    hotels_router.CACHE.clear()
+    return calls
+
+
+def test_match_names_to_real_pois(monkeypatch):
+    """AI 住宿名 → 高德真实 POI：有图/评分/到锚点真实距离/平台链接；匹配不到 → null。"""
+    _fake_text_search(monkeypatch)
+    c = TestClient(app)
+    r = c.post("/api/hotels/match", json={
+        "city": "成都", "lng": 104.06, "lat": 30.57, "names": ["锦江宾馆", "概念名酒店"]})
+    assert r.status_code == 200
+    m = r.json()["matches"]
+    hit = m["锦江宾馆"]
+    assert hit and hit["photo"] == "https://img.example/jj.jpg"
+    assert hit["rating"] == "4.6"
+    assert 0 < int(hit["distance_m"]) < 20000, "锚点到酒店的距离应按坐标算出"
+    assert "hotels.ctrip.com" in hit["links"]["ctrip"]
+    assert m["概念名酒店"] is None, "概念名匹配不到 → null，前端降级为无图卡片"
+
+
+def test_match_empty_and_cached(monkeypatch):
+    calls = _fake_text_search(monkeypatch)
+    c = TestClient(app)
+    assert c.post("/api/hotels/match", json={"names": []}).json()["matches"] == {}
+    body = {"city": "成都", "lng": 104.06, "lat": 30.57, "names": ["锦江宾馆"]}
+    c.post("/api/hotels/match", json=body)
+    n = len(calls)
+    c.post("/api/hotels/match", json=body)  # 同参数第二次 → 缓存命中
+    assert len(calls) == n, "匹配结果应缓存，不重复打高德"
