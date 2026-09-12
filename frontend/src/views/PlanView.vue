@@ -658,33 +658,31 @@ onMounted(() => { loadHistory(); initMap() })
               <div v-for="s in result.itinerary.stays" :key="s.name" class="stay-card" :class="{ pick: s.recommended }">
                 <img v-if="stayMatch(s.name)?.photo" class="stay-img" :src="stayMatch(s.name).photo" alt="酒店实拍"
                      @error="$event.target.style.display = 'none'" />
-                <div class="stay-top">
-                  <b>{{ s.name }}</b>
-                  <span class="stay-type">{{ s.type }}</span>
-                  <span class="stay-price">{{ s.price_range }}</span>
-                  <span v-if="s.recommended" class="stay-pick-badge">★ 优先推荐</span>
-                </div>
-                <div class="hotel-sub" v-if="stayMatch(s.name)?.address">📍 {{ stayMatch(s.name).address }}</div>
-                <div class="hotel-sub" v-if="stayMatch(s.name)?.rating || stayMatch(s.name)?.distance_m">
-                  <span v-if="stayMatch(s.name)?.rating">⭐ {{ stayMatch(s.name).rating }}</span>
-                  <span v-if="stayMatch(s.name)?.distance_m"> · 距核心景点 {{ fmtDist(stayMatch(s.name).distance_m) }}</span>
-                </div>
-                <div class="stay-near" v-if="s.near">🧭 {{ s.near }}</div>
-                <div class="stay-dist" v-if="s.distance">
-                  ✈️ 机场 {{ s.distance.airport_min || '—' }} 分
-                  · 🚄 车站 {{ s.distance.station_min || '—' }} 分
-                  · 📍 主要景点 {{ s.distance.spots_min || '—' }} 分
-                </div>
-                <div class="stay-pc" v-if="(s.pros || []).length || (s.cons || []).length">
-                  <span v-for="(p, pi) in s.pros" :key="'p' + pi" class="pro">＋ {{ p }}</span>
-                  <span v-for="(c, ci) in s.cons" :key="'c' + ci" class="con">－ {{ c }}</span>
-                </div>
-                <div class="stay-reason" v-if="s.reason">{{ s.reason }}</div>
-                <div class="stay-meta">👤 适合：{{ s.fit }} · 📅 适配：{{ s.stage }}</div>
-                <div class="hotel-links">
-                  <a class="lk-chip" :href="stayLinks(s).ctrip" target="_blank" rel="noopener">携程查价</a>
-                  <a class="lk-chip dim" :href="stayLinks(s).qunar" target="_blank" rel="noopener">去哪儿</a>
-                  <a class="lk-chip dim" :href="stayLinks(s).tongcheng" target="_blank" rel="noopener">同程</a>
+                <div v-else class="stay-img stay-img-empty">🏨</div>
+                <div class="stay-main">
+                  <div class="stay-top">
+                    <b>{{ s.name }}</b>
+                    <span class="stay-type">{{ s.type }}</span>
+                    <span v-if="s.recommended" class="stay-pick-badge">★ 优先推荐</span>
+                  </div>
+                  <div class="stay-price-line">
+                    💰 {{ s.price_range }}
+                    <span v-if="stayMatch(s.name)?.rating" class="rate">⭐ {{ stayMatch(s.name).rating }}</span>
+                    <span v-if="stayMatch(s.name)?.distance_m"> · 距核心景点 {{ fmtDist(stayMatch(s.name).distance_m) }}</span>
+                  </div>
+                  <div class="hotel-sub" v-if="stayMatch(s.name)?.address">📍 {{ stayMatch(s.name).address }}</div>
+                  <div class="stay-near" v-if="s.near">🧭 {{ s.near }}</div>
+                  <div class="stay-pc" v-if="(s.pros || []).length || (s.cons || []).length">
+                    <span v-for="(p, pi) in s.pros" :key="'p' + pi" class="pro">＋ {{ p }}</span>
+                    <span v-for="(c, ci) in s.cons" :key="'c' + ci" class="con">－ {{ c }}</span>
+                  </div>
+                  <div class="stay-reason" v-if="s.reason">{{ s.reason }}</div>
+                  <div class="stay-meta">👤 适合：{{ s.fit }} · 📅 适配：{{ s.stage }}<span v-if="s.distance"> · ✈️ 机场 {{ s.distance.airport_min || '—' }} 分 · 🚄 车站 {{ s.distance.station_min || '—' }} 分</span></div>
+                  <div class="hotel-links">
+                    <a class="lk-chip" :href="stayLinks(s).ctrip" target="_blank" rel="noopener">携程查价</a>
+                    <a class="lk-chip dim" :href="stayLinks(s).qunar" target="_blank" rel="noopener">去哪儿</a>
+                    <a class="lk-chip dim" :href="stayLinks(s).tongcheng" target="_blank" rel="noopener">同程</a>
+                  </div>
                 </div>
               </div>
               <div v-if="result.itinerary.stay_pick?.why" class="stay-why">
@@ -792,13 +790,17 @@ onMounted(() => { loadHistory(); initMap() })
 /* 住宿推荐卡片 */
 .stay-block { margin: 12px 0 6px; }
 .stay-head { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
-.stay-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+.stay-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start; }
 .stay-card.pick { border-color: var(--green); background: var(--green-soft); }
+.stay-img { width: 132px; height: 99px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #f0f3f0; }
+.stay-img-empty { display: flex; align-items: center; justify-content: center; font-size: 30px; color: #b9c6bc; }
+.stay-main { flex: 1; min-width: 0; }
 .stay-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.stay-top b { font-size: 13px; }
+.stay-top b { font-size: 13.5px; }
 .stay-type { font-size: 11px; color: var(--text-sub); border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; }
-.stay-price { font-size: 12px; color: var(--green); font-weight: 600; }
 .stay-pick-badge { margin-left: auto; background: var(--green); color: #fff; border-radius: 999px; padding: 1px 10px; font-size: 11px; font-weight: 600; }
+.stay-price-line { font-size: 12.5px; color: var(--green); font-weight: 700; margin: 3px 0; }
+.stay-price-line .rate { font-weight: 600; }
 .stay-dist, .stay-meta { font-size: 11.5px; color: #7a8a80; margin-top: 5px; }
 .stay-pc { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
 .stay-pc .pro { font-size: 11.5px; color: #1a6e50; background: var(--green-soft); border-radius: 6px; padding: 1px 7px; }
