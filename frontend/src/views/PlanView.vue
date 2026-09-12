@@ -47,14 +47,6 @@ const DIFF_COLORS = { 轻松: '#1a6e50', 适中: '#b7950b', 较费体力: '#c039
 function diffColor(level) {
   return DIFF_COLORS[level] || '#7a8a80'
 }
-/** 住宿五维评估维度（与后端权重一致） */
-const STAY_DIMS = [
-  { key: 'value', label: '性价比' },
-  { key: 'transit', label: '交通' },
-  { key: 'dining', label: '餐饮配套' },
-  { key: 'safety', label: '安全' },
-  { key: 'comfort', label: '舒适' },
-]
 /** 分钟 → "1小时20分" */
 function fmtMin(m) {
   const n = Number(m) || 0
@@ -115,7 +107,7 @@ function composeReply(it) {
     lines.push('')
     lines.push(`🏨 住宿：优先推荐「${pick.name || stays[0].name}」${pick.why ? '——' + pick.why : ''}`)
     stays.forEach((s) => {
-      lines.push(`· ${s.name}（${s.type || '—'}，${s.price_range}，综合 ${s.score_total} 分）：${s.reason || '—'}｜适合 ${s.fit || '通用'}｜适配 ${s.stage || '全程'}`)
+      lines.push(`· ${s.name}（${s.type || '—'}，${s.price_range}）：${s.reason || '—'}｜适合 ${s.fit || '通用'}｜适配 ${s.stage || '全程'}`)
     })
   }
   const asm = it.assumptions || []
@@ -587,9 +579,12 @@ onMounted(() => { loadHistory(); initMap() })
           <button class="undo" @click="undoDelete">撤销（{{ toast.seconds }}s）</button>
         </div>
 
-        <!-- 行程卡 + 核实报告 -->
-        <div v-if="result" class="bottom-panel">
-          <div class="panel-scroll">
+      </section>
+    </div>
+
+    <!-- 信息区：地图下方独立展示（随页面滚动完整可见，不截断不折叠） -->
+    <section v-if="result" class="info-below">
+      <div class="info-body">
             <p v-if="!visibleDays.length" class="empty-p">这个方案没有可展示的地点。</p>
             <div v-for="d in visibleDays" :key="d.day" class="day-group">
               <div class="day-title">
@@ -631,22 +626,15 @@ onMounted(() => { loadHistory(); initMap() })
                    :href="`https://uri.amap.com/marker?position=${s.lng},${s.lat}&name=${encodeURIComponent(s.name)}&src=travel-planner&coordinate=gaode`">📍 高德</a>
               </div>
             </div>
-            <!-- 住宿推荐：五维评分 + 综合分 + 优先推荐 -->
+            <!-- 住宿推荐：价格/距离/优缺点/适配人群 + 优先推荐 -->
             <div v-if="(result.itinerary.stays || []).length" class="stay-block">
-              <div class="stay-head">🏨 住宿推荐（按综合分排序）</div>
+              <div class="stay-head">🏨 住宿推荐</div>
               <div v-for="s in result.itinerary.stays" :key="s.name" class="stay-card" :class="{ pick: s.recommended }">
                 <div class="stay-top">
                   <b>{{ s.name }}</b>
                   <span class="stay-type">{{ s.type }}</span>
                   <span class="stay-price">{{ s.price_range }}</span>
                   <span v-if="s.recommended" class="stay-pick-badge">★ 优先推荐</span>
-                </div>
-                <div class="stay-scores">
-                  <div class="score-line" v-for="dim in STAY_DIMS" :key="dim.key">
-                    <span class="dim-name">{{ dim.label }}</span>
-                    <span class="bar"><i :style="{ width: (s.scores?.[dim.key] || 0) * 10 + '%' }"></i></span>
-                    <span class="score-num">{{ s.scores?.[dim.key] ?? '—' }}</span>
-                  </div>
                 </div>
                 <div class="stay-dist" v-if="s.distance">
                   ✈️ 机场 {{ s.distance.airport_min || '—' }} 分
@@ -702,10 +690,8 @@ onMounted(() => { loadHistory(); initMap() })
             </details>
             <p class="save-tip" v-if="result.saved">✅ 快照已保存（聊天内容 + 地图视角，历史方案可原样还原）</p>
             <p class="save-tip" v-else-if="!user">💡 登录后规划会自动保存为历史快照</p>
-          </div>
-        </div>
-      </section>
-    </div>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -772,13 +758,12 @@ onMounted(() => { loadHistory(); initMap() })
 .dot.big { width: 11px; height: 11px; }
 .map-empty-hint { position: absolute; top: 46%; left: 50%; transform: translate(-50%,-50%); text-align: center; color: #6a7d6a; font-size: 14px; line-height: 2; pointer-events: none; background: rgba(255,255,255,.8); padding: 14px 22px; border-radius: 12px; z-index: 4; }
 .map-empty-hint small { font-size: 11.5px; color: #8a9a8a; }
+/* 信息区：地图下方独立展示（自然文档流，完整可见不截断） */
+.info-below { margin-top: 14px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
 .toast { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); background: rgba(33,43,38,.94); color: #fff; border-radius: 10px; padding: 8px 14px; font-size: 12.5px; display: flex; align-items: center; gap: 12px; z-index: 30; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
 .toast .undo { background: transparent; border: 1px solid rgba(255,255,255,.6); color: #fff; border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer; }
 .toast .undo:hover { background: rgba(255,255,255,.16); }
 
-/* 行程卡浮层 */
-.bottom-panel { position: absolute; left: 10px; right: 10px; bottom: 10px; background: rgba(255,255,255,.97); border: 1px solid var(--line); border-radius: 12px; z-index: 5; max-height: 46%; display: flex; }
-.panel-scroll { overflow-y: auto; padding: 12px 16px; width: 100%; }
 .empty-p { color: var(--text-sub); font-size: 12.5px; }
 .day-group { margin-bottom: 10px; }
 .day-title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 7px; }
@@ -805,12 +790,6 @@ onMounted(() => { loadHistory(); initMap() })
 .stay-type { font-size: 11px; color: var(--text-sub); border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; }
 .stay-price { font-size: 12px; color: var(--green); font-weight: 600; }
 .stay-pick-badge { margin-left: auto; background: var(--green); color: #fff; border-radius: 999px; padding: 1px 10px; font-size: 11px; font-weight: 600; }
-.stay-scores { margin: 8px 0 2px; }
-.score-line { display: grid; grid-template-columns: 62px 1fr 26px; align-items: center; gap: 8px; margin: 3px 0; }
-.dim-name { font-size: 11px; color: #5c6a60; }
-.bar { display: block; background: #e7ece7; height: 6px; border-radius: 999px; overflow: hidden; }
-.bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
-.score-num { font-size: 11px; color: #5c6a60; text-align: right; }
 .stay-dist, .stay-meta { font-size: 11.5px; color: #7a8a80; margin-top: 5px; }
 .stay-pc { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
 .stay-pc .pro { font-size: 11.5px; color: #1a6e50; background: var(--green-soft); border-radius: 6px; padding: 1px 7px; }

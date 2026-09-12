@@ -316,7 +316,7 @@ def _ensure_stays(it: dict) -> dict:
     it["stays"] = stays
     it["stay_pick"] = {
         "name": name,
-        "why": why or f"综合评分最高（{stays[0]['score_total']} 分）：性价比、交通与安全最均衡",
+        "why": why or "综合表现最均衡：性价比、交通便利与安全兼顾",
     }
     return it
 
