@@ -107,8 +107,9 @@ function composeReply(it) {
     lines.push('')
     lines.push(`🏨 住宿：优先推荐「${pick.name || stays[0].name}」${pick.why ? '——' + pick.why : ''}`)
     stays.forEach((s) => {
-      lines.push(`· ${s.name}（${s.type || '—'}，${s.price_range}）：${s.reason || '—'}｜适合 ${s.fit || '通用'}｜适配 ${s.stage || '全程'}`)
+      lines.push(`· ${s.name}（${s.type || '—'}）：${s.reason || '—'}｜适合 ${s.fit || '通用'}｜适配 ${s.stage || '全程'}`)
     })
+    lines.push('　 实时房价/房型/评价请点卡片上的携程按钮查看')
   }
   const asm = it.assumptions || []
   if (asm.length) {
@@ -650,7 +651,7 @@ onMounted(() => { loadHistory(); initMap() })
             <!-- 住宿推荐：AI 推荐 × 高德真实数据（实拍/评分/真距）+ OTA 平台跳转 -->
             <div v-if="(result.itinerary.stays || []).length" class="stay-block">
               <div class="stay-head">🏨 住宿推荐
-                <span class="src-note">位置/实拍图来自高德真实数据 · 房价与房型点平台按钮看实时 · 距离景区远近是选宿考量之一</span>
+                <span class="src-note">位置/实拍图/评分来自高德真实数据 · 实时房价与房型点携程按钮查看 · 距离景区远近是选宿考量之一</span>
               </div>
               <div v-if="partyAdvice(collected.party)" class="party-tip">
                 👥 你说「{{ collected.party }}」→ 建议订：{{ partyAdvice(collected.party) }}
@@ -666,9 +667,9 @@ onMounted(() => { loadHistory(); initMap() })
                     <span v-if="s.recommended" class="stay-pick-badge">★ 优先推荐</span>
                   </div>
                   <div class="stay-price-line">
-                    💰 {{ s.price_range }}
-                    <span v-if="stayMatch(s.name)?.rating" class="rate">⭐ {{ stayMatch(s.name).rating }}</span>
+                    <span v-if="stayMatch(s.name)?.rating">⭐ {{ stayMatch(s.name).rating }}</span>
                     <span v-if="stayMatch(s.name)?.distance_m"> · 距核心景点 {{ fmtDist(stayMatch(s.name).distance_m) }}</span>
+                    <span v-if="!stayMatch(s.name)" class="no-real-tip">实时房价/评分点下方携程查看</span>
                   </div>
                   <div class="hotel-sub" v-if="stayMatch(s.name)?.address">📍 {{ stayMatch(s.name).address }}</div>
                   <div class="stay-near" v-if="s.near">🧭 {{ s.near }}</div>
@@ -679,7 +680,7 @@ onMounted(() => { loadHistory(); initMap() })
                   <div class="stay-reason" v-if="s.reason">{{ s.reason }}</div>
                   <div class="stay-meta">👤 适合：{{ s.fit }} · 📅 适配：{{ s.stage }}<span v-if="s.distance"> · ✈️ 机场 {{ s.distance.airport_min || '—' }} 分 · 🚄 车站 {{ s.distance.station_min || '—' }} 分</span></div>
                   <div class="hotel-links">
-                    <a class="lk-chip" :href="stayLinks(s).ctrip" target="_blank" rel="noopener">携程查价</a>
+                    <a class="lk-chip big" :href="stayLinks(s).ctrip" target="_blank" rel="noopener">🔍 携程看实时房价·房型·评价</a>
                     <a class="lk-chip dim" :href="stayLinks(s).qunar" target="_blank" rel="noopener">去哪儿</a>
                     <a class="lk-chip dim" :href="stayLinks(s).tongcheng" target="_blank" rel="noopener">同程</a>
                   </div>
@@ -814,7 +815,9 @@ onMounted(() => { loadHistory(); initMap() })
 .hotel-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hotel-links { display: flex; gap: 6px; margin-top: 6px; }
 .lk-chip { font-size: 11px; color: #fff; background: var(--green); border-radius: 6px; padding: 2px 8px; text-decoration: none; white-space: nowrap; }
+.lk-chip.big { font-size: 12px; font-weight: 600; padding: 4px 12px; }
 .lk-chip.dim { background: #fff; color: var(--green); border: 1px solid var(--green); }
+.no-real-tip { color: #b7950b; }
 .spot-row { display: flex; gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--line); }
 .spot-row:last-child { border: none; }
 .spot-idx { width: 20px; height: 20px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
