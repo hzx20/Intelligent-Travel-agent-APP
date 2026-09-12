@@ -807,11 +807,9 @@ onMounted(() => { loadHistory(); initMap() })
 .stay-pc .con { font-size: 11.5px; color: #a94438; background: #fbeeec; border-radius: 6px; padding: 1px 7px; }
 .stay-reason { font-size: 12px; color: #4d5a52; margin-top: 6px; line-height: 1.6; }
 .stay-why { font-size: 12.5px; font-weight: 600; color: var(--green); background: var(--green-soft); border-radius: 8px; padding: 7px 10px; margin-top: 4px; line-height: 1.6; }
-/* 真实酒店卡片（高德数据 + OTA 跳转） */
-.hotel-block { margin: 12px 0 6px; }
+/* 住宿推荐补充样式（来源标注 / 床型建议 / 距离承诺） */
 .src-note { font-weight: 400; font-size: 11px; color: var(--text-sub); margin-left: 6px; }
 .party-tip { font-size: 12px; color: #55605a; background: var(--green-soft); border-radius: 8px; padding: 6px 10px; margin: 6px 0; line-height: 1.6; }
-.stay-img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; display: block; margin-bottom: 8px; background: #f0f3f0; }
 .stay-near { font-size: 11.5px; color: var(--green); margin-top: 4px; }
 .hotel-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hotel-links { display: flex; gap: 6px; margin-top: 6px; }
