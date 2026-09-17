@@ -5,7 +5,6 @@
 import base64
 import hashlib
 import hmac
-import os
 import secrets
 from datetime import datetime, timedelta, timezone
 
@@ -42,8 +41,13 @@ def verify_password(password: str, stored: str) -> bool:
 
 
 def _jwt_secret() -> str:
-    """优先取 .env 的 JWT_SECRET；未配置时用开发期派生值（上云前务必配置正式值）。"""
-    return os.getenv("JWT_SECRET") or "dev-secret::" + hashlib.sha256(
+    """优先取 .env 配置的 jwt_secret（经 Settings 读入）；未配置时用开发期派生值。
+
+    派生值绑定智谱 key——key 一换所有 token 失效，全体被登出；上云前务必配置正式值。
+    （注意：.env 由 pydantic-settings 读进 Settings，不会进 os.environ，
+    所以这里必须读 settings 而不是 os.getenv——后者永远拿不到 .env 里的值）
+    """
+    return settings.jwt_secret or "dev-secret::" + hashlib.sha256(
         settings.zhipu_api_key.encode()
     ).hexdigest()
 

@@ -51,9 +51,11 @@ async def generate_node(state: PlanState) -> dict:
     """节点2：行程生成（复用 M2 提示词与生成逻辑）。"""
     itinerary = await generate_itinerary(state.get("collected") or {})
     days = len((itinerary.get("days") or []))
+    # 澄清收集的字段名是 destination（前端快捷模块也写它），city 只是兼容旧数据的备选
+    city = state["collected"].get("destination") or state["collected"].get("city", "")
     return {
         "itinerary": itinerary,
-        "logs": _log(state, f"行程生成：{state['collected'].get('city', '')} {days} 天框架完成"),
+        "logs": _log(state, f"行程生成：{city} {days} 天框架完成"),
     }
 
 

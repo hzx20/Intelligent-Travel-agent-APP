@@ -5,6 +5,8 @@ import { computed, nextTick, onMounted, ref } from 'vue'
 import { api, streamPlan } from '../api'
 import { loadAmap } from '../utils/amap'
 import { useAuth } from '../store/auth'
+import RegionPicker from '../components/RegionPicker.vue'
+import DateRangePicker from '../components/DateRangePicker.vue'
 
 const { user } = useAuth()
 const messages = ref([])        // {role:'user'|'ai', text, streaming?}
@@ -249,6 +251,31 @@ async function saveSnapshot({ map_only = false } = {}) {
   try { await api.patch(`/api/plan/${currentPlanId}/snapshot`, body) } catch { /* 快照失败不打扰 */ }
 }
 
+// ================= 快捷条件模块（目的地联想 + 你想去多久） =================
+/** 目的地选中/清除：destination 必须是纯城市名（后端地图核实按 Spot.city 精确匹配），
+ *  区县作为倾向词进输入文本，由需求澄清模块自然吸收 */
+function onRegionPick({ city, district }) {
+  if (!city) {
+    delete collected.value.destination
+    return
+  }
+  collected.value.destination = city
+  if (!input.value.trim()) {
+    input.value = district ? `去${city}${district}玩` : `去${city}玩`
+  }
+}
+
+/** 日期范围选中/清除：dates 用中文区间、days 给出天数，澄清时可少问一轮 */
+function onDateRangePick(r) {
+  if (!r) {
+    delete collected.value.dates
+    delete collected.value.days
+    return
+  }
+  collected.value.dates = r.dates
+  collected.value.days = r.days
+}
+
 // ================= 对话 =================
 async function send() {
   const text = input.value.trim()
@@ -451,6 +478,9 @@ function stubChat(p) {
 async function loadPlan(id) {
   try {
     const p = await api.get(`/api/plan/${id}`)
+    // 历史方案的需求现场（城市/人数等）一并还原：住宿匹配按它的城市搜、床型建议按它的人数给，
+    // 否则会拿"当前实时对话"的 collected 张冠李戴（体检报告严重项 1）
+    collected.value = p.intent || {}
     // 只在第一次离开实时对话时暂存（切历史条目之间、删除后重建都不覆盖，避免把实时对话弄丢）
     if (!historyView.value && !liveSnapshot) {
       liveSnapshot = { messages: messages.value, result: result.value, logs: logs.value, collected: collected.value }
@@ -552,9 +582,14 @@ onMounted(() => { loadHistory(); initMap() })
             <div v-for="(l, i) in logs" :key="i" class="proc-line">▸ {{ l }}</div>
           </div>
         </div>
+        <!-- 快捷条件：目的地联想 + 你想去多久（选中后并入需求，澄清少问一轮） -->
+        <div class="chat-addons" :class="{ locked: busy }">
+          <RegionPicker @select="onRegionPick" />
+          <DateRangePicker @select="onDateRangePick" @clear="onDateRangePick(null)" />
+        </div>
         <div class="chat-input">
           <input v-model="input" :disabled="busy" maxlength="500"
-                 placeholder="例如：去成都玩 3 天，想吃火锅看熊猫"
+                 placeholder="输入目的地或告诉我你的想法"
                  @keyup.enter="send" />
           <button class="btn-send" :disabled="busy || !input.trim()" @click="send">
             {{ busy ? '规划中…' : '发送' }}
@@ -749,6 +784,9 @@ onMounted(() => { loadHistory(); initMap() })
 @keyframes blink { 50% { opacity: 0; } }
 .proc { margin: 8px 0; padding: 8px 12px; background: var(--green-soft); border-radius: 8px; }
 .proc-line { font-size: 12px; color: var(--green); line-height: 1.9; }
+/* 快捷条件行：目的地联想 + 你想去多久 */
+.chat-addons { display: flex; gap: 8px; align-items: flex-end; padding: 10px 14px 0; flex-wrap: wrap; }
+.chat-addons.locked { opacity: .55; pointer-events: none; }
 .chat-input { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--line); }
 .chat-input input { flex: 1; border: 1.5px solid #ccc; border-radius: 10px; padding: 10px 12px; font-size: 13.5px; }
 .chat-input input:focus { outline: none; border-color: var(--green); }

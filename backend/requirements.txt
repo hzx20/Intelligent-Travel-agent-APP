@@ -1,8 +1,13 @@
-fastapi
-uvicorn[standard]
-langchain
-langchain-openai
-pydantic-settings
-cachetools
-pytest
-httpx
+# 依赖清单（2026-09-12 按 venv 实测版本钉死——此前缺 langgraph/pyjwt/sqlalchemy
+# 且全部未锁版本，换环境安装必炸；版本组合即当前 59 条回归测试通过的组合）
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+langchain==1.4.0
+langchain-openai==1.6.0
+langgraph==1.2.11
+pyjwt==2.13.0
+pydantic-settings==2.15.0
+cachetools==7.1.8
+pytest==9.1.1
+httpx==0.28.1
+sqlalchemy==2.0.52

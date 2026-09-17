@@ -364,3 +364,28 @@
 
 【验证】test_v12_hotels.py 3 条（形状与跳转链接/缓存命中/高德挂掉优雅降级）；
 真连高德实测：西湖锚点返回 10 家真酒店（新新饭店 4.7 分/378 米/带实拍图，香格里拉等）
+
+## 2026-09-12 · 全代码体检 + 7 项修复（后端 0.14.3，报告 docs/code_review_v1.1.md）
+
+【需求】用户要求对代码全面检查：功能正确性/边界/风格/性能/安全，逐项按严重度排序并给修法。
+逐文件通读后端 26 模块 + 前端核心 + 启动脚本，产出报告（2 严重 + 6 中等 + 10 轻微 + 亮点清单），
+用户选定修复范围"严重 + 全部中等"。
+
+【已修 7 项】
+- 🔴 PlanView.loadPlan 不恢复 collected → 回看历史时住宿匹配用错城市、床型建议串场；
+  修复一行 `collected.value = p.intent || {}`（backToLive 本就恢复实时值，闭环完整）
+- 🔴 requirements.txt 缺 langgraph/pyjwt/**sqlalchemy** 三个依赖且全未锁版本（报告初版漏了
+  sqlalchemy，pip 核对后补上）→ 按 venv 实测版本 11 项全部钉死
+- 🟠 hotels/match 最坏可挂 2 分钟 → 加 12 秒总预算（超时剩余名字按未匹配）+ 三级搜索超时 10/8/5
+- 🟠 JWT_SECRET 的 .env 通道不通（pydantic-settings 不写回 os.environ，security.py 却用
+  os.getenv）→ Settings 加 jwt_secret 字段，security.py 改读 settings
+- 🟠 快照写入无单条大小限制 → `_clean_messages()`：条数 200 / 单条 4000 字封顶，只留 {role,text}
+- 🟠 generate_node 过程日志取 collected.city 但字段是 destination → 城市名恒空，改读 destination
+- 🟠 SSE error 直接 str(e) 外泄内部细节 → 固定文案"生成失败，请稍后重试"+ logger.exception 进后端日志
+
+【撤回 1 项（诚实记录）】"SSE 占用数据库连接池"复核后不成立：SQLAlchemy Session 惰性取连，
+plan_stream 落库前从不碰 db，流式期间不占池连接；改法反而会破坏 conftest 的 get_db 覆盖。
+报告已改为【复核后撤回】，避免后人按错误前提优化。
+
+【验证】确定性回归 59 条全绿（1.74s，跳过 m1/m2/v07_graph 三个真调 LLM 文件）；
+沙箱 shell PATH 丢失复发，按 9-12 沉淀方案手动补 PortableGit usr/bin 后执行

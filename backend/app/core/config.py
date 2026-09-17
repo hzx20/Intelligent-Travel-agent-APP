@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     amap_js_security_code: str = ""
     # 模型名保持 glm-4-flash，与 Node 版一致
     glm_model: str = "glm-4-flash"
+    # 登录 token 的签名密钥：上云/换环境前务必在 .env 里配置 JWT_SECRET；
+    # 不配时 security.py 退回"由智谱 key 派生"的开发期密钥（key 一换全体登出）
+    jwt_secret: str = ""
 
     model_config = SettingsConfigDict(
         env_file=str(PROJECT_ROOT / ".env"),

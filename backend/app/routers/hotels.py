@@ -6,8 +6,6 @@
 - 平台跳转：携程支持关键词直达列表页（已实测 200）；去哪儿/同程已下线直达格式，
   只能到官网频道页（按钮文案如实标注，不假装"直达"）
 """
-from typing import Any
-
 import time
 from typing import Any
 
@@ -25,6 +23,8 @@ TEXT_URL = "https://restapi.amap.com/v5/place/text"
 TYPE_LODGING = "100000"  # 高德 POI 分类：住宿服务
 CACHE: TTLCache = TTLCache(maxsize=256, ttl=1800)  # 同一坐标 30 分钟内复用
 REQUEST_INTERVAL = 0.4  # 个人 key QPS=3
+MATCH_BUDGET_S = 12.0   # 名字匹配环节的总预算（秒）：超时即收工，剩余名字按未匹配处理，
+                        # 别让用户对着"正在匹配"干等两分钟（体检报告中等项 3）
 
 # 平台跳转链接（2026-09-12 实测：携程关键词直达可用；去哪儿/同程直达已下线）
 def _platform_links(name: str, city: str) -> dict[str, str]:
@@ -146,13 +146,15 @@ def _amap_text_poi(name: str, city: str) -> dict | None:
 
     1. 原名 + 住宿类型过滤；2. 去掉城市前缀 + 类型过滤；3. 原名不限类型。
     （AI 起的名偶有"福州悦华酒店"vs 高德"悦华酒店"这类差异，单次搜索容易脱靶）
+    超时逐级收缩（10/8/5 秒）：末级只是兜底尝试，不值得等满 10 秒——
+    全部未命中时最坏也要 6 个名字 × 23 秒，用户体验受不了，所以每级都更短。
     """
-    attempts = [(name, TYPE_LODGING)]
+    attempts: list[tuple[str, str, int]] = [(name, TYPE_LODGING, 10)]
     stripped = name.replace(city, "", 1).strip() if city else ""
     if stripped and stripped != name:
-        attempts.append((stripped, TYPE_LODGING))
-    attempts.append((name, ""))
-    for kw, types in attempts:
+        attempts.append((stripped, TYPE_LODGING, 8))
+    attempts.append((name, "", 5))
+    for kw, types, timeout in attempts:
         params = {
             "key": settings.amap_api_key,
             "keywords": kw,
@@ -164,7 +166,7 @@ def _amap_text_poi(name: str, city: str) -> dict | None:
         if types:
             params["types"] = types
         try:
-            resp = httpx.get(TEXT_URL, params=params, timeout=10)
+            resp = httpx.get(TEXT_URL, params=params, timeout=timeout)
             data = resp.json()
         except (httpx.HTTPError, ValueError):
             continue
@@ -191,7 +193,13 @@ def match_stay_names(body: MatchIn):
 
     matches: dict[str, dict | None] = {}
     matched_names: set[str] = set()
+    start = time.monotonic()
     for name in names:
+        if time.monotonic() - start > MATCH_BUDGET_S:
+            # 超出总预算：剩余名字不再逐个尝试，直接按"未匹配"收尾（前端隐藏这类卡片，
+            # 并用下方锚点周边的真实酒店补位，板块依然有内容）
+            matches[name] = None
+            continue
         poi = _amap_text_poi(name, body.city)
         if not poi or not poi.get("name"):
             matches[name] = None

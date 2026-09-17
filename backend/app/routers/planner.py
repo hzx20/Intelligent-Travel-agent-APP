@@ -7,6 +7,7 @@
   event: done    流结束
 """
 import json
+import logging
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
@@ -19,6 +20,8 @@ from app.routers.auth import get_current_user_optional
 from app.services import graph as plan_graph_module
 
 router = APIRouter(prefix="/api/plan", tags=["plan"])
+
+logger = logging.getLogger("uvicorn.error")
 
 
 class StreamIn(BaseModel):
@@ -33,6 +36,29 @@ class SnapshotIn(BaseModel):
     """v1.1 历史快照更新：聊天内容与地图视角（中心/缩放）。"""
     messages: list[dict] | None = None
     map_state: dict | None = None
+
+
+# 快照防膨胀上限：条数与单条文本都封顶（messages 来自前端原样上传，
+# 不设上限的话异常客户端可以借接口把超大文本写进 SQLite）
+MAX_SNAPSHOT_MSGS = 200
+MAX_MSG_TEXT = 4000
+
+
+def _clean_messages(msgs) -> list[dict]:
+    """快照清洗：只保留 {role, text}，条数与单条长度封顶。
+
+    用清洗后的列表落库，而不是"来什么存什么"——超出部分安静丢弃，
+    正常前端的对话量（单轮 ≤ 几十字、全程几十条）完全不受影响。
+    """
+    out: list[dict] = []
+    for m in (msgs or [])[:MAX_SNAPSHOT_MSGS]:
+        if not isinstance(m, dict):
+            continue
+        out.append({
+            "role": str(m.get("role") or "user")[:10],
+            "text": str(m.get("text") or "")[:MAX_MSG_TEXT],
+        })
+    return out
 
 
 def _sse(event: str, data: dict) -> str:
@@ -191,7 +217,8 @@ def update_snapshot(
         raise HTTPException(401, "登录后可保存快照")
     p = _ensure_alive_plan(plan_id, db, user)  # 已删除的不再接受写回
     if body.messages is not None:
-        p.chat_json = json.dumps(body.messages[-60:], ensure_ascii=False)  # 防膨胀，留最近60条
+        cleaned = _clean_messages(body.messages)[-60:]  # 防膨胀，留最近60条
+        p.chat_json = json.dumps(cleaned, ensure_ascii=False)
     if body.map_state is not None:
         state = {
             "center": body.map_state.get("center") or [],
@@ -251,7 +278,7 @@ async def plan_stream(
                     result_json=json.dumps(it, ensure_ascii=False),
                     title=str(it.get("title") or "")[:100],
                     summary=str(it.get("summary") or "")[:300],
-                    chat_json=json.dumps(body.messages or [], ensure_ascii=False),
+                    chat_json=json.dumps(_clean_messages(body.messages), ensure_ascii=False),
                 )
                 db.add(record)
                 db.commit()
@@ -267,8 +294,11 @@ async def plan_stream(
                 "plan_id": plan_id,
                 "saved": plan_id is not None,
             })
-        except Exception as e:  # 任何节点异常都以 error 事件收尾，不静默
-            yield _sse("result", {"done": False, "error": str(e)})
+        except Exception:
+            # 任何节点异常都以 error 事件收尾，不静默；
+            # 异常详情只进后端日志，不给前端——str(e) 可能带出内部路径与库名（信息泄露面）
+            logger.exception("规划流式生成失败")
+            yield _sse("result", {"done": False, "error": "生成失败，请稍后重试"})
         yield _sse("done", {})
 
     return StreamingResponse(
