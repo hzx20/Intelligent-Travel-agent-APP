@@ -115,6 +115,31 @@ def _hot_spot_ids(db: Session, limit: int) -> list[int]:
     return ids[:limit]
 
 
+@router.get("/regions")
+def list_regions(db: Session = Depends(get_db)):
+    """目的地联想候选：按城市聚合区县（区县按景点数降序）。
+    数据直接来自 spots 表，与数据底座自动保持同步。"""
+    rows = (
+        db.query(Spot.city, Spot.district, func.count(Spot.id).label("n"))
+        .filter(Spot.city.isnot(None), Spot.city != "", Spot.district.isnot(None), Spot.district != "")
+        .group_by(Spot.city, Spot.district)
+        .all()
+    )
+    regions: dict[str, list] = {}
+    for city, district, n in rows:
+        regions.setdefault(city, []).append({"name": district, "count": n})
+    for city in regions:
+        regions[city].sort(key=lambda d: -d["count"])
+    # 城市按景点总数排序，热门城市靠前
+    ordered = sorted(regions.items(), key=lambda kv: -sum(d["count"] for d in kv[1]))
+    return {
+        "cities": [
+            {"city": city, "districts": districts, "count": sum(d["count"] for d in districts)}
+            for city, districts in ordered
+        ]
+    }
+
+
 @router.get("/hot", response_model=list[SpotItem])
 def hot_spots(db: Session = Depends(get_db)):
     """首页"热门景区推荐"：收藏 Top4（冷启动按 id 兜底）。"""
