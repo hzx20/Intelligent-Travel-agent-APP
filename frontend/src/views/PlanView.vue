@@ -2,13 +2,16 @@
 /** 线路规划助手 v1.1：左对话流 + 右动态地图（高德 JS API，可缩放/拖动/打点/路线）。
  *  历史方案 = 快照（聊天内容 + 地图中心/缩放 + 标记路线数据），点击原样还原。 */
 import { computed, nextTick, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { api, streamPlan } from '../api'
 import { loadAmap } from '../utils/amap'
 import { useAuth } from '../store/auth'
-import RegionPicker from '../components/RegionPicker.vue'
-import DateRangePicker from '../components/DateRangePicker.vue'
+import RegionPicker from '../components/regionpicker.vue'
+import DateRangePicker from '../components/daterangepicker.vue'
 
 const { user } = useAuth()
+const route = useRoute()
+const router = useRouter()
 const messages = ref([])        // {role:'user'|'ai', text, streaming?}
 const input = ref('')
 const busy = ref(false)
@@ -20,6 +23,9 @@ const historyView = ref(false)  // 正在回看历史快照
 const chatBox = ref(null)
 const sessionId = ref(`s-${Date.now()}`)
 const collected = ref({})
+// 首页发令台带过来的城市：进页面就要回显到目的地选择框，
+// 否则会出现"输入框里写着成都、下面的目的地却是空的"这种自相矛盾的状态
+const prefillCity = ref(String(route.query.d || ''))
 
 // ---- 地图状态 ----
 const mapEl = ref(null)
@@ -277,6 +283,23 @@ function onDateRangePick(r) {
 }
 
 // ================= 对话 =================
+/** 首页发令台把需求带过来（?d=城市&days=天数&q=原话&auto=1）：
+ *  填好输入框和条件，auto=1 就直接开跑——不能让用户把刚说过的话再打一遍。 */
+function applyPrefill() {
+  const q = route.query
+  if (!q || !q.q) return
+  const city = String(q.d || '')
+  const days = Number(q.days || 0)
+  if (city) collected.value.destination = city
+  if (days > 0) collected.value.days = days
+  input.value = String(q.q)
+  if (String(q.auto) === '1' && !messages.value.length) {
+    // 先把 query 抹掉再发：刷新页面不该重复跑一次、也不该重复计一次调用
+    router.replace({ path: '/plan' })
+    setTimeout(() => send(), 350)
+  }
+}
+
 async function send() {
   const text = input.value.trim()
   if (!text || busy.value) return
@@ -518,7 +541,7 @@ function backToLive() {
   drawPlan(true)
 }
 
-onMounted(() => { loadHistory(); initMap() })
+onMounted(() => { loadHistory(); initMap(); applyPrefill() })
 </script>
 
 <template>
@@ -584,7 +607,7 @@ onMounted(() => { loadHistory(); initMap() })
         </div>
         <!-- 快捷条件：目的地联想 + 你想去多久（选中后并入需求，澄清少问一轮） -->
         <div class="chat-addons" :class="{ locked: busy }">
-          <RegionPicker @select="onRegionPick" />
+          <RegionPicker :initial="prefillCity" @select="onRegionPick" />
           <DateRangePicker @select="onDateRangePick" @clear="onDateRangePick(null)" />
         </div>
         <div class="chat-input">

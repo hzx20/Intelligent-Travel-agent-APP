@@ -389,3 +389,34 @@ plan_stream 落库前从不碰 db，流式期间不占池连接；改法反而�
 
 【验证】确定性回归 59 条全绿（1.74s，跳过 m1/m2/v07_graph 三个真调 LLM 文件）；
 沙箱 shell PATH 丢失复发，按 9-12 沉淀方案手动补 PortableGit usr/bin 后执行
+
+## 2026-11-07 · 首页定位改造：轮播让位，线路规划助手成为首屏主体
+
+【问题】首页是"内容门户"不是"工具入口"：首屏 260px 轮播 + 两屏景点卡片，
+核心功能只存在于导航栏第 3 个文字链接里；移动端 ≤640px 时 `.nav .links` 整块隐藏，
+规划助手被收进汉堡菜单，首屏彻底看不到。另发现 `/api/spots/hot` 与
+`/api/spots/for-you-guest` 同取 `_hot_spot_ids()` 开头，导致"热门 Top4"与
+"猜你喜欢"第 1 页前 4 条完全同款同序。
+
+【方案】三案对比（A 首页即规划页 / B 首屏强入口 / C 首屏内嵌轻量规划器）后定 B：
+首屏 70% 做"规划发令台"，提交带参数跳 `/plan` 自动发起；改造只落 Home + 导航层，
+PlanView 的对话/地图/快照逻辑不动，首屏也不拉高德 JS SDK。
+
+【改动】
+- 新增 `components/PlannerHero.vue`：一句话输入 + 目的地/天数条件行 + 3 个示例胶囊 + 5 个能力标签；
+  只收需求不发请求，提交 `router.push('/plan?d&days&q&auto=1')`
+- `HomeView.vue` 重写：删轮播；Hero 置顶；三步说明 860 居中；热门景区改「热门目的地」城市卡
+  （5 张无图渐变卡，点了把城市填回 Hero）；猜你喜欢 12×3 页 → 8 条；底部加攻略轻量横条
+- `App.vue` + `main.css`：导航「线路规划助手」→「AI 规划」实心按钮，且放在 `.links` 之外，
+  小屏不再被汉堡吃掉；≤640px 隐藏"游客 ·"前缀腾位置
+- `PlanView.vue`：读 `route.query` 预填 input/collected；`auto=1` 延时 350ms 自动 `send()`，
+  发前 `router.replace('/plan')` 抹掉 query，避免刷新重复触发
+- `regionpicker.vue`：加 `initial`（回显）+ `placement`（首屏向下弹）+ `placeholder` +
+  `--rp-h/--rp-fs` 两个 CSS 变量；顺手修掉 PlanView 里 `RegionPicker.vue` 的大小写错误引用
+- `SpotsView.vue` 顶部引导条 / `SpotDetailView.vue` 加「用 AI 排进行程」实心按钮——
+  景点板块从"浏览终点"变成"规划起点"
+
+【验证】`vite build` 通过；无头 Edge 截图核对 1440 桌面、390 移动端（用 iframe 绕开
+Windows 最小窗口宽度≈500 的截图钳制）；
+预填链路实测：`/plan?d=成都&days=3&q=去成都玩 3 天&auto=1` → 目的地回显成都、
+用户气泡自动发出、后端 clarify 节点被调用（本机无 .env，止于智谱 401，属预期）

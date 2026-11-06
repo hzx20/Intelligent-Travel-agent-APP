@@ -36,6 +36,20 @@ img { display: block; }
   z-index: 10;
 }
 .nav .logo { font-size: 17px; font-weight: 700; color: var(--green); }
+/* 核心入口：实心按钮，视觉权重高于其它文字链接 */
+.nav .nav-cta {
+  flex-shrink: 0;
+  background: var(--green);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 9px;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.nav .nav-cta:hover { background: #14563e; }
+.nav .nav-cta.router-link-active { background: #14563e; }
 .nav .links { display: flex; gap: 4px; flex: 1; }
 .nav .links a {
   padding: 6px 14px;
@@ -121,18 +135,7 @@ img { display: block; }
 .pager .pg.disabled { opacity: .4; cursor: default; pointer-events: none; }
 .pager .pg.ellipsis { border: none; background: transparent; cursor: default; color: #999; }
 
-/* 轮播 */
-.carousel { position: relative; border-radius: var(--radius); overflow: hidden; height: 260px; background: #dfe8e2; }
-.carousel .frame { height: 100%; background-size: cover; background-position: center; display: flex; align-items: flex-end; }
-.carousel .cap {
-  width: 100%; padding: 26px 20px 14px; color: #fff;
-  background: linear-gradient(transparent, rgba(0,0,0,.55));
-  font-size: 15px; font-weight: 600;
-}
-.carousel .dots { position: absolute; bottom: 10px; right: 14px; display: flex; gap: 6px; }
-.carousel .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.5); cursor: pointer; }
-.carousel .dot.on { background: #fff; }
-@media (max-width: 640px) { .carousel { height: 170px; } }
+/* 首页轮播已移除：首屏让给线路规划助手，图片内容在景点卡片里已有 */
 
 /* 空态/加载 */
 .empty { text-align: center; color: var(--text-sub); padding: 40px 0; font-size: 13px; }
@@ -145,7 +148,11 @@ img { display: block; }
 }
 @media (max-width: 640px) {
   .nav { gap: 8px; }
-  .nav .logo { margin-right: auto; font-size: 15px; }
+  .nav .logo { margin-right: auto; font-size: 14.5px; }
+  /* 小屏：把"游客 ·"这类前缀收掉，给常驻的 AI 规划按钮腾位置 */
+  .nav .u-hello { display: none; }
+  .nav .user { font-size: 12.5px; }
+  .nav .nav-cta { font-size: 12.5px; padding: 7px 12px; }
   .nav-toggle { display: block; }
   .nav .links.open {
     display: flex; flex-direction: column; gap: 0;

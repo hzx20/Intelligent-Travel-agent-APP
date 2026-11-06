@@ -31,17 +31,19 @@ async function submit() {
     <div class="links" :class="{ open: menuOpen }">
       <router-link to="/" @click="closeMenu">首页</router-link>
       <router-link to="/spots" @click="closeMenu">旅游景点</router-link>
-      <router-link to="/plan" @click="closeMenu">线路规划助手</router-link>
       <router-link to="/guides" @click="closeMenu">旅游攻略</router-link>
       <router-link v-if="user" to="/me" @click="closeMenu">个人中心</router-link>
       <router-link v-if="user?.is_admin" to="/admin" @click="closeMenu">管理后台</router-link>
     </div>
+    <!-- 核心入口做成实心按钮，且放在 .links 之外：
+         小屏时 .links 整体收起，这一颗仍然常驻，核心功能不会跟着消失 -->
+    <router-link to="/plan" class="nav-cta" @click="closeMenu">AI 规划</router-link>
     <span class="user">
       <template v-if="user">
-        你好，{{ user.nickname }} · <span class="lk" @click="logout">退出</span>
+        <span class="u-hello">你好，{{ user.nickname }} · </span><span class="lk" @click="logout">退出</span>
       </template>
       <template v-else>
-        游客 · <span class="lk" @click="openLogin('login')">登录</span> /
+        <span class="u-hello">游客 · </span><span class="lk" @click="openLogin('login')">登录</span> /
         <span class="lk" @click="openLogin('register')">注册</span>
       </template>
     </span>

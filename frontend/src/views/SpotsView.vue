@@ -54,6 +54,11 @@ onMounted(() => load(1))
 
 <template>
   <div class="wrap">
+    <!-- 景点板块的新定位：规划器的素材库，不是浏览终点 -->
+    <router-link class="plan-hint" to="/plan">
+      <span>挑好景点后，可以交给 AI 排成一条路线</span>
+      <b>去规划 →</b>
+    </router-link>
     <div class="filters">
       <input v-model="keyword" class="finput" placeholder="🔍 搜索景点名 / 标签 / 区域，支持多关键词" @keyup.enter="search" />
       <select v-model="city" class="fsel" @change="search">
@@ -87,6 +92,20 @@ onMounted(() => load(1))
 </template>
 
 <style scoped>
+.plan-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: var(--green-soft);
+  border: 1px solid var(--green-border);
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: #3d5f52;
+}
+.plan-hint b { margin-left: auto; color: var(--green); font-weight: 600; }
 .filters { display: flex; gap: 10px; flex-wrap: wrap; }
 .finput {
   flex: 1; min-width: 220px; border: 1.5px solid #bbb; border-radius: 10px;

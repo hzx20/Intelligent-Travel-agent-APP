@@ -1,6 +1,6 @@
 <script setup>
 /** 景点详情：大图 + 收藏切换 + 数据来源跳转 + 评论列表与发表 */
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '../api'
 import { useAuth } from '../store/auth'
@@ -14,6 +14,15 @@ const commentText = ref('')
 const commentRating = ref(0)
 const commentBusy = ref(false)
 const commentMsg = ref('')
+
+/** 「用 AI 排进行程」：带着这个城市和景点名跳到规划页，自动发起。
+ *  景点板块由此从"浏览终点"变成"规划起点"——不跟规划助手抢流量，而是给它送人。 */
+const planLink = computed(() => {
+  const s = detail.value?.spot
+  if (!s) return '/plan'
+  const q = `去${s.city}玩，想把${s.name}安排进行程`
+  return { path: '/plan', query: { d: s.city, q, auto: '1' } }
+})
 
 async function load() {
   try {
@@ -84,6 +93,7 @@ onMounted(load)
           <span v-if="detail.spot.is_free" class="badge-free">免费</span>
           <span v-else-if="detail.spot.price" class="badge-price">¥{{ detail.spot.price }} 起</span>
           <span v-else class="badge-free">票价以景区公示为准</span>
+          <router-link class="plan-btn" :to="planLink">用 AI 排进行程 →</router-link>
           <button class="fav-btn" :class="{ on: detail.favorited }" :disabled="favBusy" @click="toggleFav">
             {{ detail.favorited ? '❤ 已收藏' : '♡ 收藏' }} · {{ detail.favorite_count }} 人
           </button>
@@ -156,6 +166,13 @@ onMounted(load)
 .hero-cap p { font-size: 13px; opacity: .9; }
 .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-top: 14px; }
 .meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+/* 主行动：景点页唯一一个实心按钮，指向规划助手 */
+.plan-btn {
+  background: var(--green); color: #fff;
+  border-radius: 20px; padding: 6px 15px; font-size: 13px; font-weight: 600;
+  transition: background .15s;
+}
+.plan-btn:hover { background: #14563e; }
 .fav-btn {
   border: 1.5px solid var(--green-border); background: var(--green-soft); color: var(--green);
   border-radius: 20px; padding: 5px 14px; font-size: 13px;
