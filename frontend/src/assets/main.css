@@ -68,6 +68,10 @@ img { display: block; }
 @media (max-width: 640px) {
   .grid, .grid-3 { grid-template-columns: repeat(2, 1fr); }
   .nav .links { display: none; }
+  /* 区块标题是 flex，三项都不换行会把页面撑宽（390px 下横向溢出） */
+  .sec { flex-wrap: wrap; row-gap: 4px; }
+  .sec .more { margin-left: 0; }
+  .wrap { width: 92%; }
 }
 
 /* 景点卡 */
