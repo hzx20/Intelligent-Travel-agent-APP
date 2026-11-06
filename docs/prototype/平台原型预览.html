@@ -3,7 +3,7 @@
 <head data-page-node-id="wb9jAIKEZfhbpYbYd0UFWT">
 <meta charset="UTF-8" data-page-node-id="7ICaUYy0fb1TxDch89nf4x">
 <meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="3SwotnCHrhNq1ZeEH1XkES">
-<title>智能旅行规划平台 — 页面效果图 v1.0</title>
+<title>智能旅行规划平台 — 页面效果图 v1.1</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:"Microsoft YaHei",sans-serif; background:#f0efeb; color:#333; padding:24px 16px; }
@@ -40,14 +40,7 @@
   .ph.sea { background:linear-gradient(135deg,#d3e7ef,#b8d8e6); color:#4a7d96; }
   .ph.sun { background:linear-gradient(135deg,#f4e9d3,#ecd9ae); color:#96803f; }
   .ph.mount { background:linear-gradient(135deg,#e2e8dc,#c9d4c2); color:#6a7d5f; }
-  /* 首页 */
-  .carousel { position:relative; height:180px; border-radius:10px; overflow:hidden; margin-bottom:18px; }
-  .carousel .slide { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:16px; color:#fff; }
-  .carousel .slide .t1 { font-size:18px; font-weight:bold; text-shadow:0 1px 4px rgba(0,0,0,.35); }
-  .carousel .slide .t2 { font-size:12px; opacity:.9; text-shadow:0 1px 3px rgba(0,0,0,.35); }
-  .dots { position:absolute; right:14px; bottom:12px; display:flex; gap:5px; }
-  .dot { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.5); }
-  .dot.on { background:#fff; }
+  /* 首页（v1.1 轮播已移除，样式见下方「规划发令台」） */
   .sec { font-size:15px; font-weight:bold; margin:16px 0 10px; }
   .sec small { font-weight:normal; color:#999; font-size:12px; margin-left:8px; }
   .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
@@ -181,6 +174,40 @@
   .gt.on { border-color:#1a6e50; }
   .articletext { border:1px solid #e4e2da; border-radius:12px; padding:16px 18px 8px; background:#fff; margin-bottom:16px; }
   .articletext p { font-size:13.5px; line-height:2.1; color:#333; margin-bottom:12px; }
+  /* 首页 v1.1：规划发令台（首屏即入口，轮播已取消） */
+  .nl.cta { background:#1a6e50; color:#fff; font-weight:bold; }
+  .nl.cta.on { background:#14563e; }
+  .herobox { border:1px solid #cfe4da; background:#fafdfb; border-radius:14px; padding:22px 24px; margin-bottom:18px; }
+  .hkicker { font-size:11px; letter-spacing:2px; color:#1a6e50; margin-bottom:8px; }
+  .htitle { font-size:21px; font-weight:bold; color:#1d3a30; }
+  .hsub { font-size:12px; color:#777; line-height:1.9; margin-top:8px; }
+  .hask { display:flex; gap:8px; margin-top:14px; }
+  .hinput { flex:1; border:1.5px solid #cfd8d2; background:#fff; border-radius:10px; padding:11px 14px; font-size:13px; color:#aaa; }
+  .hcond { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .hsel { border:1.5px solid #ccc; background:#fff; border-radius:9px; padding:8px 12px; font-size:12px; color:#666; }
+  .hsel b { color:#1a6e50; }
+  .hsep { font-size:11px; color:#aaa; }
+  .hchip { border:1px solid #cfe4da; background:#eaf4ee; color:#1a6e50; border-radius:14px; padding:4px 10px; font-size:11px; }
+  .hcaps { margin-top:12px; font-size:11px; color:#9aa39d; }
+  .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .step { display:flex; gap:8px; border:1px solid #e4e2da; border-radius:10px; padding:10px 12px; background:#fff; }
+  .step .sn { width:20px; height:20px; border-radius:50%; background:#e3f0ea; color:#1a6e50; font-size:11px; font-weight:bold; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .step b { font-size:12.5px; display:block; }
+  .step small { font-size:11px; color:#999; display:block; margin-top:2px; }
+  .cities { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
+  .cityc { position:relative; overflow:hidden; border-radius:10px; padding:12px; min-height:84px; color:#fff; display:flex; flex-direction:column; justify-content:flex-end; }
+  .cityc b { font-size:14px; }
+  .cityc small { font-size:11px; opacity:.85; }
+  .cityc em { font-size:11px; font-style:normal; opacity:.8; margin-top:4px; }
+  .cityc .ghost { position:absolute; right:6px; top:0; font-size:42px; font-weight:bold; opacity:.15; }
+  .cityc.t1 { background:linear-gradient(135deg,#2f8d6a,#186b4d); }
+  .cityc.t2 { background:linear-gradient(135deg,#3d7f8f,#255e6d); }
+  .cityc.t3 { background:linear-gradient(135deg,#788f57,#4d6535); }
+  .cityc.t4 { background:linear-gradient(135deg,#b98a4f,#8b6130); }
+  .cityc.t5 { background:linear-gradient(135deg,#6b7c90,#414f62); }
+  .gstrip { display:flex; align-items:center; gap:10px; border:1px solid #e4e2da; border-radius:10px; padding:11px 14px; margin-top:16px; font-size:12px; color:#888; }
+  .gstrip b { color:#1a6e50; font-size:13px; }
+  .gstrip em { margin-left:auto; font-style:normal; color:#1a6e50; }
   /* 移动端适配（≤640px） */
   @media (max-width:640px){
     body { padding:14px 8px; }
@@ -197,6 +224,10 @@
     .admin { flex-direction:column; } .aside { width:100%; display:flex; flex-wrap:wrap; align-items:center; } .aside .ai2 { padding:6px 10px; }
     .ustat { margin-left:0; flex-wrap:wrap; gap:10px; }
     .gcard .ph { height:60px; }
+    .steps { grid-template-columns:1fr; }
+    .cities { grid-template-columns:repeat(2,1fr) !important; }
+    .hask { flex-direction:column; }
+    .htitle { font-size:17px; }
     .filters { flex-direction:column; } .finput { min-width:0; }
     .gcard .row, .gcard small { font-size:11px; }
   }
@@ -205,7 +236,7 @@
 </head>
 <body data-page-node-id="8DMXPykdPbHtYZdlqnhDsb">
 <div class="wrap" data-page-node-id="sJTCJpuUx05sY3vvxYgNKf">
-  <h1 data-page-node-id="ee1NKqgdttMrLHqI2yvF8U">智能旅行规划平台 · 页面效果图 <span class="tag" data-page-node-id="ymCmhWA0KcA1DyJYXmANsn">v1.0 · 十页完整版（docs/PROJECT_BRIEF.md 定稿配套）</span></h1>
+  <h1 data-page-node-id="ee1NKqgdttMrLHqI2yvF8U">智能旅行规划平台 · 页面效果图 <span class="tag" data-page-node-id="ymCmhWA0KcA1DyJYXmANsn">v1.1 · 十页完整版（2026-11-07 首页改版，对应 docs/PROJECT_BRIEF.md v1.1）</span></h1>
   <div class="sub" data-page-node-id="aIehVWuIADZWrc5vCMdpDz">高保真线框图 = 定布局、内容和交互用，不是最终配色。顶部导航栏是每个页面都会有的"平台骨架"，各页里绿色高亮的板块就是当前页。点页签切换，共 10 页。</div>
 
   <div class="tabs" data-page-node-id="z3IcALAyzAV11b3qQDDrmn">
@@ -226,35 +257,62 @@
     <div class="frame" data-page-node-id="l8dvTdznwJhWOrDhpJo8Qp">
       <div class="nav" data-page-node-id="cRO72nHKPlAKi2pn6oQvE0">
         <span class="logo" data-page-node-id="xpAZ3LSEzYSIRziTn7mIEL">🧭 旅行规划平台</span>
-        <span class="navlinks" data-page-node-id="rvbCxFHXhmq3R81mrgs99n"><span class="nl on" data-page-node-id="0DaK9gk8JYGoh3yO3BsZit">首页</span><span class="nl" data-page-node-id="DawdmHTXeE8He2KmOsZ13w">旅游景点</span><span class="nl" data-page-node-id="wkQgJLfBgd5P57dzCLbLkM">线路规划助手</span><span class="nl" data-page-node-id="CsqcN3bBfVArQoDPYpZWLR">旅游攻略</span><span class="nl" data-page-node-id="0Cx10rBzQnXhjCtW673bgj">个人中心</span></span>
+        <span class="navlinks" data-page-node-id="rvbCxFHXhmq3R81mrgs99n"><span class="nl on" data-page-node-id="0DaK9gk8JYGoh3yO3BsZit">首页</span><span class="nl" data-page-node-id="DawdmHTXeE8He2KmOsZ13w">旅游景点</span><span class="nl" data-page-node-id="CsqcN3bBfVArQoDPYpZWLR">旅游攻略</span><span class="nl" data-page-node-id="0Cx10rBzQnXhjCtW673bgj">个人中心</span></span>
+        <span class="nl cta">AI 规划</span>
         <span class="navuser" data-page-node-id="kscEZZUGrORmPskgheKUkp">游客 · <span class="lk" data-page-node-id="1ULX77dvJZZOEFdLmsqv0S">登录</span> / <span class="lk" data-page-node-id="Bdpz5B9oNJyJ1QX90CdSVJ">注册</span></span>
       </div>
       <div class="inner" data-page-node-id="e4ip6o5ZF9v5fdLjSpIGLe">
-        <div class="carousel" data-page-node-id="fpgY4w91fwbCskfuUnoRgx">
-          <div class="slide" style="background:linear-gradient(120deg,#4a8a68,#2d5e45);" data-page-node-id="f0BpAAs3kDLBzWN97y1y2g">
-            <div class="t1" data-page-node-id="yDhbwsdQh0K2BFnjXxvtsD">成都 · 大熊猫繁育研究基地</div>
-            <div class="t2" data-page-node-id="OlE3On4q3oSQWS6gKZ9gTL">国宝萌态 · 建议上午前往看活跃时段</div>
+        <!-- v1.1：首屏改为「规划发令台」，轮播已取消 -->
+        <div class="herobox">
+          <div class="hkicker">AI 智能旅行规划</div>
+          <div class="htitle">说一句话，帮你把行程排好</div>
+          <div class="hsub">覆盖成都、杭州、西安、北京、三亚 5 座城市、530 个真实地点。每个地点先用高德核实是否真的存在，再按游览顺序连成路线。</div>
+          <div class="hask">
+            <div class="hinput">例如：成都 3 天，带 5 岁孩子</div>
+            <span class="btn">生成我的路线 →</span>
           </div>
-          <div class="dots" data-page-node-id="zUAEhmKgxD7sHRjJUs6tRX"><span class="dot on" data-page-node-id="moL4Ysp43tEaPJiKFLTSGt"></span><span class="dot" data-page-node-id="AcZe5kIeUitZYBy9Hvabhy"></span><span class="dot" data-page-node-id="6dqQFbKZ1NTOhUfZqGgwQX"></span></div>
+          <div class="hcond">
+            <span class="hsel">📍 目的地，如：成都</span>
+            <span class="hsel">玩 <b>3</b> 天 ▾</span>
+            <span class="hsep">试试</span>
+            <span class="hchip">成都 3 天亲子</span>
+            <span class="hchip">杭州 2 天安静</span>
+            <span class="hchip">西安 4 天历史</span>
+          </div>
+          <div class="hcaps">地图逐点核实 · 在途耗时估算 · 出行难度评估 · 真实酒店推荐 · 天气预报</div>
         </div>
-        <div class="sec" style="display:flex;align-items:baseline;" data-page-node-id="rO9qIcwM55akrX17cVdu0j">热门景区推荐 <small data-page-node-id="AeqGtRWGvcAD2LSuw8WV2G">轮播图 5s 自动切换，共 3 帧</small><a class="more" onclick="show(1)">查看全部景点 →</a></div>
-        <div class="grid" data-page-node-id="URsEEJq6GQy0pcM7bPZ3aw">
-          <div class="gcard" data-page-node-id="UEYMzXvsQhdLCakECOx3tU"><div class="ph" data-page-node-id="PWbOKebfrM0O6XxNVCdiiI">宽窄巷子 · 图占位</div><div class="gi" data-page-node-id="METUrLLpKSoiby4zG9FRCp"><b data-page-node-id="UMUJtm3yXBouFVRDPGBgFB">宽窄巷子</b><small data-page-node-id="mzMqfFwfHtTCNMDkluYQG6">成都 · 青羊区</small><div class="row" data-page-node-id="ubDBRAejFvbMnggmXmCMkO"><span class="free" data-page-node-id="B4vcNQFZNi4E6aJyMztDhz">免费</span><span class="ht" data-page-node-id="FNUKmyS0xu4TTAmokp5zDL">历史街区</span></div></div></div>
-          <div class="gcard" data-page-node-id="OESM2VK4ZH9SPiSVIiPtSU"><div class="ph sea" data-page-node-id="DKvmJRhxmMTHmZcgY5FByg">西湖 · 图占位</div><div class="gi" data-page-node-id="iZTK7nTygxMZLMqOZMlrNH"><b data-page-node-id="TKa2dzRGYsHSZdD06J5D4j">杭州西湖</b><small data-page-node-id="Hz2A2vYXpZAFAaFmIf91G7">杭州 · 西湖区</small><div class="row" data-page-node-id="PoM8Ot1kxFt4jJhDEq0M3L"><span class="free" data-page-node-id="1qUD81DYw6HrtLx9tUVaFO">免费</span><span class="ht" data-page-node-id="WiKcAx8quAWxR4X0PJtEDk">湖光山色</span></div></div></div>
-          <div class="gcard" data-page-node-id="Hp8xBZwfs7KtTYQYkx1W6W"><div class="ph sun" data-page-node-id="sZdmO4BPpNFQIStjCX8toY">亚龙湾 · 图占位</div><div class="gi" data-page-node-id="sNAMVDPRE4f4sX8hrfrAh5"><b data-page-node-id="y9mryobsE4x0w4oaoQtyEA">亚龙湾</b><small data-page-node-id="LAGdUtcnOS9jvxcCXdZtQ1">三亚 · 吉阳区</small><div class="row" data-page-node-id="A4FHfgbyZpQdVI5OZnlkFj"><span class="price" data-page-node-id="tLa5HjmaR3HWbVZHnaz5za">¥158 起</span><span class="ht" data-page-node-id="f97peXkEQZzyXMkHuAIaXi">海滨度假</span></div></div></div>
-          <div class="gcard" data-page-node-id="Zk1bkPtx62h0T8PE0jcfiG"><div class="ph mount" data-page-node-id="ebeZBQkCaAq4yDMHytUcmB">都江堰 · 图占位</div><div class="gi" data-page-node-id="OhU6KrHJoxVNqJK9BPxRqu"><b data-page-node-id="m7L0hNyYq84iCKXRaczyG4">都江堰景区</b><small data-page-node-id="Jh1b9B5JMHVHRfu6uEOvzV">成都 · 都江堰市</small><div class="row" data-page-node-id="9RZ6txOcHndVYrcKLAxEMO"><span class="price" data-page-node-id="BuzOGaeOCFYcvFXCF47Wql">¥80 起</span><span class="ht" data-page-node-id="Rau6mA4CrUXPnGOcZCRHZ4">世界遗产</span></div></div></div>
+
+        <div class="steps">
+          <div class="step"><span class="sn">1</span><div><b>说你想要什么</b><small>目的地、天数、同行人，一句话就够</small></div></div>
+          <div class="step"><span class="sn">2</span><div><b>AI 追问补齐</b><small>缺什么问什么，不用填长表单</small></div></div>
+          <div class="step"><span class="sn">3</span><div><b>地图核实成线</b><small>每个地点查真，再按顺序连成路线</small></div></div>
         </div>
-        <div class="sec" data-page-node-id="le9T72iU90rCfI9dazmNIG">猜你喜欢 <small data-page-node-id="sJEBEkNpBVnQKKQyarlMP5">按你的收藏偏好 + 全站收藏热度推荐</small></div>
-        <div class="grid" id="recgrid" data-page-node-id="mD8cRsh34V0mVGhwlUaJvM">
-          <div class="gcard" data-page-node-id="QREGHxF7tR4LRMVSCJPdBF"><div class="ph mount" data-page-node-id="2nGNf6bFkjuKIfP7BwemlC">灵隐寺 · 图占位</div><div class="gi" data-page-node-id="96YHxE7YGKC9yU6sdY954d"><b data-page-node-id="WvTr9BdK79vZqtP31A41v0">灵隐寺</b><small data-page-node-id="lTHYssd3Jun8DA7hFJoF6C">杭州 · 因为收藏过"西湖"</small></div></div>
-          <div class="gcard" data-page-node-id="ADvSjENZBTdOpgH8H4pkOv"><div class="ph" data-page-node-id="2eDpoa6WwCDIr2q3cFwgQ7">锦里古街 · 图占位</div><div class="gi" data-page-node-id="JPAGoXapplvljl0O0fxtMT"><b data-page-node-id="xphl7HFopZAmFBspJUQwPd">锦里古街</b><small data-page-node-id="iH3CGfYg0T7TS0iFnT5LTh">成都 · 热门美食街区</small></div></div>
-          <div class="gcard" data-page-node-id="1VnpgWhg7g6oOjzokWAmNn"><div class="ph" data-page-node-id="jZilqlKChJmS0WDTadPhRD">大雁塔 · 图占位</div><div class="gi" data-page-node-id="f6ha1DMdx9pUd48TEbNe6z"><b data-page-node-id="4AGfNSvigo5DH6oo1hFZFQ">大雁塔</b><small data-page-node-id="FCjzS3nu3MowxNES2s4ATm">西安 · 全站收藏 Top3</small></div></div>
-          <div class="gcard" data-page-node-id="wQ8bXKGuPd7p81AwZAFCF0"><div class="ph sun" data-page-node-id="TEPU5LJPDFMV6VVkspOOFg">蜈支洲岛 · 图占位</div><div class="gi" data-page-node-id="h1Lx5yl8h4EARxWw1VYHsm"><b data-page-node-id="eHdYnVChwY3uLR4ooxzmWk">蜈支洲岛</b><small data-page-node-id="XfvPYonQC1qvkuElrxXouu">三亚 · 海岛控必收</small></div></div>
+
+        <div class="sec">热门目的地 <small>点一下，直接开始规划</small></div>
+        <div class="cities">
+          <div class="cityc t1"><span class="ghost">三</span><b>三亚</b><small>100 个景点</small><em>开始规划 →</em></div>
+          <div class="cityc t2"><span class="ghost">北</span><b>北京</b><small>100 个景点</small><em>开始规划 →</em></div>
+          <div class="cityc t3"><span class="ghost">成</span><b>成都</b><small>100 个景点</small><em>开始规划 →</em></div>
+          <div class="cityc t4"><span class="ghost">杭</span><b>杭州</b><small>100 个景点</small><em>开始规划 →</em></div>
+          <div class="cityc t5"><span class="ghost">西</span><b>西安</b><small>100 个景点</small><em>开始规划 →</em></div>
         </div>
-        <div class="pager"><span class="pg on" id="recpg1" onclick="recPage(1)">1</span><span class="pg" id="recpg2" onclick="recPage(2)">2</span><span class="pg" id="recpg3" onclick="recPage(3)">3</span><span class="pg" onclick="recPage(recCur+1)">下一页 ›</span></div>
+
+        <div class="sec" style="display:flex;align-items:baseline;">猜你喜欢 <small>按你的收藏偏好 + 全站收藏热度推荐，只展示 8 条</small><a class="more" onclick="show(1)">更多景点 →</a></div>
+        <div class="grid">
+          <div class="gcard"><div class="ph mount">灵隐寺 · 图占位</div><div class="gi"><b>灵隐寺</b><small>杭州 · 因为收藏过"西湖"</small></div></div>
+          <div class="gcard"><div class="ph">锦里古街 · 图占位</div><div class="gi"><b>锦里古街</b><small>成都 · 热门美食街区</small></div></div>
+          <div class="gcard"><div class="ph">大雁塔 · 图占位</div><div class="gi"><b>大雁塔</b><small>西安 · 全站收藏 Top3</small></div></div>
+          <div class="gcard"><div class="ph sun">蜈支洲岛 · 图占位</div><div class="gi"><b>蜈支洲岛</b><small>三亚 · 海岛控必收</small></div></div>
+          <div class="gcard"><div class="ph">宽窄巷子 · 图占位</div><div class="gi"><b>宽窄巷子</b><small>成都 · 历史街区</small></div></div>
+          <div class="gcard"><div class="ph sea">杭州西湖 · 图占位</div><div class="gi"><b>杭州西湖</b><small>杭州 · 湖光山色</small></div></div>
+          <div class="gcard"><div class="ph mount">都江堰 · 图占位</div><div class="gi"><b>都江堰景区</b><small>成都 · 世界遗产</small></div></div>
+          <div class="gcard"><div class="ph sun">兵马俑 · 图占位</div><div class="gi"><b>兵马俑</b><small>西安 · 世界遗产</small></div></div>
+        </div>
+
+        <div class="gstrip"><b>旅游攻略</b><span>看看别人怎么安排，或者把你的路线写下来</span><em>→</em></div>
       </div>
     </div>
-    <div class="note" data-page-node-id="jqC7rZEzZS2CorMgN5ynUu"><b data-page-node-id="K1dFT6Ops4ZtF1Sz6nDigq">这页的交互：</b><br data-page-node-id="sjJfonA94FcSj8CyU0GxF1">1. 轮播图自动播放（5 秒/帧），底部圆点可手动切。<br data-page-node-id="lcp6CTw9kU5iiFx88MAxxo">2. 推荐卡片与"猜你喜欢"卡片：点击 → 进入 ③ 景点详情页。<br data-page-node-id="fcfFmGnx1xoN0EqTcyiYUn">3. "猜你喜欢"规则：你的收藏标签偏好优先，没登录就按全站收藏热度。<br data-page-node-id="7cGv67OJpOKKpWYO3uuHlW">4. "猜你喜欢"支持分页：页码 1/2/3 与"下一页"按钮切换，每页 12 条（4×3 网格铺满），样式与景点列表页分页一致。<br>5. 右上角"登录/注册"→ 打开 ⑩ 弹窗。游客可自由浏览本页。</div>
+    <div class="note"><b>这页的交互：</b><br>1. <b>首屏即入口</b>：填一句话（或选目的地 + 天数）→ 点「生成我的路线」→ 跳到 ④ 线路规划助手并<b>自动开始生成</b>，不用把刚说的话再打一遍。<br>2. <b>热门目的地</b>城市卡：点击 → 把城市填回首屏入口，接着补天数即可出发。<br>3. <b>猜你喜欢</b>只展示 8 条精选，翻页交给 ② 景点列表页（每页 12 条真实分页）。<br>4. 点任意景点卡片 → 进入 ③ 景点详情页。<br>5. 右上角「登录/注册」→ 打开 ⑩ 弹窗。游客可用本页全部功能，只是不保存历史方案。<br>6. <b>设计说明</b>：旧版顶部轮播已取消——5 秒自动切换会抢注意力，图片内容在景点卡片里本来就有；顺带解决了"热门景区推荐"与"猜你喜欢"首屏 4 条完全重复的问题。</div>
   </div>
 
   <!-- ═══ 页2 景点列表 ═══ -->
@@ -262,7 +320,8 @@
     <div class="frame" data-page-node-id="yxHvOByuF3Wwp5pFg4Putb">
       <div class="nav" data-page-node-id="SCDsMCaEs9UbVVcX8Raa9t">
         <span class="logo" data-page-node-id="lmxXcfE9Y17miYvBBTlWXO">🧭 旅行规划平台</span>
-        <span class="navlinks" data-page-node-id="bQNBHaJBJBcRbkggUlE45j"><span class="nl" data-page-node-id="nm3hDTwET3740Fujeqinz5">首页</span><span class="nl on" data-page-node-id="SeDym0DGEDOIBDXmGBzZAb">旅游景点</span><span class="nl" data-page-node-id="IRJvF5vKyNqhYJaIwi9tYv">线路规划助手</span><span class="nl" data-page-node-id="zFXmOli0yfbJIYaQDIjDbs">旅游攻略</span><span class="nl" data-page-node-id="yu97ZSuOC3d2y4fQnOG4ty">个人中心</span></span>
+        <span class="navlinks" data-page-node-id="bQNBHaJBJBcRbkggUlE45j"><span class="nl" data-page-node-id="nm3hDTwET3740Fujeqinz5">首页</span><span class="nl on" data-page-node-id="SeDym0DGEDOIBDXmGBzZAb">旅游景点</span><span class="nl" data-page-node-id="zFXmOli0yfbJIYaQDIjDbs">旅游攻略</span><span class="nl" data-page-node-id="yu97ZSuOC3d2y4fQnOG4ty">个人中心</span></span>
+        <span class="nl cta">AI 规划</span>
         <span class="navuser" data-page-node-id="ZmNzdQA4xIY6wDS6zREZv0">游客 · <span class="lk" data-page-node-id="YgCvSzbvcYSHsw9rFAfpMf">登录</span></span>
       </div>
       <div class="inner" data-page-node-id="34LJTzOQflj2wQUrbBFzeo">
@@ -298,7 +357,8 @@
     <div class="frame" data-page-node-id="YfZFwOviBneWxmSyqcghr1">
       <div class="nav" data-page-node-id="hHeG8qB9oHR4XHerNBbI3v">
         <span class="logo" data-page-node-id="yHhYogeEY2XGwGAklNg2n8">🧭 旅行规划平台</span>
-        <span class="navlinks" data-page-node-id="GgNrK0QmgLmUaLA2THhw0b"><span class="nl" data-page-node-id="kEmCtYa9M5EH36IX0FyDdC">首页</span><span class="nl on" data-page-node-id="lukmxWCtEEIxFO7T6cmBk9">旅游景点</span><span class="nl" data-page-node-id="9FwqCSvmLFq6wNjRgQQ20U">线路规划助手</span><span class="nl" data-page-node-id="V9Y6RCG7e1MpncNHsNat9m">旅游攻略</span><span class="nl" data-page-node-id="2OIpQ9FEX5cFmBVg2BLYur">个人中心</span></span>
+        <span class="navlinks" data-page-node-id="GgNrK0QmgLmUaLA2THhw0b"><span class="nl" data-page-node-id="kEmCtYa9M5EH36IX0FyDdC">首页</span><span class="nl on" data-page-node-id="lukmxWCtEEIxFO7T6cmBk9">旅游景点</span><span class="nl" data-page-node-id="V9Y6RCG7e1MpncNHsNat9m">旅游攻略</span><span class="nl" data-page-node-id="2OIpQ9FEX5cFmBVg2BLYur">个人中心</span></span>
+        <span class="nl cta">AI 规划</span>
         <span class="navuser" data-page-node-id="ofPrWJ51ysDflSEFRGgydt">游客 · <span class="lk" data-page-node-id="3fp2btoxMirAyC1Apcpo4V">登录</span></span>
       </div>
       <div class="inner" data-page-node-id="7ETODhmqZu5bVOyPCz6Dzo">
@@ -331,7 +391,8 @@
     <div class="frame" data-page-node-id="pnpXl3ezXLro032GXFKPRB">
       <div class="nav" data-page-node-id="GFya0DcxL3bPzHcyb18y5v">
         <span class="logo" data-page-node-id="lty4k14v6Ax7HZYhBuvecF">🧭 旅行规划平台</span>
-        <span class="navlinks" data-page-node-id="zsIH84OGb8TXix7kptPlF6"><span class="nl" data-page-node-id="6r37HVGKGy5TWfqpvSYp3H">首页</span><span class="nl" data-page-node-id="WK2kyWpFL2czbsqCDceL9J">旅游景点</span><span class="nl on" data-page-node-id="W5TurYWWEWySRAFWStxjjg">线路规划助手</span><span class="nl" data-page-node-id="qc3qy8DiuW0eMjGGRCPVuV">旅游攻略</span><span class="nl" data-page-node-id="lmciDX5J4MQPCaaGWFYvkJ">个人中心</span></span>
+        <span class="navlinks" data-page-node-id="zsIH84OGb8TXix7kptPlF6"><span class="nl" data-page-node-id="6r37HVGKGy5TWfqpvSYp3H">首页</span><span class="nl" data-page-node-id="WK2kyWpFL2czbsqCDceL9J">旅游景点</span><span class="nl" data-page-node-id="qc3qy8DiuW0eMjGGRCPVuV">旅游攻略</span><span class="nl" data-page-node-id="lmciDX5J4MQPCaaGWFYvkJ">个人中心</span></span>
+        <span class="nl on cta">AI 规划</span>
         <span class="navuser" data-page-node-id="tRlHtOXE2FCHN1iHo3TlwH">游客 · <span class="lk" data-page-node-id="eTSpvEvkis1WMSWAZMMCkl">登录</span></span>
       </div>
       <div class="inner" data-page-node-id="xZYxzVT5YURpts93DvJhdS">
@@ -410,7 +471,8 @@
     <div class="frame" data-page-node-id="JZmFEY7CYWkcraO8TbRfyz">
       <div class="nav" data-page-node-id="CocRAHxvs3UuM1SuxdVBsq">
         <span class="logo" data-page-node-id="fDkO1pRYEk4iHGnKKDPG7t">🧭 旅行规划平台</span>
-        <span class="navlinks" data-page-node-id="wEzKJpVgGKtyBF2bGOSlne"><span class="nl" data-page-node-id="0aif1djsFwX9CO8PAf2mry">首页</span><span class="nl" data-page-node-id="9b0mS3DSVAqxusjOF5iuie">旅游景点</span><span class="nl" data-page-node-id="Dvf458FLuNC9Z8ILLLumMY">线路规划助手</span><span class="nl on" data-page-node-id="gbBnDc4WDYryUhGmpafrhj">旅游攻略</span><span class="nl" data-page-node-id="5BZwo0tFRXlNFuWrM1LAot">个人中心</span></span>
+        <span class="navlinks" data-page-node-id="wEzKJpVgGKtyBF2bGOSlne"><span class="nl" data-page-node-id="0aif1djsFwX9CO8PAf2mry">首页</span><span class="nl" data-page-node-id="9b0mS3DSVAqxusjOF5iuie">旅游景点</span><span class="nl on" data-page-node-id="gbBnDc4WDYryUhGmpafrhj">旅游攻略</span><span class="nl" data-page-node-id="5BZwo0tFRXlNFuWrM1LAot">个人中心</span></span>
+        <span class="nl cta">AI 规划</span>
         <span class="navuser" data-page-node-id="G8OuzVsFpgvySDLE46nFPE">游客 · <span class="lk" data-page-node-id="XSkfIHohsIAjPEpbClf1Ts">登录</span></span>
       </div>
       <div class="inner" data-page-node-id="HOAGrCrQFMHLpYgnvKH6KD">
@@ -439,7 +501,8 @@
     <div class="frame" data-page-node-id="FTyPhyA4ujgyaNBMX7a2lB">
       <div class="nav" data-page-node-id="h5LE7jY5pBZu2Es6oGN0YU">
         <span class="logo" data-page-node-id="nTGNKMrFTGBLVGLhNQzkcV">🧭 旅行规划平台</span>
-        <span class="navlinks" data-page-node-id="TnE8P0Rs7v2ynyxlJx4x84"><span class="nl" data-page-node-id="zIMkzm9TlFarCSi3KPkTdu">首页</span><span class="nl" data-page-node-id="JL74n8cDD0P4AeR2CVPLyi">旅游景点</span><span class="nl" data-page-node-id="d0sUcMxAfSoKgBeMYNbvmr">线路规划助手</span><span class="nl on" data-page-node-id="eIwCF6F0hWDCA0RsoXJjGC">旅游攻略</span><span class="nl" data-page-node-id="u2aU8XsptouM18vP99SQM6">个人中心</span></span>
+        <span class="navlinks" data-page-node-id="TnE8P0Rs7v2ynyxlJx4x84"><span class="nl" data-page-node-id="zIMkzm9TlFarCSi3KPkTdu">首页</span><span class="nl" data-page-node-id="JL74n8cDD0P4AeR2CVPLyi">旅游景点</span><span class="nl on" data-page-node-id="eIwCF6F0hWDCA0RsoXJjGC">旅游攻略</span><span class="nl" data-page-node-id="u2aU8XsptouM18vP99SQM6">个人中心</span></span>
+        <span class="nl cta">AI 规划</span>
         <span class="navuser" data-page-node-id="PBFrVsZZPNUFFf4GUh0Bhz">游客 · <span class="lk" data-page-node-id="kCGnszsyfEhk9KBgaDxt9a">登录</span></span>
       </div>
       <div class="inner" data-page-node-id="KiTxVO8OoC404VnPfSp0SR">
@@ -491,7 +554,8 @@
     <div class="frame" data-page-node-id="HWGDkVUhiuqdVvW8k4wqqB">
       <div class="nav" data-page-node-id="Oee2STMXQEG4UO7uVoDQmo">
         <span class="logo" data-page-node-id="SMDQAsdHAqCMEr7hBvfaUX">🧭 旅行规划平台</span>
-        <span class="navlinks" data-page-node-id="PjkEe1sgjfZ8Tra3vtRPb2"><span class="nl" data-page-node-id="rijccqkapntC14UBDryPBT">首页</span><span class="nl" data-page-node-id="dikAAjQbGwDMLt2cLAW5O7">旅游景点</span><span class="nl" data-page-node-id="4OhrN9Xv7gXN4Ge2tDrzag">线路规划助手</span><span class="nl on" data-page-node-id="XQqrYIjHu9tXrzBAhED9Ua">旅游攻略</span><span class="nl" data-page-node-id="IPPaiRbIo6XCiCE1r2dtQX">个人中心</span></span>
+        <span class="navlinks" data-page-node-id="PjkEe1sgjfZ8Tra3vtRPb2"><span class="nl" data-page-node-id="rijccqkapntC14UBDryPBT">首页</span><span class="nl" data-page-node-id="dikAAjQbGwDMLt2cLAW5O7">旅游景点</span><span class="nl on" data-page-node-id="XQqrYIjHu9tXrzBAhED9Ua">旅游攻略</span><span class="nl" data-page-node-id="IPPaiRbIo6XCiCE1r2dtQX">个人中心</span></span>
+        <span class="nl cta">AI 规划</span>
         <span class="navuser" data-page-node-id="1jnel0hdUc7EYKZ2E2wekN">😊 阿茶（已登录）</span>
       </div>
       <div class="inner" data-page-node-id="SxxHpdgTi0OXQMQYTFCuSW">
@@ -521,7 +585,8 @@
     <div class="frame" data-page-node-id="Srm3OpqurWMEGeWrOsijqp">
       <div class="nav" data-page-node-id="eHQ31b1VYoD1C66M2Ac2qp">
         <span class="logo" data-page-node-id="P07Ilj8kUIY8pjsNaB3sCd">🧭 旅行规划平台</span>
-        <span class="navlinks" data-page-node-id="XYCKUwPj03cHNcdZIVNeAE"><span class="nl" data-page-node-id="nK5J2zpyBHqiQyrnuf5HBE">首页</span><span class="nl" data-page-node-id="S0c30SZFJZqNMSyGHkPlA8">旅游景点</span><span class="nl" data-page-node-id="nxR9pih4SjPPDdVbW9p5uX">线路规划助手</span><span class="nl" data-page-node-id="6mPmZzkupDkrexijyHfjqd">旅游攻略</span><span class="nl on" data-page-node-id="C21n9eHiKeklXWaj8tQOmt">个人中心</span></span>
+        <span class="navlinks" data-page-node-id="XYCKUwPj03cHNcdZIVNeAE"><span class="nl" data-page-node-id="nK5J2zpyBHqiQyrnuf5HBE">首页</span><span class="nl" data-page-node-id="S0c30SZFJZqNMSyGHkPlA8">旅游景点</span><span class="nl" data-page-node-id="6mPmZzkupDkrexijyHfjqd">旅游攻略</span><span class="nl on" data-page-node-id="C21n9eHiKeklXWaj8tQOmt">个人中心</span></span>
+        <span class="nl cta">AI 规划</span>
         <span class="navuser" data-page-node-id="TtDIp4tYCh63CJ8DA0jO56">😊 阿茶（已登录）</span>
       </div>
       <div class="inner" data-page-node-id="5WVhga3Fs7zHCNzrGjzAX6">
@@ -597,7 +662,7 @@
     <div class="note" data-page-node-id="691woFJandZD4FvoNU83Mw"><b data-page-node-id="7zxf9ksJC0KCoqAwU8q5ap">这页的交互：</b>① 弹窗式（也可独立页，开发时定）；② 注册=用户名+密码，密码 bcrypt 加密存储，管理员也看不到原密码；③ 登录后右上角变成用户昵称，收藏/评论/发攻略/存历史全部解锁；④ 管理员后台另有独立登录入口。</div>
   </div>
 
-  <footer data-page-node-id="uVvLoPCn3sxPv89oUuFZcy">配套文档：docs/PROJECT_BRIEF.md v1.0（正式定稿）· 开发顺序：v0.5 数据底座 → v0.6 有门有脸 → v0.7 图上谈兵 → v0.8 游记笔墨 → v0.9 各就各位 → v1.0 整装正式版 · 逐页提修改意见，全部确认后开工。</footer>
+  <footer data-page-node-id="uVvLoPCn3sxPv89oUuFZcy">配套文档：docs/PROJECT_BRIEF.md v1.1（2026-11-07 修订）· 线上地址：http://134.175.137.18/travel/ · 开发顺序：v0.5 数据底座 → v0.6 有门有脸 → v0.7 图上谈兵 → v0.8 游记笔墨 → v0.9 各就各位 → v1.0 整装正式版 → v1.1 首页改版 · 首页已按线上实现重画，其余九页仍是 v1.0 定稿时的线框。</footer>
 </div>
 <script>
   function show(i){document.querySelectorAll('.tab').forEach((t,k)=>t.classList.toggle('on',k===i));document.querySelectorAll('.page').forEach((p,k)=>p.classList.toggle('on',k===i));}
@@ -605,15 +670,6 @@
   var gpics=['图 1 · 攻略头图 · 图占位','图 2 · 宽窄巷子 · 图占位','图 3 · 鹤鸣茶社 · 图占位','图 4 · 熊猫基地 · 图占位','图 5 · 锦里夜景 · 图占位','图 6 · 建设路小吃 · 图占位','图 7 · 武侯祠红墙 · 图占位','图 8 · 人民公园 · 图占位'];
   var gi=0;
   function gshow(i){gi=(i+gpics.length)%gpics.length;document.getElementById('gmain').textContent=gpics[gi];document.querySelectorAll('.gt').forEach(function(t,k){t.classList.toggle('on',k===gi);});}
-  /* 首页"猜你喜欢"分页：3 页 × 12 条（4 列 × 3 行铺满一屏） */
-  var recCur=1;
-  var recData={
-    1:[['灵隐寺','杭州 · 因为收藏过"西湖"','mount','灵隐寺 · 图占位'],['锦里古街','成都 · 热门美食街区','','锦里古街 · 图占位'],['大雁塔','西安 · 全站收藏 Top3','','大雁塔 · 图占位'],['蜈支洲岛','三亚 · 海岛控必收','sun','蜈支洲岛 · 图占位'],['武侯祠','成都 · 三国圣地','','武侯祠 · 图占位'],['雷峰塔','杭州 · 西湖十景之一','mount','雷峰塔 · 图占位'],['兵马俑','西安 · 世界第八大奇迹','','兵马俑 · 图占位'],['天涯海角','三亚 · 打卡圣地','sea','天涯海角 · 图占位'],['故宫博物院','北京 · 全站热度第一','','故宫 · 图占位'],['颐和园','北京 · 皇家园林','mount','颐和园 · 图占位'],['春熙路','成都 · 潮人聚集地','','春熙路 · 图占位'],['断桥残雪','杭州 · 西湖地标','','断桥残雪 · 图占位']],
-    2:[['宽窄巷子','成都 · 历史街区，同款Citywalk','','宽窄巷子 · 图占位'],['西湖','杭州 · 你收藏过的湖光山色','sea','西湖 · 图占位'],['都江堰景区','成都 · 世界遗产水位线','mount','都江堰 · 图占位'],['亚龙湾','三亚 · 海滨度假首选','sun','亚龙湾 · 图占位'],['天坛公园','北京 · 祈福打卡地','','天坛 · 图占位'],['西安城墙','西安 · 夜骑古城墙','','西安城墙 · 图占位'],['西溪湿地','杭州 · 城市绿肺','sea','西溪湿地 · 图占位'],['八达岭长城','北京 · 不到长城非好汉','mount','八达岭长城 · 图占位'],['华清宫','西安 · 长恨歌实景演出地','','华清宫 · 图占位'],['南山文化旅游区','三亚 · 海上观音','mount','南山寺 · 图占位'],['什刹海','北京 · 胡同与酒吧街','sea','什刹海 · 图占位'],['南锣鼓巷','北京 · 老北京胡同','','南锣鼓巷 · 图占位']],
-    3:[['大熊猫繁育基地','成都 · 国宝必看','','熊猫基地 · 图占位'],['杜甫草堂','成都 · 诗圣故居','mount','杜甫草堂 · 图占位'],['青城山','成都 · 道教名山','mount','青城山 · 图占位'],['良渚古城遗址','杭州 · 五千年世界遗产','','良渚古城 · 图占位'],['清河坊历史街区','杭州 · 宋韵老街','','清河坊 · 图占位'],['大唐不夜城','西安 · 网红步行街','','大唐不夜城 · 图占位'],['回民街','西安 · 美食天堂','','回民街 · 图占位'],['798艺术区','北京 · 文艺打卡地','','798艺术区 · 图占位'],['鸟巢','北京 · 奥运地标','','鸟巢 · 图占位'],['北海公园','北京 · 皇家园林泛舟','sea','北海公园 · 图占位'],['三亚湾','三亚 · 夕阳海岸','sea','三亚湾 · 图占位'],['大东海','三亚 · 免费海滨浴场','sun','大东海 · 图占位']]
-  };
-  function recCard(c){return '<div class="gcard"><div class="ph '+c[2]+'">'+c[3]+'</div><div class="gi"><b>'+c[0]+'</b><small>'+c[1]+'</small></div></div>';}
-  function recPage(n){if(n<1||n>3)return;recCur=n;document.getElementById('recgrid').innerHTML=recData[n].map(recCard).join('');for(var k=1;k<=3;k++){document.getElementById('recpg'+k).classList.toggle('on',k===n);}}
   /* 景点列表页分页：3 页 × 12 条（3 列 × 4 行），首批 5 城 */
   var spotCur=1;
   var spotData={
