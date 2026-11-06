@@ -10,7 +10,7 @@
 - guide_spots    攻略关联景点（多对多）
 - ai_plans       AI 路线规划记录（管理员后台查看）
 """
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import (
     Boolean,
@@ -36,8 +36,13 @@ guide_spots_table = Table(
 )
 
 
-def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+def now_local() -> datetime:
+    """本地时间（服务器与开发机都按 Asia/Shanghai 运行）。
+
+    早先这里存的是 UTC，但所有接口都用 strftime 原样输出，导致页面时间比
+    本地时间早 8 小时。改成直接存本地时间，展示层不再需要额外转换。
+    """
+    return datetime.now()
 
 
 class User(Base):
@@ -50,7 +55,7 @@ class User(Base):
     avatar: Mapped[str] = mapped_column(String(500), default="")
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)  # 管理员可停用账户
-    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=now_local)
 
     favorites: Mapped[list["Favorite"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     guides: Mapped[list["Guide"]] = relationship(back_populates="user")
@@ -75,7 +80,7 @@ class Spot(Base):
     source_url: Mapped[str] = mapped_column(String(500), default="")
     image_url: Mapped[str] = mapped_column(String(500), default="")  # POI 自带照片，无图留空
     amap_id: Mapped[str] = mapped_column(String(50), unique=True, index=True)  # 防重复入库
-    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=now_local)
 
     comments: Mapped[list["Comment"]] = relationship(back_populates="spot", cascade="all, delete-orphan")
 
@@ -87,7 +92,7 @@ class Favorite(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     spot_id: Mapped[int] = mapped_column(ForeignKey("spots.id"), index=True)
-    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=now_local)
 
     user: Mapped["User"] = relationship(back_populates="favorites")
     spot: Mapped["Spot"] = relationship()
@@ -102,7 +107,7 @@ class Comment(Base):
     content: Mapped[str] = mapped_column(Text)
     rating: Mapped[int | None] = mapped_column(Integer, nullable=True)  # 1-5 分，可空
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)  # 审核删除=软删除
-    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=now_local)
 
     spot: Mapped["Spot"] = relationship(back_populates="comments")
 
@@ -118,8 +123,8 @@ class Guide(Base):
     cover_image: Mapped[str] = mapped_column(String(500), default="")
     views: Mapped[int] = mapped_column(Integer, default=0)  # v0.8：浏览量（详情页每次打开 +1）
     is_draft: Mapped[bool] = mapped_column(Boolean, default=False)  # v0.8：草稿不进公开列表
-    created_at: Mapped[datetime] = mapped_column(default=utcnow)
-    updated_at: Mapped[datetime] = mapped_column(default=utcnow, onupdate=utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=now_local)
+    updated_at: Mapped[datetime] = mapped_column(default=now_local, onupdate=now_local)
 
     user: Mapped["User"] = relationship(back_populates="guides")
     images: Mapped[list["GuideImage"]] = relationship(back_populates="guide", cascade="all, delete-orphan")
@@ -154,6 +159,6 @@ class AiPlan(Base):
     summary: Mapped[str] = mapped_column(String(300), default="")  # 一句话摘要（历史列表展示用）
     chat_json: Mapped[str] = mapped_column(Text, default="[]")     # 对话快照 [{role,text,logs}]
     map_json: Mapped[str] = mapped_column(Text, default="{}")      # 地图状态 {center,zoom}
-    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=now_local)
 
     user: Mapped["User"] = relationship(back_populates="ai_plans")

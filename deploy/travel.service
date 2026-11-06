@@ -1,0 +1,27 @@
+# 旅行规划 Agent 的 systemd 单元
+# 安装：sudo cp deploy/travel.service /etc/systemd/system/
+#       sudo systemctl daemon-reload && sudo systemctl enable --now travel
+#
+# 注意：必须监听 0.0.0.0。nginx 跑在 Docker 容器里，通过 172.18.0.1 访问宿主机，
+# 只听 127.0.0.1 会得到 connect() failed (111)。
+
+[Unit]
+Description=Travel Planner API (FastAPI)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/travel/app/backend
+Environment=TZ=Asia/Shanghai
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/travel/venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1
+Restart=always
+RestartSec=3
+MemoryMax=1200M
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -13,7 +13,9 @@ let promise = null
 export function loadAmap() {
   if (promise) return promise
   promise = (async () => {
-    const cfg = await fetch('/api/map/config').then((r) => r.json())
+    // 与 API 层共用同一个前缀：生产环境是 /travel，dev 是空串
+    const { BASE } = await import('../api')
+    const cfg = await fetch(BASE + '/api/map/config').then((r) => r.json())
     if (!cfg.enabled) {
       throw new Error('MISSING_KEY')
     }

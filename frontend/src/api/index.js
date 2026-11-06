@@ -1,6 +1,10 @@
 /** 极简 API 层：fetch 封装 + token 自动携带 */
 const TOKEN_KEY = 'tp_token'
 
+// 生产构建挂在 /travel/ 子路径下，接口也要跟着加前缀；
+// dev 时 BASE_URL 是 '/'，拼接结果仍是原来的 /api/...
+export const BASE = import.meta.env.BASE_URL.replace(/\/$/, '')
+
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY) || ''
 }
@@ -12,7 +16,7 @@ async function request(method, url, body) {
   const headers = { 'Content-Type': 'application/json' }
   const token = getToken()
   if (token) headers.Authorization = `Bearer ${token}`
-  const resp = await fetch(url, {
+  const resp = await fetch(BASE + url, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
@@ -42,7 +46,7 @@ export async function streamPlan(payload, { onLog, onToken, onResult, onDone }) 
   const headers = { 'Content-Type': 'application/json' }
   const token = getToken()
   if (token) headers.Authorization = `Bearer ${token}`
-  const resp = await fetch('/api/plan/stream', {
+  const resp = await fetch(BASE + '/api/plan/stream', {
     method: 'POST', headers, body: JSON.stringify(payload),
   })
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`)

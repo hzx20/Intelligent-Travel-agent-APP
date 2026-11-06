@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:travel": "vite build --mode travel",
     "preview": "vite preview"
   },
   "dependencies": {

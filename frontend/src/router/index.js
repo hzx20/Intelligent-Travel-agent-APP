@@ -14,7 +14,9 @@ const routes = [
 ]
 
 export default createRouter({
-  history: createWebHistory(),
+  // 生产环境挂在 /travel/ 子路径下，这里跟随 Vite 的 BASE_URL，
+  // 否则刷新 /travel/plan 会被当成站内根路由而 404
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior: () => ({ top: 0 }),
 })
