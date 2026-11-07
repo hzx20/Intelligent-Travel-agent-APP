@@ -426,3 +426,49 @@ Windows 最小窗口宽度≈500 的截图钳制）；
 全站 8 处导航同步把「线路规划助手」改成右侧实心「AI 规划」（页4 保持激活态深绿）；
 顺手删掉废弃的轮播样式与 `recPage` 分页脚本，页脚版本号同步 v1.1。
 另导出 `analysis/首页效果图-v1.1.png`（1000×959）供文档/答辩直接引用。
+
+---
+
+## 2026-11-07 · 生成任务搬到后端：切页面/刷新/关标签页都不再中断（后端 0.15.0）
+
+【问题】v1.2 只保住了"状态"，没保住"任务"。会话状态确实搬到了模块级 store，
+但生成仍然跑在 `StreamingResponse` 的响应生成器里——SSE 的前提是连接一直连着。
+浏览器一旦卸载或挂起页面（整页跳转、刷新、关标签页、移动端后台回收内存），
+连接断开，Starlette 会取消那个生成器，任务当场死亡。
+用户看到的就是：结果只进了历史方案，页面上却没跑完。
+换句话说，v1.2 能防住"前端主动 abort"，防不住"浏览器把连接带走"。
+
+【方案】把生成从 HTTP 请求里彻底搬出来，改成"下单 + 轮询"：
+- 后端 `asyncio.create_task` 跑任务，生命周期与任何连接无关；
+  事件按自增 seq 缓存在任务里，前端按 `?since=` 拉增量，断线期间的事件不丢
+- 前端 `send()` 只负责下单（POST 立刻返回），然后每 500ms 轮询一次；
+  轮询定时器在模块级，切路由照常跑
+- `job_id` 存 sessionStorage（刷新即续），登录用户重开标签页靠 `/api/plan/jobs/active` 找回
+- 兼容：`/api/plan/stream` 保留，但底层同样走任务——断开只停止转发，不取消生成
+
+【改动】
+- 新增 `backend/app/services/plan_jobs.py`：`PlanJob` 状态机（running/done/error/cancelled）
+  + 事件缓冲 + `asyncio.create_task` 执行体；落库自己开 `SessionLocal`
+  （请求作用域的 db 在响应结束后已关闭，这是旧实现埋的隐患）；
+  任务保留 30 分钟供回来取，游客不参与 `/active`（user_id=0 是所有游客共用的桶）
+- `backend/app/routers/planner.py`：新增 `/api/plan/jobs`（下单）、`/jobs/active`（找回）、
+  `/jobs/{id}`（增量拉取）、`DELETE /jobs/{id}`（取消）；路由注册在 `/{plan_id}` 之前，
+  否则 `jobs` 会被 int 转换挡成 422；`/stream` 改为转发任务事件
+- `frontend/src/api/index.js`：新增 `planJob` 四个方法；`request` 抛出的错误带 `status`，
+  用于区分 404（任务过期）和网络抖动
+- `frontend/src/store/planSession.js`：`send()` 改为下单 + 轮询；新增
+  `schedulePoll/pollOnce/applySnapshot/applyResult/finishJob/abandonJob/cancelJob`；
+  `hydrate()` 恢复时若本地有 job_id 直接续上，否则调 `tryResumeRemote()`；
+  存档保留"末尾正在生成的空气泡"；生成完成而用户正在翻历史时自动切回实时对话
+- `backend/tests/conftest.py`：把 `plan_jobs.SESSION_FACTORY` 指到测试内存库，
+  否则后台任务会把假行程写进真实 `backend/data/app.db`
+- 新增 `backend/tests/test_v13_jobs.py`：7 项
+
+【验证】pytest 7/7 通过（立即返回、断线 0.5s 后事件齐全且日志不重复、登录落库、
+active 找回、取消生效、越权 404、游客不串台）；
+真实 uvicorn 断线验收：下单 0.00s 返回 → 断开 4 秒不发请求 → 回来 `status=done`、
+3 条过程日志与结果齐全、`since` 增量正确、`DELETE` 后状态 cancelled；
+`vite build` 通过。
+
+【遗留】任务存在进程内存，只适合 `uvicorn --workers 1`（当前部署即如此）；
+扩多 worker 需换 Redis 或落任务表。进程重启任务会丢，但已落库的行程不受影响。

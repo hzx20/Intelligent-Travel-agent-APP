@@ -12,6 +12,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.db.database import Base, get_db
 from app.main import app
+from app.services import plan_jobs
 
 
 @pytest.fixture()
@@ -30,6 +31,17 @@ def client():
             db.close()
 
     app.dependency_overrides[get_db] = _override
-    with TestClient(app) as c:
-        yield c, TestSession
-    app.dependency_overrides.clear()
+
+    # 后台任务落库走的是模块级 SESSION_FACTORY（请求的 db 早就关了，用不了），
+    # 这里指到同一个内存库；否则测试会写进真实的 backend/data/app.db。
+    _old_factory = plan_jobs.SESSION_FACTORY
+    plan_jobs.SESSION_FACTORY = TestSession
+    plan_jobs._jobs.clear()   # 任务表是进程级全局的，测试之间必须清干净
+
+    try:
+        with TestClient(app) as c:
+            yield c, TestSession
+    finally:
+        plan_jobs._jobs.clear()
+        plan_jobs.SESSION_FACTORY = _old_factory
+        app.dependency_overrides.clear()

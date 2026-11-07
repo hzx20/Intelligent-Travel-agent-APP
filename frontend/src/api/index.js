@@ -24,7 +24,9 @@ async function request(method, url, body) {
   if (!resp.ok) {
     let detail = `HTTP ${resp.status}`
     try { detail = (await resp.json()).detail || detail } catch { /* keep */ }
-    throw new Error(detail)
+    const err = new Error(detail)
+    err.status = resp.status   // 调用方靠它区分 404（任务过期）和网络抖动
+    throw err
   }
   if (resp.status === 204) return null // 删除等无响应体
   return resp.json()
@@ -39,10 +41,28 @@ export const api = {
 }
 
 /**
- * SSE 流式规划：POST + ReadableStream 手动解析（fetch 不支持 EventSource 的 POST）
+ * 后台规划任务（v1.3 起前端走这套）
+ *
+ * 为什么不直接用 SSE 了：
+ *   SSE 是"一条连接扛一个任务"，连接一断（切页面/刷新/关标签页）服务端就取消任务。
+ *   改成"下单 + 轮询"之后，任务活在后端，前端只是个看板——断开不影响它跑。
+ *   轮询还有个好处：断网恢复后接着拉就行，不用处理长连接重连那一堆状态。
+ */
+export const planJob = {
+  /** 建任务，立刻返回 {job_id} —— 不等生成 */
+  create: (payload) => request('POST', '/api/plan/jobs', payload),
+  /** 拉增量：since 传上次收到的最大 seq，只回比它新的事件 */
+  poll: (id, since = 0) => request('GET', `/api/plan/jobs/${encodeURIComponent(id)}?since=${since}`),
+  /** 找回"我最近一条还在跑的任务"（关掉页面再打开时用） */
+  active: () => request('GET', '/api/plan/jobs/active'),
+  /** 取消（开新会话时顺手掐掉旧任务，别白烧模型调用） */
+  cancel: (id) => request('DELETE', `/api/plan/jobs/${encodeURIComponent(id)}`),
+}
+
+/**
+ * SSE 流式规划（保留给外部集成 / 调试，前端 v1.3 起不再用它）
+ * POST + ReadableStream 手动解析（fetch 不支持 EventSource 的 POST）
  * 回调：onLog({node,message}) / onToken(text) / onResult(data) / onDone()
- * signal：AbortSignal —— 换新需求/清空会话时要能主动掐断旧请求，
- *         否则两条流会同时往同一个对话里写，内容交叉。
  */
 export async function streamPlan(payload, { onLog, onToken, onResult, onDone, signal } = {}) {
   const headers = { 'Content-Type': 'application/json' }

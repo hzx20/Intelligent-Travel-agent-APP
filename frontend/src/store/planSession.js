@@ -1,30 +1,37 @@
-/** 规划会话（v1.2：让"生成到一半切走"不再丢东西）
+/** 规划会话（v1.3：生成任务搬到后端，切页面/刷新/关标签页都不再中断）
  *
  * 为什么要单独抽这一层？
  *   PlanView 是路由级页面，用户点「首页 / 旅游景点 / 旅游攻略」时组件会被销毁。
  *   v1.1 以前对话、行程、需求槽位（collected）、当前记录 id 全存在组件内部的 ref 里，
  *   组件一销毁就全没了 —— 表现就是"生成到一半切走，回来一片空白，还得从头再说一遍"。
  *
- * 这里做了三件事：
- *  1. 状态放模块级单例：ES 模块只会加载一次，页面反复挂载销毁都不影响这些 ref；
- *  2. 生成请求也在这里发起：页面只是"显示器"。切走时 fetch 继续跑，token 继续写进
- *     同一个状态里，回来就能看到完整结果（甚至能看到还在打字的过程）；
- *  3. 再往 sessionStorage 存一份：连刷新/关标签页也能恢复。恢复时校验归属用户，
- *     避免 A 的行程被显示给 B。
+ * v1.2 把状态提到了模块级单例（ES 模块只加载一次，页面反复挂载销毁都不影响）。
+ * 但那只解决了一半问题：生成请求虽然写在模块里，仍然是"一条 SSE 长连接"。
+ * 连接一断，服务端就会取消那个响应生成器——所以切页面/刷新依然会打断生成，
+ * 用户只能事后去历史方案里捡已经落库的结果。
+ *
+ * v1.3 的做法：**生成不属于任何 HTTP 连接**
+ *   1. 发一句话 = 向后端"下单"（POST /api/plan/jobs），立刻拿回 job_id；
+ *   2. 真正的生成跑在后端后台任务里，前端只是每隔 500ms 去拉一次增量事件；
+ *   3. 页面切走、刷新、甚至关标签页，任务都在后端跑到底；
+ *   4. 回来时按 job_id 续上（刷新走 sessionStorage，重开标签页走 /jobs/active），
+ *      把断线期间的日志和内容一次补齐，然后继续跟进度。
  *
  * 约定：本文件只管"会话与数据"，不碰地图实例和 DOM —— 那些属于页面。
  * 需要让地图动起来时，往 mapCommand 里放一条指令，页面 watch 到就去执行。
  */
 import { ref } from 'vue'
-import { api, streamPlan } from '../api'
+import { api, planJob } from '../api'
 import { useAuth } from './auth'
 import { fmtMin } from '../utils/format'
 
 const { user } = useAuth()
 
 const STORAGE_KEY = 'tp_plan_session_v1'
+const JOB_KEY = 'tp_plan_job_v1'   // 只存 job_id：刷新后靠它把后台任务接回来
 const STORAGE_VERSION = 1
 const MAX_KEEP_MSGS = 60          // 只留最近 60 条，防止快照无限膨胀
+const POLL_MS = 500               // 轮询间隔：够快看出"在动"，又不至于把后端打爆
 
 /* ======================= 会话状态 ======================= */
 const messages = ref([])          // {role:'user'|'ai', text, streaming?}
@@ -50,10 +57,14 @@ const nearbyHotels = ref([])      // 锚点周边真实酒店（补位用）
 const scrollKey = ref(0)
 
 /* ======================= 非响应式内部句柄 ======================= */
-let abortCtrl = null      // 当前流式请求的取消器
-let runSeq = 0            // 第几次生成：用于让"被放弃的旧请求"的回调失效
+let jobId = null          // 当前后端任务的 id（生成中才有值）
+let pollTimer = null      // 轮询定时器
+let pollSeq = 0           // 已消费到的事件序号：只拉比它新的
+let pollFails = 0         // 连续失败次数（用于退避）
+let jobMsg = null         // 本次生成写入的 AI 气泡（锁对象引用，不锁下标）
+let runSeq = 0            // 第几次生成：让"被放弃的旧任务"的回调失效
 let typingTimer = null    // 打字机定时器
-let typingTarget = null   // 打字机正在写的那条消息（锁对象引用，不锁下标）
+let typingTarget = null   // 打字机正在写的那条消息
 let persistTimer = null   // 落 sessionStorage 的防抖
 let saveTimer = null      // 地图视角写回后端的防抖
 let cmdSeq = 0            // 地图指令序号
@@ -62,6 +73,17 @@ let hydrated = false      // 是否已尝试过从 sessionStorage 恢复
 
 function newSessionId() {
   return `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+}
+
+/* ======================= 任务 id 的本地存档 ======================= */
+/* 只存 job_id，不存别的：它足够小，也足够让刷新后的页面"接回"后台任务。
+ * 用 sessionStorage 而不是 localStorage —— 每个标签页管自己的会话，
+ * 两个标签页各开一局时不会互相抢任务。 */
+function storeJobId(id) {
+  try { id ? sessionStorage.setItem(JOB_KEY, id) : sessionStorage.removeItem(JOB_KEY) } catch { /* 隐私模式 */ }
+}
+function readJobId() {
+  try { return sessionStorage.getItem(JOB_KEY) || '' } catch { return '' }
 }
 
 /* ======================= 地图指令 ======================= */
@@ -182,7 +204,9 @@ async function saveSnapshot({ mapOnly = false } = {}) {
   if (!id || !user.value) return   // 游客不落库，状态由 sessionStorage 兜底
   const body = { map_state: mapView.value }
   if (!mapOnly) {
-    body.messages = messages.value
+    // 正在看历史快照时，要存的是"自己的对话"，不能把临时翻开的那条历史盖上去
+    const msgs = historyView.value && liveSnapshot.value ? liveSnapshot.value.messages : messages.value
+    body.messages = msgs
       .filter((m) => m.text)
       .map((m) => ({ role: m.role, text: m.text }))
   }
@@ -217,7 +241,173 @@ async function refreshHistory() {
   try { history.value = (await api.get('/api/plan/history')).items } catch { /* 游客忽略 */ }
 }
 
-/* ======================= 生成 ======================= */
+/* ======================= 后台任务：下单 / 轮询 / 收尾 ======================= */
+/** 往对话里加一条空的 AI 气泡，并返回它的**响应式代理**。
+ *
+ *  这里有个坑必须说清楚：Vue 的 ref 数组里存的是 Proxy，push 进去的原始对象
+ *  本身不是响应式的。如果后续对"原始对象"改 text，数据确实变了，但视图收不到通知，
+ *  表现就是打字机一直在写、界面一直空着（光标 ▌ 转圈）。
+ *  所以 push 完一定要从数组里再取一次——拿到的才是代理。 */
+function pushAiMsg() {
+  messages.value.push({ role: 'ai', text: '', streaming: true })
+  const msg = messages.value[messages.value.length - 1]
+  jobMsg = msg
+  return msg
+}
+
+/** 当前生成中的 AI 气泡。引用一旦锁定就不再换，
+ *  这样用户中途去看历史快照，token 仍然写进"自己那份对话"里，切回来能接上。
+ *  刷新恢复时会留着一条空的 AI 气泡，这里优先复用它，别再 push 出第二条空的。 */
+function ensureJobMsg() {
+  if (jobMsg) return jobMsg
+  const tail = messages.value[messages.value.length - 1]
+  if (tail && tail.role === 'ai' && !tail.text) {
+    tail.streaming = true
+    jobMsg = tail            // 从数组取出来的一定是代理，可以直接改
+    return jobMsg
+  }
+  return pushAiMsg()
+}
+
+/** 日志写到哪：看历史快照的时候就写进"自己的对话"存档，
+ *  免得实时过程日志混到历史记录里，切回来又看不到。 */
+function logSink() {
+  if (historyView.value && liveSnapshot.value) return liveSnapshot.value.logs
+  return logs.value
+}
+
+function schedulePoll(delay = POLL_MS) {
+  clearTimeout(pollTimer)
+  pollTimer = setTimeout(pollOnce, delay)
+}
+
+/** 拉一次增量。所有状态变更都从这里进来，页面在不在都一样跑。 */
+async function pollOnce() {
+  const id = jobId
+  if (!id) return
+  const myRun = runSeq
+  try {
+    const snap = await planJob.poll(id, pollSeq)
+    if (myRun !== runSeq || id !== jobId) return   // 期间开了新会话，旧回调作废
+    pollFails = 0
+    applySnapshot(snap)
+    if (snap.status === 'running') {
+      schedulePoll(POLL_MS)
+    } else {
+      finishJob(snap)
+    }
+  } catch (e) {
+    if (myRun !== runSeq || id !== jobId) return
+    if (e.status === 404) {
+      // 任务过期或后端重启过：不假装还在生成，老实告诉用户重发一次
+      abandonJob('（这次生成的后台任务已失效，请重新发送一次）')
+      return
+    }
+    // 网络抖一下不判死刑：任务在后端活着，退避重试就行。
+    // 这也正是轮询比 SSE 省心的地方——SSE 断了得自己处理重连状态，这里重试一次就完事。
+    pollFails = Math.min(pollFails + 1, 5)
+    schedulePoll(Math.min(5000, POLL_MS * 2 ** pollFails))
+  }
+}
+
+/** 把一帧增量事件铺到界面上（seq 去重，重复投递也不会写两遍） */
+function applySnapshot(snap) {
+  const msg = ensureJobMsg()
+  for (const ev of snap.events || []) {
+    if (!ev || ev.seq <= pollSeq) continue
+    pollSeq = ev.seq
+    if (ev.type === 'log') {
+      logSink().push(`[${ev.data.node}] ${ev.data.message}`)
+      scrollKey.value += 1
+    } else if (ev.type === 'token') {
+      msg.text += ev.data.text || ''
+      msg.streaming = true
+      scrollKey.value += 1
+    }
+  }
+  if (snap.result) applyResult(snap.result, msg)
+}
+
+/** 处理 result 事件：要么是追问，要么是完整行程 */
+function applyResult(r, msg) {
+  if (r.error) {
+    msg.text = `出错了：${r.error}`
+    msg.streaming = false
+    return
+  }
+  if (r.cancelled) {
+    if (!msg.text) msg.text = '（已取消这次生成）'
+    msg.streaming = false
+    return
+  }
+  collected.value = r.collected || collected.value
+  if (!r.done || !r.itinerary?.days) {
+    // 需求还没收集全：追问文本已经由 token 事件逐字铺好了，这里只收尾
+    msg.streaming = false
+    if (!msg.text) msg.text = r.done ? '（这次没生成出行程，换个说法再试一次）' : ''
+    return
+  }
+  // 生成完成时用户可能正在翻历史快照：先切回实时对话，
+  // 否则结果留在看不见的地方，用户会以为"又没生成出来"
+  if (historyView.value) backToLive()
+  result.value = r
+  currentPlanId.value = r.plan_id || null
+  activeDay.value = 0
+  mapFit()
+  // 断线重连时可能把同一份 result 又推一遍；已经打出相同内容就别再打一次
+  const reply = composeReply(r.itinerary)
+  if (msg.text === reply) msg.streaming = false
+  else typeOut(msg, reply)
+  saveSnapshot()
+  refreshHistory()
+  fetchStayMatches()
+  persistSoon()
+}
+
+/** 任务结束：收拾状态，把 job_id 从本地存档里摘掉 */
+function finishJob(snap) {
+  busy.value = false
+  // 正在逐字打解说时不要抢它的 streaming 标记，交给 typeOut 自己收尾
+  if (jobMsg && typingTarget !== jobMsg) jobMsg.streaming = false
+  if (snap && snap.status === 'error' && jobMsg && !jobMsg.text) jobMsg.text = `出错了：${snap.error || '生成失败'}`
+  jobMsg = null
+  jobId = null
+  pollSeq = 0
+  storeJobId('')
+  clearTimeout(pollTimer)
+  pollTimer = null
+  persistSoon()
+}
+
+/** 异常放弃（任务过期/后端重启）：给一句实话，别留个空气泡一直转圈 */
+function abandonJob(tip) {
+  if (jobMsg) {
+    jobMsg.streaming = false
+    if (!jobMsg.text) jobMsg.text = tip
+  }
+  busy.value = false
+  jobMsg = null
+  jobId = null
+  pollSeq = 0
+  storeJobId('')
+  clearTimeout(pollTimer)
+  pollTimer = null
+  persistSoon()
+}
+
+/** 主动掐掉当前任务（开新会话时用），不在界面上留痕 */
+function cancelJob() {
+  const id = jobId
+  jobId = null
+  pollSeq = 0
+  jobMsg = null
+  storeJobId('')
+  clearTimeout(pollTimer)
+  pollTimer = null
+  if (id) planJob.cancel(id).catch(() => { /* 取消失败不影响新会话 */ })
+}
+
+/* ======================= 生成入口 ======================= */
 /** 发一句话开始（或继续）规划。
  *  可以传显式文本；不传就用输入框里的草稿。返回 Promise，方便外部等待。
  *  （只认字符串：模板里 @click="send" 会把事件对象塞进来，这里挡掉） */
@@ -227,69 +417,41 @@ async function send(explicitText) {
   // 正在看历史快照时发言 = 回到自己的对话再接着聊，避免把历史快照冲花
   if (historyView.value) backToLive()
 
-  const myRun = ++runSeq          // 本次生成的编号：被放弃的旧请求靠它认领"我已经过期"
+  runSeq += 1                     // 本次生成的编号：被放弃的旧任务靠它认领"我已经过期"
+  const myRun = runSeq
   stopTyping()
   input.value = ''
   messages.value.push({ role: 'user', text })
   const payloadMessages = messages.value.map((m) => ({ role: m.role, text: m.text }))
-  messages.value.push({ role: 'ai', text: '', streaming: true })
-  const aiMsg = messages.value[messages.value.length - 1]
+  const aiMsg = pushAiMsg()      // 注意：必须用返回的代理，原始对象改不动视图
   logs.value = []
   busy.value = true
   historyView.value = false
   scrollKey.value += 1
-  persistSoon()
+  persistNow()                    // 先把"用户已发出、正在等结果"这个状态存下来
 
-  abortCtrl = new AbortController()
-  let gotPlan = false
   try {
-    await streamPlan(
-      {
-        history: [], user_input: text, prev_collected: collected.value,
-        session_id: sessionId.value, messages: payloadMessages,
-      },
-      {
-        signal: abortCtrl.signal,
-        onLog: (l) => {
-          if (myRun !== runSeq) return
-          logs.value.push(`[${l.node}] ${l.message}`)
-          scrollKey.value += 1
-        },
-        onToken: (t) => {
-          if (myRun !== runSeq) return
-          aiMsg.text += t
-          scrollKey.value += 1
-        },
-        onResult: (r) => {
-          if (myRun !== runSeq) return
-          if (r.error) { aiMsg.text = `出错了：${r.error}`; return }
-          collected.value = r.collected || collected.value
-          if (r.done && r.itinerary?.days) {
-            gotPlan = true
-            result.value = r
-            currentPlanId.value = r.plan_id || null
-            activeDay.value = 0
-            mapFit()
-            typeOut(aiMsg, composeReply(r.itinerary))
-            saveSnapshot()
-            refreshHistory()
-            fetchStayMatches()
-            persistSoon()
-          }
-        },
-      },
-    )
-    if (!gotPlan) aiMsg.streaming = false
+    // 这一步只是"下单"，很快就返回；生成在后端跑，和这个页面再无关系
+    const r = await planJob.create({
+      history: [], user_input: text, prev_collected: collected.value,
+      session_id: sessionId.value, messages: payloadMessages,
+    })
+    if (myRun !== runSeq) {
+      // 下单期间用户又开了新会话：这个刚建出来的任务没人要，顺手取消掉
+      planJob.cancel(r.job_id).catch(() => { /* 取消失败也无所谓，任务不会写进界面 */ })
+      return
+    }
+    jobId = r.job_id
+    pollSeq = 0
+    pollFails = 0
+    storeJobId(jobId)
+    schedulePoll(0)
   } catch (e) {
     aiMsg.streaming = false
-    // 主动中断（换新需求/清空会话）不是错误，不往对话里写红字
-    if (e.name !== 'AbortError') aiMsg.text = `连接失败：${e.message}（确认后端 8000 已启动）`
-  } finally {
-    if (myRun === runSeq) {
-      busy.value = false
-      abortCtrl = null
-      persistSoon()
-    }
+    aiMsg.text = `连接失败：${e.message}（确认后端 8000 已启动）`
+    busy.value = false
+    jobMsg = null
+    persistSoon()
   }
 }
 
@@ -313,12 +475,11 @@ function clearWorkspace({ keepLive = false } = {}) {
   persistSoon()
 }
 
-/** 彻底重开一局：中断在跑的请求、清空会话、换新的 session_id。
+/** 彻底重开一局：取消在跑的任务、清空会话、换新的 session_id。
  *  首页发令台带着新需求过来时用它（新需求 = 新会话，别和上一趟混在一起） */
 function resetSession() {
-  runSeq += 1            // 让旧请求的回调全部失效
-  abortCtrl?.abort()
-  abortCtrl = null
+  runSeq += 1            // 让旧任务的回调全部失效
+  cancelJob()            // 顺手让后端别再为旧需求烧模型调用
   busy.value = false
   clearWorkspace({ keepLive: false })
   sessionId.value = newSessionId()
@@ -377,7 +538,7 @@ async function loadPlan(id) {
   } catch (e) { alert(e.message) }
 }
 
-/** 从历史快照切回自己的实时对话 */
+/** 从历史快照切回自己的实时对话（生成中切回来也能接着看进度） */
 function backToLive() {
   historyView.value = false
   if (liveSnapshot.value) {
@@ -420,7 +581,18 @@ async function undoDelete(id) {
   await loadPlan(id)
 }
 
-/* ======================= 本地存档（防刷新） ======================= */
+/* ======================= 本地存档（防刷新 / 接回任务） ======================= */
+/** 打包对话给存档：丢掉空消息，但**保留末尾那条正在生成的 AI 气泡**。
+ *  不保留的话，刷新回来只剩用户那句话，看不出"其实还在后台跑"。 */
+function packMessages(list) {
+  const last = list.length - 1
+  return list
+    .map((m, i) => ({ m, i }))
+    .filter(({ m, i }) => m.text || (i === last && m.role === 'ai' && m.streaming))
+    .slice(-MAX_KEEP_MSGS)
+    .map(({ m }) => ({ role: m.role, text: String(m.text || '').slice(0, 4000) }))
+}
+
 /** 组装要落盘的快照。
  *  回看历史时存"自己的实时对话"，别把临时看的那条历史当成用户的项目 */
 function snapshotPayload() {
@@ -431,10 +603,7 @@ function snapshotPayload() {
     ownerId: user.value?.id ?? 0,     // 0 = 游客
     savedAt: Date.now(),
     sessionId: sessionId.value,
-    messages: msgs
-      .filter((m) => m.text)
-      .slice(-MAX_KEEP_MSGS)
-      .map((m) => ({ role: m.role, text: String(m.text).slice(0, 4000) })),
+    messages: packMessages(msgs),
     result: live ? live.result : result.value,
     collected: live ? live.collected : collected.value,
     currentPlanId: live ? live.currentPlanId : currentPlanId.value,
@@ -476,34 +645,85 @@ function hydrate() {
   hydrated = true
   let raw = ''
   try { raw = sessionStorage.getItem(STORAGE_KEY) || '' } catch { return }
-  if (!raw) return
-  let s
-  try { s = JSON.parse(raw) } catch { return }
-  if (!s || s.v !== STORAGE_VERSION) return
-  if ((s.ownerId ?? 0) !== (user.value?.id ?? 0)) { clearStorage(); return }
-
-  if (s.sessionId) sessionId.value = String(s.sessionId)
-  if (Array.isArray(s.messages)) {
-    messages.value = s.messages
-      .filter((m) => m && typeof m === 'object')
-      .map((m) => ({ role: m.role === 'ai' ? 'ai' : 'user', text: String(m.text || '') }))
+  let s = null
+  if (raw) {
+    try { s = JSON.parse(raw) } catch { s = null }
+    if (s && s.v === STORAGE_VERSION && (s.ownerId ?? 0) !== (user.value?.id ?? 0)) {
+      clearStorage(); s = null
+    }
   }
-  if (s.result && s.result.itinerary) result.value = s.result
-  if (s.collected && typeof s.collected === 'object') collected.value = s.collected
-  currentPlanId.value = Number(s.currentPlanId) || null
-  if (Array.isArray(s.mapView?.center) && s.mapView.center.length === 2 && s.mapView.zoom) {
-    mapView.value = { center: s.mapView.center, zoom: s.mapView.zoom }
+  if (s) {
+    if (s.sessionId) sessionId.value = String(s.sessionId)
+    if (Array.isArray(s.messages)) {
+      messages.value = s.messages
+        .filter((m) => m && typeof m === 'object')
+        .map((m) => ({ role: m.role === 'ai' ? 'ai' : 'user', text: String(m.text || '') }))
+    }
+    if (s.result && s.result.itinerary) result.value = s.result
+    if (s.collected && typeof s.collected === 'object') collected.value = s.collected
+    currentPlanId.value = Number(s.currentPlanId) || null
+    if (Array.isArray(s.mapView?.center) && s.mapView.center.length === 2 && s.mapView.zoom) {
+      mapView.value = { center: s.mapView.center, zoom: s.mapView.zoom }
+    }
+    if (typeof s.input === 'string') input.value = s.input
+    activeDay.value = result.value ? (Number(s.activeDay) || 0) : 0
   }
-  if (typeof s.input === 'string') input.value = s.input
-  activeDay.value = result.value ? (Number(s.activeDay) || 0) : 0
 
-  // 上次是"正在生成"时被刷新/关掉的：流已经断了，补一句实话，别留一个空气泡在那儿转圈
+  // 上次的生成任务还挂着？把它接回来 —— 这是 v1.3 的核心：
+  // 刷新不再等于"中断"，后台任务一直在跑，这里只是重新开始收事件。
+  // 注意：判断依据是"本地还有 job_id"，不是"有没有旧结果"——
+  // 上一轮生成完的行程本来就会留在存档里，新一单照样可能正在跑。
+  const savedJob = readJobId()
+  if (savedJob) {
+    jobId = savedJob
+    pollSeq = 0
+    pollFails = 0
+    jobMsg = ensureJobMsg()
+    jobMsg.streaming = true
+    busy.value = true
+    schedulePoll(0)
+    return
+  }
+
+  // 刷新/关页面留下的"半截对话"：任务确实断了（没有 job_id 可接），说句实话
   const tail = messages.value[messages.value.length - 1]
-  const TIP = '（这次生成被中断了：刷新或关闭页面会让正在跑的请求断开。再发一句话就能接着来）'
+  const TIP = '（这次生成被中断了：再发一句话就能接着来）'
   if (tail && tail.role === 'user') messages.value.push({ role: 'ai', text: TIP })
   else if (tail && tail.role === 'ai' && !tail.text) tail.text = TIP
 
   if (result.value) fetchStayMatches()
+  else tryResumeRemote()
+}
+
+/** 本地什么都没了（比如关掉标签页重新打开）时，问后端还有没有我的任务。
+ *  登录用户才能用：游客的任务没有归属，找不回来。 */
+async function tryResumeRemote() {
+  if (busy.value || jobId || messages.value.length || historyView.value) return
+  const mark = runSeq   // 记下"发起这次询问时是第几局"
+  try {
+    const r = await planJob.active()
+    const job = r && r.job
+    if (!job || job.status !== 'running') return
+    // 等接口这段时间里用户可能已经自己发了新需求（runSeq 变了）或界面已经有内容，
+    // 这时再把旧任务顶上来就是"抢戏"，必须放弃。
+    if (mark !== runSeq || busy.value || jobId || messages.value.length) return
+    const req = job.request || {}
+    const list = (req.messages || []).map((m) => ({
+      role: m.role === 'ai' ? 'ai' : 'user',
+      text: String(m.text || ''),
+    }))
+    messages.value = list.length ? list : [{ role: 'user', text: String(req.user_input || '') }]
+    pushAiMsg()
+    collected.value = req.prev_collected || {}
+    logs.value = []
+    busy.value = true
+    jobId = job.job_id
+    pollSeq = 0
+    pollFails = 0
+    storeJobId(jobId)
+    persistNow()
+    schedulePoll(0)
+  } catch { /* 游客 / 离线 / 后端没起：正常从空白开始 */ }
 }
 
 // 关页面/切后台标签页时立刻落盘（防抖没跑完就走的场景）

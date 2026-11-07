@@ -28,7 +28,7 @@ from app.schemas import ClarifyRequest, ClarifyResponse, ItineraryRequest
 from app.services.clarify import clarify_turn
 from app.services.itinerary import generate_itinerary
 
-app = FastAPI(title="智能旅行规划 Agent API", version="0.14.3")
+app = FastAPI(title="智能旅行规划 Agent API", version="0.15.0")
 
 # v0.5：启动时建库建表（幂等），并挂载用户系统路由
 init_db()

@@ -365,9 +365,9 @@ onBeforeUnmount(() => {
           <span class="lk" @click="backToLive">← 返回当前对话</span>
         </div>
 
-        <!-- 生成中提示：既解释"为什么回来还在转"，也告诉用户切页面不会中断 -->
+        <!-- 生成中提示：任务跑在后端，页面只是看板 —— 这也是"切走不中断"的前提 -->
         <div v-if="busy" class="run-hint">
-          ⏳ AI 正在生成路线，切换页面不会中断，回到这里可以接着看
+          ⏳ AI 正在后台生成路线 —— 切到别的页面、刷新、关掉这个标签页都不会中断，回来就能看到结果（断线期间的过程也一并补上）
         </div>
 
         <div class="chat-box" ref="chatBox">
