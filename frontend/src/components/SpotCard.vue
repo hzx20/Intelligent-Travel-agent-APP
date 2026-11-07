@@ -21,7 +21,9 @@ function bgStyle(s) {
       <div class="row">
         <span v-if="spot.is_free" class="badge-free">免费</span>
         <span v-else-if="spot.price" class="badge-price">¥{{ spot.price }} 起</span>
-        <span v-else class="badge-free">详情页看票价</span>
+        <!-- 票价未采集到：不能用绿色"免费"样式冒充（会让人误以为不要钱），
+             也不该承诺"详情页看票价"——详情页同样没有这个数。 -->
+        <span v-else class="badge-unknown">票价以景区为准</span>
         <span class="heart">{{ spot.tags ? spot.tags.split(',')[0] : '景点' }}</span>
       </div>
     </div>

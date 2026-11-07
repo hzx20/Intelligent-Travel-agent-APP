@@ -12,6 +12,7 @@ import { useAuth } from '../store/auth'
 const { user } = useAuth()
 const heroRef = ref(null)
 const cities = ref([])   // 热门目的地（按景点总数排序取前 5）
+const totalSpots = ref(0) // 全站真实景点数：首屏文案里那个数字必须跟库里对得上
 const guess = ref([])    // 猜你喜欢 8 条
 const loading = ref(true)
 const error = ref('')
@@ -25,6 +26,7 @@ onMounted(async () => {
     // 两个接口互不依赖，并行拿，少等一轮
     const [regions, g] = await Promise.all([api.get('/api/spots/regions'), api.get(url)])
     cities.value = (regions.cities || []).slice(0, 5)
+    totalSpots.value = (regions.cities || []).reduce((n, c) => n + (c.count || 0), 0)
     guess.value = (g.items || []).slice(0, 8)
   } catch (e) {
     error.value = e.message || '加载失败'
@@ -45,7 +47,7 @@ function pickCity(c) {
     <!-- 首屏：规划发令台 -->
     <section class="hero">
       <div class="hero-inner">
-        <PlannerHero ref="heroRef" />
+        <PlannerHero ref="heroRef" :total-spots="totalSpots" />
       </div>
     </section>
 
@@ -119,13 +121,15 @@ function pickCity(c) {
 </template>
 
 <style scoped>
-/* 首屏：撑满一屏减去导航高度，让发令台独占第一眼 */
+/* 首屏：不再是"硬撑满一屏"。
+   以前这里是 min-height: min(620px, calc(100vh - 56px))，可内容只有 260px 高，
+   1440×900 下上下各空出 150px，首屏和下面「三步说明」之间像被切断。
+   现在高度跟着内容走，只保留一点呼吸位。 */
 .hero {
   position: relative;
   display: flex;
   align-items: center;
-  min-height: min(620px, calc(100vh - 56px));
-  padding: 24px 0 36px;
+  padding: 40px 0 30px;
 }
 /* 顶部一层极淡的绿光，把白卡片托起来 */
 .hero::before {

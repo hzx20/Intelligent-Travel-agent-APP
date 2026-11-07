@@ -91,6 +91,50 @@ def _db_substitute(db, city: str, used_ids: set[str]) -> dict | None:
     return None
 
 
+def _dedupe_resolved(spots: list[dict]) -> tuple[list[dict], int]:
+    """核实之后按 amap_id 再去一次重。
+
+    只按名字去重是不够的：模型可能给出"颐和园""颐和园北宫门"两个不同说法，
+    _db_lookup 用 like 匹配，两个都会落到同一个 POI 上，最终列表里就出现
+    两条同名同坐标的"颐和园"。所以命中真实数据之后，得按 amap_id 收敛一次。
+    """
+    seen_ids: set[str] = set()
+    seen_names: set[str] = set()
+    out: list[dict] = []
+    for s in spots:
+        sid = str(s.get("amap_id") or "")
+        nm = str(s.get("name") or "").strip()
+        if sid:
+            if sid in seen_ids:
+                continue
+            seen_ids.add(sid)
+        elif nm:
+            if nm in seen_names:
+                continue
+            seen_names.add(nm)
+        out.append(s)
+    return out, len(spots) - len(out)
+
+
+def _dedupe_day(spots: list[dict]) -> tuple[list[dict], int]:
+    """同一天内按地点名去重，返回 (新列表, 去掉的条数)。
+
+    模型偶尔会把同一个地方排两次（实测出现过"14:00 颐和园、17:00 颐和园"）。
+    同一天内同名重复几乎都是生成错误，而不是"上午下午各去一次"——时间字段并不同、
+    理由也没单独写。放在核实之前做，顺带少查两次高德。
+    """
+    seen: set[str] = set()
+    out: list[dict] = []
+    for s in spots:
+        key = str(s.get("name") or "").strip()
+        if key and key in seen:
+            continue
+        if key:
+            seen.add(key)
+        out.append(s)
+    return out, len(spots) - len(out)
+
+
 def verify_itinerary_spots(
     itinerary: dict, city: str, db, amap_enabled: bool = True
 ) -> tuple[dict, list[dict]]:
@@ -108,7 +152,14 @@ def verify_itinerary_spots(
     try:
         for day in days:
             new_day = {**day, "spots": []}
-            for spot in day.get("spots", []):
+            raw_spots, dropped = _dedupe_day(day.get("spots", []))
+            if dropped:
+                logs.append({
+                    "spot": day.get("theme") or f"第{day.get('day')}天",
+                    "action": "dedupe",
+                    "detail": f"同一天重复地点已合并（{len(raw_spots) + dropped} → {len(raw_spots)}）",
+                })
+            for spot in raw_spots:
                 name = spot.get("name", "")
                 hit = _db_lookup(db, name, city)
                 action = "db"
@@ -135,6 +186,15 @@ def verify_itinerary_spots(
                     "replaced": f"查无此地，已替换为 {hit['name']}",
                 }[action]
                 logs.append({"spot": name, "action": action, "detail": detail})
+            # 核实完再收一次：不同说法可能落到同一个真实 POI（"颐和园"/"颐和园北宫门"）
+            resolved, dup_ids = _dedupe_resolved(new_day["spots"])
+            if dup_ids:
+                new_day["spots"] = resolved
+                logs.append({
+                    "spot": day.get("theme") or f"第{day.get('day')}天",
+                    "action": "dedupe",
+                    "detail": f"核实后发现同一地点被排了两次，已合并（{len(resolved) + dup_ids} → {len(resolved)}）",
+                })
             new_itinerary["days"].append(new_day)
     finally:
         if client is not None:

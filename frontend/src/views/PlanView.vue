@@ -20,7 +20,8 @@ const router = useRouter()
 const { user } = useAuth()
 const {
   messages, input, busy, logs, result, collected, history, historyView, activeDay,
-  showHistory, mapView, mapCommand, stayMatches, nearbyHotels, scrollKey,
+  showHistory, mapView, mapCommand, stayMatches, nearbyHotels, scrollKey, jobStartedAt,
+  stayLoading,
   hydrate, send, startFresh, refreshHistory, loadPlan, backToLive, deletePlan,
   undoDelete, setMapView,
 } = usePlanSession()
@@ -61,6 +62,55 @@ const stayBoard = computed(() => {
 function colorOf(day) {
   return DAY_COLORS[(day - 1) % DAY_COLORS.length]
 }
+
+/* ================= 生成进度（等待 2 分钟不能让人以为死机） =================
+ * 生成一次要调两次大模型：澄清 + 排行程（后者要吐出一大段 JSON，实测 2 分多钟），
+ * 之后再逐个地点过高德核实、查天气。全程后端只在 4 个节点各发一条日志，
+ * 两条日志之间可能整整两分钟没有任何变化 —— 用户看到的就是"转圈不动"。
+ * 这里把"已经等了多久 + 走到哪一步了"显式画出来：
+ *   · 已用时按 jobStartedAt 算，切页面回来、刷新之后都接着走，不会归零；
+ *   · 阶段用日志里的 [节点名] 推断，出现过 = 那一步已完成，下一个就是正在做的。 */
+const STAGES = [
+  { key: 'clarify', label: '读懂需求' },
+  { key: 'generate', label: '排行程' },
+  { key: 'verify', label: '地图核实' },
+  { key: 'weather', label: '查天气' },
+]
+/** 已完成到第几步（-1 表示一条日志都还没有） */
+const doneStage = computed(() => {
+  let idx = -1
+  for (const line of logs.value) {
+    const m = /^\[([a-z]+)\]/.exec(line)
+    if (!m) continue
+    const i = STAGES.findIndex((s) => s.key === m[1])
+    if (i > idx) idx = i
+  }
+  return idx
+})
+/** 秒表：只为了让"还在动"这件事可见 */
+const elapsed = ref(0)
+let elapsedTimer = null
+function tickElapsed() {
+  if (!jobStartedAt.value) { elapsed.value = 0; return }
+  elapsed.value = Math.max(0, Math.round((Date.now() - jobStartedAt.value) / 1000))
+}
+watch(busy, (running) => {
+  clearInterval(elapsedTimer)
+  elapsedTimer = null
+  if (running) {
+    tickElapsed()                       // 立刻出数，别先显示 0:00 再跳
+    elapsedTimer = setInterval(tickElapsed, 1000)
+  } else {
+    elapsed.value = 0
+  }
+}, { immediate: true })
+const elapsedText = computed(() => {
+  const m = Math.floor(elapsed.value / 60)
+  const s = elapsed.value % 60
+  return m ? `${m} 分 ${String(s).padStart(2, '0')} 秒` : `${s} 秒`
+})
+/** 超过 90 秒还没出结果：给一句解释，避免用户以为是自己的网卡了 */
+const slowHint = computed(() => elapsed.value >= 90)
 /** 难度配色：轻松绿 / 适中黄 / 较费体力红 */
 const DIFF_COLORS = { 轻松: '#1a6e50', 适中: '#b7950b', 较费体力: '#c0392b' }
 function diffColor(level) {
@@ -95,6 +145,18 @@ async function initMap() {
   }
 }
 
+/** 两点直线距离（公里）：用来判断这一段是不是"跨区"，跨区就画虚线 */
+function distKm(a, b) {
+  const R = 6371
+  const rad = Math.PI / 180
+  const dLat = (b[1] - a[1]) * rad
+  const dLng = (b[0] - a[0]) * rad
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a[1] * rad) * Math.cos(b[1] * rad) * Math.sin(dLng / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(h))
+}
+/** 超过这个距离（公里）就认为是跨区移动：八达岭到市区这种 */
+const FAR_KM = 30
+
 /** 把当前行程画到地图上（按 activeDay 过滤）：编号标记 + 分日颜色路线 */
 function drawPlan(fit = true) {
   if (!map) return
@@ -119,10 +181,20 @@ function drawPlan(fit = true) {
       overlays.push(m)
     })
     pts.push(...dayPts)
-    if (dayPts.length > 1) {
+    /* 逐段画，而不是整条 Polyline 一把梭：
+     * 一条线只有一个样式，跨区那一段（如八达岭→市区 60 公里）会和市区内的正常车程
+     * 长得一模一样，用户会以为那条斜穿全城的直线就是实际路线。
+     * 现在跨区段改成虚线，视觉上明确"这段只是示意、不是真实路径"。 */
+    for (let i = 1; i < dayPts.length; i++) {
+      const far = distKm(dayPts[i - 1], dayPts[i]) > FAR_KM
       const line = new AMap.Polyline({
-        path: dayPts, strokeColor: color, strokeWeight: 4,
-        strokeOpacity: 0.9, showDir: true, lineJoin: 'round',
+        path: [dayPts[i - 1], dayPts[i]],
+        strokeColor: color,
+        strokeWeight: far ? 3 : 4,
+        strokeOpacity: far ? 0.5 : 0.9,
+        strokeStyle: far ? 'dashed' : 'solid',
+        showDir: !far,
+        lineJoin: 'round',
       })
       map.add(line)
       overlays.push(line)
@@ -304,6 +376,8 @@ onMounted(() => {
 
 // 组件销毁时把地图实例一并回收：不 destroy 的话每次进页面都会多留一份监听与画布
 onBeforeUnmount(() => {
+  clearInterval(elapsedTimer)   // 秒表跟着页面走，别在后台空转
+  elapsedTimer = null
   if (map) {
     try { map.destroy() } catch { /* 高德内部异常不影响页面卸载 */ }
     map = null
@@ -365,9 +439,28 @@ onBeforeUnmount(() => {
           <span class="lk" @click="backToLive">← 返回当前对话</span>
         </div>
 
-        <!-- 生成中提示：任务跑在后端，页面只是看板 —— 这也是"切走不中断"的前提 -->
+        <!-- 生成中提示：任务跑在后端，页面只是看板 —— 这也是"切走不中断"的前提。
+             除了说"在跑"，还要回答两个真正会让人焦虑的问题：等了多久、卡在哪一步。 -->
         <div v-if="busy" class="run-hint">
-          ⏳ AI 正在后台生成路线 —— 切到别的页面、刷新、关掉这个标签页都不会中断，回来就能看到结果（断线期间的过程也一并补上）
+          <div class="rh-head">
+            <span class="rh-spin" aria-hidden="true"></span>
+            <b>AI 正在生成路线</b>
+            <span class="rh-time">已用 {{ elapsedText }}</span>
+          </div>
+          <div class="rh-steps">
+            <span
+              v-for="(st, i) in STAGES" :key="st.key"
+              class="rh-step"
+              :class="{ done: i <= doneStage, active: i === doneStage + 1 }"
+            >
+              <i>{{ i <= doneStage ? '✓' : i + 1 }}</i>{{ st.label }}
+            </span>
+          </div>
+          <p class="rh-note">
+            切到别的页面、刷新、关掉标签页都不会中断，回来就能看到结果。
+            <template v-if="slowHint">排行程要模型一次写完整个行程表，模型忙时 3～5 分钟也可能，请再等一下。</template>
+            <template v-else>通常 1～3 分钟。</template>
+          </p>
         </div>
 
         <div class="chat-box" ref="chatBox">
@@ -376,7 +469,12 @@ onBeforeUnmount(() => {
             <small>生成的行程会实时标到右侧地图，右侧地图也能随手打点参考</small>
           </div>
           <div v-for="(m, i) in messages" :key="i" class="msg" :class="m.role">
-            <div class="bubble">{{ m.text }}<span v-if="m.streaming" class="cursor">▌</span></div>
+            <div class="bubble">
+              <!-- 一个字都没有的时候别只显示一根光标：那看着像渲染坏了 -->
+              <span v-if="m.streaming && !m.text" class="thinking">正在整理需求…</span>
+              <template v-else>{{ m.text }}</template>
+              <span v-if="m.streaming && m.text" class="cursor">▌</span>
+            </div>
           </div>
           <div v-if="logs.length" class="proc">
             <div v-for="(l, i) in logs" :key="i" class="proc-line">▸ {{ l }}</div>
@@ -494,7 +592,11 @@ onBeforeUnmount(() => {
               <div v-if="partyAdvice(collected.party)" class="party-tip">
                 👥 你说「{{ collected.party }}」→ 建议订：{{ partyAdvice(collected.party) }}
               </div>
-              <p v-if="!stayBoard.length" class="empty-p">正在匹配景点周边的真实酒店…</p>
+              <p v-if="stayLoading" class="empty-p">正在匹配景点周边的真实酒店…</p>
+              <p v-else-if="!stayBoard.length" class="empty-p">
+                这次没有可用的住宿卡片（模型没给推荐，或周边没匹配到真实酒店）。
+                可以按城市名直接在携程 / 去哪儿搜。
+              </p>
               <div v-for="b in stayBoard" :key="b.real.name" class="stay-card">
                 <img v-if="b.real.photo" class="stay-img" :src="b.real.photo" alt="酒店实拍"
                      @error="$event.target.style.display = 'none'" />
@@ -526,7 +628,7 @@ onBeforeUnmount(() => {
                   </div>
                 </div>
               </div>
-              <div v-if="result.itinerary.stay_pick?.why" class="stay-why">
+              <div v-if="stayBoard.length && result.itinerary.stay_pick?.why" class="stay-why">
                 💡 最终建议：{{ result.itinerary.stay_pick.why }}
               </div>
             </div>
@@ -574,7 +676,32 @@ onBeforeUnmount(() => {
 .hist-travel { color: #6a7d6a; }
 .back-live { padding: 7px 16px; font-size: 12px; background: var(--green-soft); color: var(--green); border-bottom: 1px solid var(--line); }
 .back-live .lk { cursor: pointer; font-weight: 700; margin-left: 8px; }
-.run-hint { padding: 7px 16px; font-size: 12px; background: #fff8e6; color: #7a6520; border-bottom: 1px solid #e8d9a0; }
+.run-hint { padding: 9px 16px 10px; font-size: 12px; background: #fff8e6; color: #7a6520; border-bottom: 1px solid #e8d9a0; }
+.rh-head { display: flex; align-items: center; gap: 8px; }
+.rh-head b { font-size: 12.5px; }
+.rh-time { margin-left: auto; font-variant-numeric: tabular-nums; color: #8a6a1e; }
+/* 小圆圈：不用图片，纯 CSS 转圈，避免再压一个资源请求 */
+.rh-spin {
+  width: 12px; height: 12px; flex-shrink: 0;
+  border: 2px solid rgba(122, 101, 32, .25);
+  border-top-color: #7a6520;
+  border-radius: 50%;
+  animation: rh-rotate .9s linear infinite;
+}
+@keyframes rh-rotate { to { transform: rotate(360deg); } }
+.rh-steps { display: flex; align-items: center; gap: 6px; margin-top: 7px; flex-wrap: wrap; }
+.rh-step { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #7c682f; }
+.rh-step i {
+  width: 15px; height: 15px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-style: normal; font-size: 9.5px; font-weight: 700;
+  background: #f0e4c4; color: #8a7638;
+}
+.rh-step.done { color: #6b7d3a; }
+.rh-step.done i { background: #d9e8b8; color: #4e6420; }
+.rh-step.active { color: #7a5a10; font-weight: 700; }
+.rh-step.active i { background: #7a6520; color: #fff; }
+.rh-note { margin-top: 6px; font-size: 11.5px; line-height: 1.6; color: #8a7638; }
 .chat-box { flex: 1; overflow-y: auto; padding: 14px 16px; min-height: 0; }
 .msg { display: flex; margin-bottom: 10px; }
 .msg.user { justify-content: flex-end; }
@@ -583,6 +710,8 @@ onBeforeUnmount(() => {
 .msg.ai .bubble { background: #f4f6f3; border: 1px solid var(--line); border-bottom-left-radius: 4px; }
 .cursor { animation: blink 1s infinite; color: var(--green); }
 @keyframes blink { 50% { opacity: 0; } }
+/* 空等状态：说明"在做事"，而不是留一根闪烁光标 */
+.thinking { color: #7f8c85; font-size: 12.5px; }
 .proc { margin: 8px 0; padding: 8px 12px; background: var(--green-soft); border-radius: 8px; }
 .proc-line { font-size: 12px; color: var(--green); line-height: 1.9; }
 /* 快捷条件行：目的地联想 + 你想去多久 */
@@ -608,7 +737,14 @@ onBeforeUnmount(() => {
 .pin-chip:hover { color: var(--green); }
 .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .dot.big { width: 11px; height: 11px; }
-.map-empty-hint { position: absolute; top: 46%; left: 50%; transform: translate(-50%,-50%); text-align: center; color: #6a7d6a; font-size: 14px; line-height: 2; pointer-events: none; background: rgba(255,255,255,.8); padding: 14px 22px; border-radius: 12px; z-index: 4; }
+.map-empty-hint {
+  position: absolute; top: 46%; left: 50%; transform: translate(-50%,-50%);
+  /* max-content + 上限：不加的话绝对定位元素按"剩余可用宽度"收缩，
+     手机上会被挤成一根竖条，一句话读成六行。 */
+  width: max-content; max-width: 78%;
+  text-align: center; color: #6a7d6a; font-size: 14px; line-height: 2; pointer-events: none;
+  background: rgba(255,255,255,.8); padding: 14px 22px; border-radius: 12px; z-index: 4;
+}
 .map-empty-hint small { font-size: 11.5px; color: #8a9a8a; }
 /* 信息区：地图下方独立展示（自然文档流，完整可见不截断） */
 .info-below { margin-top: 14px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
@@ -676,7 +812,9 @@ onBeforeUnmount(() => {
 @media (max-width: 900px) {
   .split { flex-direction: column; height: auto; }
   .chat { width: 100%; height: 56vh; }
-  .map-side { height: 60vh; }
+  /* flex:none 必不可少：.map-side 默认 flex:1 即 flex-basis:0，
+     竖排时基准轴变成高度，会把 height:60vh 直接压成 0 —— 手机上地图只剩一条缝。 */
+  .map-side { flex: none; height: 60vh; }
 }
 </style>
 

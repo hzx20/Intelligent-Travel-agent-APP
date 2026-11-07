@@ -74,13 +74,16 @@ async def verify_node(state: PlanState) -> dict:
             True,
         )
         replaced = sum(1 for l in logs if l["action"] == "replaced")
+        deduped = sum(1 for l in logs if l["action"] == "dedupe")
+        # 过检数量按"实际保留下来的地点数"算：logs 里还混着去重记录，不能拿 len(logs) 当地点数
+        total = sum(len(d.get("spots") or []) for d in new_itinerary.get("days") or [])
+        tail = f"，替换 {replaced} 个虚构地点" if replaced else "，全部真实"
+        if deduped:
+            tail += f"，合并 {deduped} 天里的重复地点"
         return {
             "itinerary": new_itinerary,
             "verify_logs": logs,
-            "logs": _log(
-                state,
-                f"地图核实：{len(logs)} 个地点过检" + (f"，替换 {replaced} 个虚构地点" if replaced else "，全部真实"),
-            ),
+            "logs": _log(state, f"地图核实：{total} 个地点过检" + tail),
         }
     finally:
         db.close()

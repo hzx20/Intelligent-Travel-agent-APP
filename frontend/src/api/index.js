@@ -12,31 +12,41 @@ export function setToken(t) {
   t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY)
 }
 
-async function request(method, url, body) {
+async function request(method, url, body, { timeout = 0 } = {}) {
   const headers = { 'Content-Type': 'application/json' }
   const token = getToken()
   if (token) headers.Authorization = `Bearer ${token}`
-  const resp = await fetch(BASE + url, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  })
-  if (!resp.ok) {
-    let detail = `HTTP ${resp.status}`
-    try { detail = (await resp.json()).detail || detail } catch { /* keep */ }
-    const err = new Error(detail)
-    err.status = resp.status   // 调用方靠它区分 404（任务过期）和网络抖动
-    throw err
+  /* timeout 默认 0 = 不设限（生成任务这类长请求本来就要等）。
+   * 但"可选的富数据"接口必须给上限：酒店匹配内部要连高德，个别网络环境下会挂住，
+   * 不设超时的话 loading 永远转下去，用户看到的就是"正在匹配…"卡死。 */
+  const ctrl = timeout > 0 && typeof AbortController !== 'undefined' ? new AbortController() : null
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), timeout) : null
+  try {
+    const resp = await fetch(BASE + url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      signal: ctrl ? ctrl.signal : undefined,
+    })
+    if (!resp.ok) {
+      let detail = `HTTP ${resp.status}`
+      try { detail = (await resp.json()).detail || detail } catch { /* keep */ }
+      const err = new Error(detail)
+      err.status = resp.status   // 调用方靠它区分 404（任务过期）和网络抖动
+      throw err
+    }
+    if (resp.status === 204) return null // 删除等无响应体
+    return await resp.json()
+  } finally {
+    if (timer) clearTimeout(timer)
   }
-  if (resp.status === 204) return null // 删除等无响应体
-  return resp.json()
 }
 
 export const api = {
-  get: (url) => request('GET', url),
-  post: (url, body) => request('POST', url, body),
-  patch: (url, body) => request('PATCH', url, body),
-  del: (url) => request('DELETE', url),
+  get: (url, opts) => request('GET', url, undefined, opts),
+  post: (url, body, opts) => request('POST', url, body, opts),
+  patch: (url, body, opts) => request('PATCH', url, body, opts),
+  del: (url, opts) => request('DELETE', url, undefined, opts),
   raw: (method, url) => request(method, url),
 }
 

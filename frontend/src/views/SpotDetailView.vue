@@ -24,6 +24,12 @@ const planLink = computed(() => {
   return { path: '/plan', query: { d: s.city, q, auto: '1' } }
 })
 
+/** 简介缺位时用来撑住信息量的主类型（高德标签的第一项，比"景点"具体） */
+const mainType = computed(() => {
+  const tags = detail.value?.spot?.tags || ''
+  return tags.split(',').map((t) => t.trim()).filter(Boolean)[0] || '景点'
+})
+
 async function load() {
   try {
     detail.value = await api.get(`/api/spots/${route.params.id}`)
@@ -102,7 +108,33 @@ onMounted(load)
           </a>
         </div>
         <p class="tags" v-if="detail.spot.tags">标签：{{ detail.spot.tags.split(',').join(' / ') }}</p>
-        <p class="desc">{{ detail.description || '景区简介待补充（后台可编辑）。' }}</p>
+        <p class="desc" v-if="detail.description">{{ detail.description }}</p>
+
+        <!-- 简介没收录时不再甩一句"待补充（后台可编辑）"给用户看：
+             那是写给我们自己的备注，不是内容。改成把手里确实有的真实字段摊开，
+             并诚实说明简介缺什么、去哪儿能看原始资料。 -->
+        <div v-else class="facts">
+          <div class="fact">
+            <span>所在区域</span>
+            <b>{{ detail.spot.city }}{{ detail.spot.district ? ' · ' + detail.spot.district : '' }}</b>
+          </div>
+          <div class="fact" v-if="mainType">
+            <span>景点类型</span>
+            <b>{{ mainType }}</b>
+          </div>
+          <div class="fact" v-if="detail.address || detail.spot.address">
+            <span>详细地址</span>
+            <b>{{ detail.address || detail.spot.address }}</b>
+          </div>
+          <div class="fact" v-if="detail.spot.lng && detail.spot.lat">
+            <span>地理坐标</span>
+            <b>{{ detail.spot.lng.toFixed(4) }}, {{ detail.spot.lat.toFixed(4) }}</b>
+          </div>
+          <p class="fact-note">
+            该景点的文字简介尚未收录。以上地址、类型与坐标取自
+            {{ detail.source || '高德地图开放平台' }}，点右上角「在{{ detail.source }}查看」可阅读原始 POI 资料。
+          </p>
+        </div>
       </div>
 
       <!-- 位置地图（静态图，后端代理生成，key 不外泄） -->
@@ -186,6 +218,18 @@ onMounted(load)
 }
 .tags { font-size: 12.5px; color: #888; margin-top: 10px; }
 .desc { font-size: 13.5px; line-height: 2; margin-top: 8px; color: #333; }
+/* 简介缺位时的替代信息区：两列字段，行高紧凑，视觉上仍是"内容"而不是"占位" */
+.facts {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 22px; margin-top: 10px;
+}
+.fact { display: flex; gap: 8px; font-size: 13px; line-height: 1.7; min-width: 0; }
+.fact span { flex: 0 0 60px; color: #8b968f; }
+.fact b { font-weight: 600; color: #333; word-break: break-all; }
+.fact-note {
+  grid-column: 1 / -1; font-size: 11.5px; color: #93a09a;
+  line-height: 1.7; margin-top: 2px; padding-top: 8px; border-top: 1px dashed var(--line);
+}
 .pos-title { font-weight: 700; font-size: 13.5px; margin-bottom: 8px; }
 .pos-title small { font-weight: 400; font-size: 11.5px; color: var(--text-sub); margin-left: 6px; }
 .pos-map { width: 100%; border-radius: 8px; display: block; border: 1px solid var(--line); }
@@ -211,5 +255,8 @@ onMounted(load)
 .c-time { color: #aaa; font-size: 11.5px; }
 .c-rate { color: #e8a33d; }
 .comment p { font-size: 13px; color: #444; }
-@media (max-width: 640px) { .hero { height: 180px; } }
+@media (max-width: 640px) {
+  .hero { height: 180px; }
+  .facts { grid-template-columns: 1fr; gap: 6px; }   /* 窄屏两列会把地址挤成竖条 */
+}
 </style>

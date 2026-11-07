@@ -9,6 +9,10 @@ import RegionPicker from './regionpicker.vue'
 
 const router = useRouter()
 
+/** 全站景点数由首页按 /api/spots/regions 累加后传进来。
+ *  不在文案里写死数字：写死过一次 530，实际库里是 500，改完数据就变成了假话。 */
+defineProps({ totalSpots: { type: Number, default: 0 } })
+
 const text = ref('')      // 用户输入的需求原话
 const city = ref('')      // 条件行选中的城市（纯城市名，与后端地图核实口径一致）
 const days = ref(3)       // 条件行的天数
@@ -57,7 +61,10 @@ defineExpose({ prefill })
   <div class="hero-card">
     <p class="eyebrow">AI 智能旅行规划</p>
     <h1>说一句话，帮你把行程排好</h1>
-    <p class="sub">覆盖成都、杭州、西安、北京、三亚 5 座城市、530 个真实地点。每个地点先用高德核实是否真的存在，再按游览顺序连成路线。</p>
+    <p class="sub">
+      覆盖成都、杭州、西安、北京、三亚 5 座城市<template v-if="totalSpots">、{{ totalSpots }} 个真实地点</template>。
+      每个地点先用高德核实是否真的存在，再按游览顺序连成路线。
+    </p>
 
     <!-- 主输入：一整句话描述需求 -->
     <div class="ask-row">

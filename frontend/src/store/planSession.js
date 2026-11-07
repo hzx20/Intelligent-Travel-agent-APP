@@ -51,6 +51,13 @@ const mapView = ref(null)         // 最近一次地图视角 {center:[lng,lat],
 const mapCommand = ref(null)      // 给页面的地图指令 {nonce, fit} | {nonce, center, zoom}
 const stayMatches = ref({})       // 住宿名 → 高德真实 POI
 const nearbyHotels = ref([])      // 锚点周边真实酒店（补位用）
+/* 住宿匹配是否还在请求中。
+ * 没有这个标志，页面只能靠"列表为空"判断，于是空结果也显示成"正在匹配…"，
+ * 永远转不完 —— 用户以为一直在加载，其实是没匹配到。 */
+const stayLoading = ref(false)
+/* 本次生成的起点时刻（毫秒），0 表示没在跑。
+ * 单独存这里而不是让页面自己算：用户中途切页面再回来，计时不会从 0 重新开始。 */
+const jobStartedAt = ref(0)
 
 /* 视图滚动触发器：每有一点点新内容就 +1，页面 watch 它去滚到底部。
  * 用计数器而不是让页面深监听整个 messages 数组，省得每个 token 都全量遍历。 */
@@ -70,6 +77,7 @@ let saveTimer = null      // 地图视角写回后端的防抖
 let cmdSeq = 0            // 地图指令序号
 let matchKey = ''         // 住宿匹配缓存键
 let hydrated = false      // 是否已尝试过从 sessionStorage 恢复
+let resultApplied = false // 本次任务是否已经消费过 result（事件流与顶层字段会各来一次）
 
 function newSessionId() {
   return `s-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
@@ -216,22 +224,35 @@ async function saveSnapshot({ mapOnly = false } = {}) {
 /* ======================= 住宿推荐 × 高德真实数据 ======================= */
 async function fetchStayMatches() {
   const names = (result.value?.itinerary?.stays || []).map((s) => s.name).filter(Boolean).slice(0, 6)
-  if (!names.length) return
+  if (!names.length) {
+    // 模型这次没给住宿建议：别把"没结果"伪装成"还在加载"
+    stayMatches.value = {}
+    nearbyHotels.value = []
+    stayLoading.value = false
+    return
+  }
   const days = result.value?.itinerary?.days || []
   const anchor = days.flatMap((d) => d.spots || []).find((s) => s.lng && s.lat)
   const city = collected.value.destination || collected.value.city || ''
   const key = `${city}|${names.join('|')}|${anchor ? anchor.lng.toFixed(4) + ',' + anchor.lat.toFixed(4) : 'none'}`
   if (key === matchKey) return   // 同一行程不重复匹配
   matchKey = key
+  stayLoading.value = true
+  // 兜底：即使请求被浏览器挂住（接口内部要连高德），8 秒后也把 loading 关掉，
+  // 让界面落到"没有可用住宿卡片"的实话，而不是无限转圈。
+  const bail = setTimeout(() => { stayLoading.value = false }, 8000)
   try {
     const r = await api.post('/api/hotels/match', {
       city, lng: anchor?.lng ?? null, lat: anchor?.lat ?? null, names,
-    })
+    }, { timeout: 7000 })
     stayMatches.value = r.matches || {}
     nearbyHotels.value = r.nearby || []
   } catch {
     stayMatches.value = {}
     nearbyHotels.value = []
+  } finally {
+    clearTimeout(bail)
+    stayLoading.value = false
   }
 }
 
@@ -323,6 +344,11 @@ function applySnapshot(snap) {
       msg.text += ev.data.text || ''
       msg.streaming = true
       scrollKey.value += 1
+    } else if (ev.type === 'result' && ev.data) {
+      /* 失败与取消只在这里出现：后端异常收尾时走的是 emit("result", {error})
+       * 而顶层 result 字段保持 null。以前只认顶层字段，导致模型报错后
+       * 界面上那条 AI 气泡一直停在"正在整理需求…"，用户等了五分钟不知道发生了什么。 */
+      applyResult(ev.data, msg)
     }
   }
   if (snap.result) applyResult(snap.result, msg)
@@ -330,6 +356,9 @@ function applySnapshot(snap) {
 
 /** 处理 result 事件：要么是追问，要么是完整行程 */
 function applyResult(r, msg) {
+  // 同一份 result 可能从事件流和顶层字段各来一次（成功时两者都有），只认第一次
+  if (resultApplied) return
+  resultApplied = true
   if (r.error) {
     msg.text = `出错了：${r.error}`
     msg.streaming = false
@@ -367,6 +396,7 @@ function applyResult(r, msg) {
 /** 任务结束：收拾状态，把 job_id 从本地存档里摘掉 */
 function finishJob(snap) {
   busy.value = false
+  jobStartedAt.value = 0
   // 正在逐字打解说时不要抢它的 streaming 标记，交给 typeOut 自己收尾
   if (jobMsg && typingTarget !== jobMsg) jobMsg.streaming = false
   if (snap && snap.status === 'error' && jobMsg && !jobMsg.text) jobMsg.text = `出错了：${snap.error || '生成失败'}`
@@ -386,6 +416,7 @@ function abandonJob(tip) {
     if (!jobMsg.text) jobMsg.text = tip
   }
   busy.value = false
+  jobStartedAt.value = 0
   jobMsg = null
   jobId = null
   pollSeq = 0
@@ -401,6 +432,7 @@ function cancelJob() {
   jobId = null
   pollSeq = 0
   jobMsg = null
+  jobStartedAt.value = 0
   storeJobId('')
   clearTimeout(pollTimer)
   pollTimer = null
@@ -419,6 +451,7 @@ async function send(explicitText) {
 
   runSeq += 1                     // 本次生成的编号：被放弃的旧任务靠它认领"我已经过期"
   const myRun = runSeq
+  resultApplied = false           // 新任务：允许消费这一轮的 result
   stopTyping()
   input.value = ''
   messages.value.push({ role: 'user', text })
@@ -426,6 +459,7 @@ async function send(explicitText) {
   const aiMsg = pushAiMsg()      // 注意：必须用返回的代理，原始对象改不动视图
   logs.value = []
   busy.value = true
+  jobStartedAt.value = Date.now()   // 页面靠它显示"已用时"，切页面回来也准
   historyView.value = false
   scrollKey.value += 1
   persistNow()                    // 先把"用户已发出、正在等结果"这个状态存下来
@@ -450,6 +484,7 @@ async function send(explicitText) {
     aiMsg.streaming = false
     aiMsg.text = `连接失败：${e.message}（确认后端 8000 已启动）`
     busy.value = false
+    jobStartedAt.value = 0
     jobMsg = null
     persistSoon()
   }
@@ -610,6 +645,7 @@ function snapshotPayload() {
     mapView: mapView.value,
     activeDay: activeDay.value,
     input: input.value,
+    jobStartedAt: jobStartedAt.value,   // 刷新后接着算"已用时"，不要从 0 重来
   }
 }
 
@@ -666,6 +702,7 @@ function hydrate() {
       mapView.value = { center: s.mapView.center, zoom: s.mapView.zoom }
     }
     if (typeof s.input === 'string') input.value = s.input
+    if (Number(s.jobStartedAt) > 0) jobStartedAt.value = Number(s.jobStartedAt)
     activeDay.value = result.value ? (Number(s.activeDay) || 0) : 0
   }
 
@@ -681,6 +718,7 @@ function hydrate() {
     jobMsg = ensureJobMsg()
     jobMsg.streaming = true
     busy.value = true
+    if (!jobStartedAt.value) jobStartedAt.value = Date.now()
     schedulePoll(0)
     return
   }
@@ -717,6 +755,7 @@ async function tryResumeRemote() {
     collected.value = req.prev_collected || {}
     logs.value = []
     busy.value = true
+    jobStartedAt.value = Date.now()
     jobId = job.job_id
     pollSeq = 0
     pollFails = 0
@@ -736,7 +775,7 @@ export function usePlanSession() {
     // 状态（都是 ref，页面直接读写；不要在页面里再复制一份，否则又会出现"两份状态"）
     messages, input, busy, logs, result, collected, activeDay,
     historyView, showHistory, history, mapView, mapCommand,
-    stayMatches, nearbyHotels, scrollKey,
+    stayMatches, nearbyHotels, scrollKey, jobStartedAt, stayLoading,
     // 动作
     hydrate, send, startFresh, refreshHistory, loadPlan, backToLive,
     deletePlan, undoDelete, setMapView,
