@@ -41,13 +41,15 @@ export const api = {
 /**
  * SSE 流式规划：POST + ReadableStream 手动解析（fetch 不支持 EventSource 的 POST）
  * 回调：onLog({node,message}) / onToken(text) / onResult(data) / onDone()
+ * signal：AbortSignal —— 换新需求/清空会话时要能主动掐断旧请求，
+ *         否则两条流会同时往同一个对话里写，内容交叉。
  */
-export async function streamPlan(payload, { onLog, onToken, onResult, onDone }) {
+export async function streamPlan(payload, { onLog, onToken, onResult, onDone, signal } = {}) {
   const headers = { 'Content-Type': 'application/json' }
   const token = getToken()
   if (token) headers.Authorization = `Bearer ${token}`
   const resp = await fetch(BASE + '/api/plan/stream', {
-    method: 'POST', headers, body: JSON.stringify(payload),
+    method: 'POST', headers, body: JSON.stringify(payload), signal,
   })
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
   const reader = resp.body.getReader()

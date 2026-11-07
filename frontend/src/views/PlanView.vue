@@ -1,51 +1,62 @@
 <script setup>
-/** 线路规划助手 v1.1：左对话流 + 右动态地图（高德 JS API，可缩放/拖动/打点/路线）。
- *  历史方案 = 快照（聊天内容 + 地图中心/缩放 + 标记路线数据），点击原样还原。 */
-import { computed, nextTick, onMounted, ref } from 'vue'
+/** 线路规划助手 v1.2：左对话流 + 右动态地图（高德 JS API，可缩放/拖动/打点/路线）。
+ *  历史方案 = 快照（聊天内容 + 地图中心/缩放 + 标记路线数据），点击原样还原。
+ *
+ *  v1.2 起「会话状态」搬到了 store/planSession.js —— 对话、行程、需求槽位、
+ *  正在跑的生成请求都在那一层，用户切到别的模块再回来不会丢。
+ *  本文件只负责两件事：把状态显示出来，以及维护地图（地图实例属于页面，不属于会话）。 */
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { api, streamPlan } from '../api'
 import { loadAmap } from '../utils/amap'
+import { usePlanSession } from '../store/planSession'
 import { useAuth } from '../store/auth'
+import { fmtDist, fmtMin, partyAdvice } from '../utils/format'
 import RegionPicker from '../components/regionpicker.vue'
 import DateRangePicker from '../components/daterangepicker.vue'
 
-const { user } = useAuth()
 const route = useRoute()
 const router = useRouter()
-const messages = ref([])        // {role:'user'|'ai', text, streaming?}
-const input = ref('')
-const busy = ref(false)
-const logs = ref([])
-const result = ref(null)        // {itinerary, verify_logs, weather, plan_id, saved}
-const history = ref([])
-const showHistory = ref(false)
-const historyView = ref(false)  // 正在回看历史快照
-const chatBox = ref(null)
-const sessionId = ref(`s-${Date.now()}`)
-const collected = ref({})
-// 首页发令台带过来的城市：进页面就要回显到目的地选择框，
-// 否则会出现"输入框里写着成都、下面的目的地却是空的"这种自相矛盾的状态
-const prefillCity = ref(String(route.query.d || ''))
+// 登录态：模板里要判断"显示历史面板 / 显示登录提示"，与 store 里的 user 是同一个 ref
+const { user } = useAuth()
+const {
+  messages, input, busy, logs, result, collected, history, historyView, activeDay,
+  showHistory, mapView, mapCommand, stayMatches, nearbyHotels, scrollKey,
+  hydrate, send, startFresh, refreshHistory, loadPlan, backToLive, deletePlan,
+  undoDelete, setMapView,
+} = usePlanSession()
 
-// ---- 地图状态 ----
+// ---- 地图状态（页面级：组件销毁时地图跟着销毁，会话状态不受影响）----
 const mapEl = ref(null)
 const mapReady = ref(false)
 const mapError = ref('')        // 'MISSING_KEY' | 其它错误信息
-const activeDay = ref(0)        // 0=全部，其它=第 N 天
+const chatBox = ref(null)
 let map = null
 let overlays = []               // 当前行程的标记+路线
 let pinMarkers = []             // 用户手动打的点
 let infoWin = null
-let currentPlanId = null        // 当前快照归属的规划记录
-let liveSnapshot = null         // 回看历史前暂存当前对话
-let saveTimer = null
 const DAY_COLORS = ['#1a6e50', '#c0392b', '#2471a3', '#7d3c98', '#b7950b', '#ca6f1e']
 
 const days = computed(() => result.value?.itinerary?.days || [])
 const visibleDays = computed(() =>
   days.value.filter((d) => !activeDay.value || d.day === activeDay.value)
 )
-const spotTotal = computed(() => days.value.reduce((n, d) => n + (d.spots || []).length, 0))
+/** 目的地选择框的回显：以会话里记着的城市为准（切页面回来不会"上面有字、下面是空的"） */
+const pickerCity = computed(() => collected.value.destination || '')
+
+/** 住宿展示板：AI 推荐里匹配到真实 POI 的 + 周边真实酒店补位（凑满 6 家，全部带实拍图） */
+const stayBoard = computed(() => {
+  const stays = result.value?.itinerary?.stays || []
+  const out = []
+  for (const s of stays) {
+    const real = stayMatches.value[s.name]
+    if (real) out.push({ kind: 'stay', stay: s, real })
+  }
+  for (const n of nearbyHotels.value) {
+    if (out.length >= 6) break
+    out.push({ kind: 'nearby', real: n })
+  }
+  return out
+})
 
 function colorOf(day) {
   return DAY_COLORS[(day - 1) % DAY_COLORS.length]
@@ -55,12 +66,6 @@ const DIFF_COLORS = { 轻松: '#1a6e50', 适中: '#b7950b', 较费体力: '#c039
 function diffColor(level) {
   return DIFF_COLORS[level] || '#7a8a80'
 }
-/** 分钟 → "1小时20分" */
-function fmtMin(m) {
-  const n = Number(m) || 0
-  if (!n) return '0 分'
-  return n >= 60 ? `${Math.floor(n / 60)} 小时 ${n % 60} 分` : `${n} 分`
-}
 function scrollBottom() {
   nextTick(() => { if (chatBox.value) chatBox.value.scrollTop = chatBox.value.scrollHeight })
 }
@@ -68,91 +73,21 @@ function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 }
 
-/** 助手回复不再干巴巴：拼出 理由/方案对比/决策依据/假设 的完整解说 */
-function composeReply(it) {
-  if (!it) return ''
-  const lines = []
-  lines.push(`✅ 已生成「${it.title || '行程'}」——${it.summary || ''}`)
-  const ds = it.days || []
-  if (ds.some((d) => d.reason)) {
-    lines.push('')
-    lines.push('📌 每天这样安排的理由：')
-    ds.forEach((d) => { if (d.reason) lines.push(`· 第${d.day}天 ${d.theme || ''}：${d.reason}`) })
-  }
-  const alts = it.alternatives || []
-  if (alts.length) {
-    lines.push('')
-    lines.push('⚖️ 方案对比：')
-    alts.forEach((a) =>
-      lines.push(`· ${a.option}（优点：${a.pros || '—'}；不足：${a.cons || '—'}）${a.chosen ? ' ← 已选' : ''}`))
-  }
-  const basis = it.decision_basis || []
-  if (basis.length) {
-    lines.push('')
-    lines.push('🧭 决策依据：')
-    basis.forEach((b) => lines.push(`· ${b}`))
-  }
-  // 出行难度与交通可达性（v1.1 核心评估维度，方便横向比较不同目的地）
-  const tf = it.traffic || {}
-  if (tf.total_min || tf.cost) {
-    lines.push('')
-    lines.push(`🚦 全程在途约 ${fmtMin(tf.total_min)}，交通费约 ${tf.cost || 0} 元，整体难度「${tf.difficulty_overall || '—'}」`)
-    if (tf.peak_note) lines.push(`　 高峰波动：${tf.peak_note}`)
-  }
-  ds.forEach((d) => {
-    const t = d.timing || {}
-    if (!t.total_min && !(d.transit || {}).combo) return
-    lines.push(
-      `· 第${d.day}天 ${d.theme || ''}：难度 ${(d.difficulty || {}).level || '—'}，` +
-      `在途约 ${fmtMin(t.total_min)}（步行 ${t.walk_min || 0}／车程 ${t.ride_min || 0}／候车 ${t.wait_min || 0} 分，换乘 ${t.transfers || 0} 次）`
-    )
-    if ((d.transit || {}).combo) lines.push(`　 交通：${d.transit.combo}`)
-  })
-  // 住宿推荐（v1.1）：优先推荐 + 各档对比
-  const stays = it.stays || []
-  if (stays.length) {
-    const pick = it.stay_pick || {}
-    lines.push('')
-    lines.push(`🏨 住宿：优先推荐「${pick.name || stays[0].name}」${pick.why ? '——' + pick.why : ''}`)
-    stays.forEach((s) => {
-      lines.push(`· ${s.name}（${s.type || '—'}）：${s.reason || '—'}｜适合 ${s.fit || '通用'}｜适配 ${s.stage || '全程'}`)
-    })
-    lines.push('　 实时房价/房型/评价请点卡片上的携程按钮查看')
-  }
-  const asm = it.assumptions || []
-  if (asm.length) {
-    lines.push('')
-    lines.push('📝 我做的假设：')
-    asm.forEach((a) => lines.push(`· ${a}`))
-  }
-  if (!spotTotal.value) lines.push('\n（提示：这批地点没有可核实的坐标，地图上无法标点）')
-  return lines.join('\n')
-}
-
-/** 逐字打出最终解说（打字机效果） */
-function typeOut(full) {
-  const msg = messages.value[messages.value.length - 1]
-  msg.text = ''
-  let i = 0
-  const timer = setInterval(() => {
-    i = Math.min(full.length, i + 3)
-    msg.text = full.slice(0, i)
-    scrollBottom()
-    if (i >= full.length) { clearInterval(timer); msg.streaming = false }
-  }, 15)
-}
-
 // ================= 地图 =================
 async function initMap() {
   try {
     const AMap = await loadAmap()
+    // 地图脚本是异步加载的：等待期间用户可能已经切走，此时容器没了就别再建实例
+    if (!mapEl.value || map) return
     map = new AMap.Map(mapEl.value, { zoom: 11, center: [120.155, 30.274], viewMode: '2D' })
     map.addControl(new AMap.ToolBar({ position: 'RB' }))
     map.addControl(new AMap.Scale())
     map.on('click', onMapClick)
-    map.on('moveend', scheduleMapSave)
-    map.on('zoomend', scheduleMapSave)
+    map.on('moveend', onMapMoved)
+    map.on('zoomend', onMapMoved)
     mapReady.value = true
+    // 可能是"切页面回来"：优先还原上次看到的视角，没有才自适应整条行程
+    syncMap({ restore: true })
   } catch (e) {
     mapError.value = e.message === 'MISSING_KEY'
       ? 'MISSING_KEY'
@@ -160,7 +95,7 @@ async function initMap() {
   }
 }
 
-/** 在地图上画当前行程（按 activeDay 过滤）：编号标记 + 分日颜色路线 */
+/** 把当前行程画到地图上（按 activeDay 过滤）：编号标记 + 分日颜色路线 */
 function drawPlan(fit = true) {
   if (!map) return
   if (overlays.length) { map.remove(overlays); overlays = [] }
@@ -196,6 +131,24 @@ function drawPlan(fit = true) {
   if (fit && pts.length) map.setFitView(overlays, false, [50, 50, 50, 50])
 }
 
+/** 会话层发出的地图指令（新生成→自适应；打开历史→跳到当时视角） */
+function syncMap({ restore = false } = {}) {
+  if (!map) return
+  const cmd = mapCommand.value
+  // 刚挂载时优先还原"上次看到的样子"，指令只在之后到达时才执行
+  if (restore && mapView.value?.center?.length === 2 && mapView.value.zoom) {
+    map.setZoomAndCenter(mapView.value.zoom, mapView.value.center)
+    drawPlan(false)
+    return
+  }
+  if (cmd && !cmd.fit && Array.isArray(cmd.center)) {
+    map.setZoomAndCenter(cmd.zoom || 11, cmd.center)
+    drawPlan(false)
+    return
+  }
+  drawPlan(true)
+}
+
 function openInfo(s) {
   if (!map || !s.lng || !s.lat) return
   const nav = `https://uri.amap.com/marker?position=${s.lng},${s.lat}&name=${encodeURIComponent(s.name)}&src=travel-planner&coordinate=gaode`
@@ -227,37 +180,22 @@ function clearPins() {
   pinMarkers = []
 }
 
+/** 分日筛选：状态存在会话里，切页面回来还是"只看第 2 天" */
 function setDay(d) {
   activeDay.value = d
-  drawPlan(false)
 }
 
-// ================= 快照 =================
-function mapState() {
-  if (!map) return null
+/** 地图拖动/缩放停稳：记住视角（下次进来还原），登录用户顺便写回历史快照 */
+function onMapMoved() {
+  if (!map) return
   const c = map.getCenter()
-  return { center: [Number(c.lng.toFixed(6)), Number(c.lat.toFixed(6))], zoom: Number(map.getZoom().toFixed(1)) }
+  setMapView({
+    center: [Number(c.lng.toFixed(6)), Number(c.lat.toFixed(6))],
+    zoom: Number(map.getZoom().toFixed(1)),
+  })
 }
 
-/** 生成完成/对话更新 → 存聊天+地图；地图拖动停稳 → 只存地图（防抖 1 秒） */
-function scheduleMapSave() {
-  if (!currentPlanId || !user.value) return
-  clearTimeout(saveTimer)
-  saveTimer = setTimeout(() => saveSnapshot({ map_only: true }), 1000)
-}
-
-async function saveSnapshot({ map_only = false } = {}) {
-  if (!currentPlanId || !user.value) return
-  const body = { map_state: mapState() }
-  if (!map_only) {
-    body.messages = messages.value
-      .filter((m) => m.text)
-      .map((m) => ({ role: m.role, text: m.text }))
-  }
-  try { await api.patch(`/api/plan/${currentPlanId}/snapshot`, body) } catch { /* 快照失败不打扰 */ }
-}
-
-// ================= 快捷条件模块（目的地联想 + 你想去多久） =================
+// ================= 快捷条件模块 =================
 /** 目的地选中/清除：destination 必须是纯城市名（后端地图核实按 Spot.city 精确匹配），
  *  区县作为倾向词进输入文本，由需求澄清模块自然吸收 */
 function onRegionPick({ city, district }) {
@@ -282,130 +220,26 @@ function onDateRangePick(r) {
   collected.value.days = r.days
 }
 
-// ================= 对话 =================
-/** 首页发令台把需求带过来（?d=城市&days=天数&q=原话&auto=1）：
- *  填好输入框和条件，auto=1 就直接开跑——不能让用户把刚说过的话再打一遍。 */
+// ================= 首页发令台带过来的需求 =================
+/** ?d=城市&days=天数&q=原话&auto=1：
+ *  填好输入框和条件，auto=1 就直接开跑——不能让用户把刚说过的话再打一遍。
+ *  新需求 = 新会话：先把上一趟的会话清掉，否则会带着旧城市去澄清，问出驴唇不对马嘴的问题。 */
 function applyPrefill() {
   const q = route.query
-  if (!q || !q.q) return
+  const text = String(q?.q || '')
+  if (!text) return
   const city = String(q.d || '')
   const days = Number(q.days || 0)
-  if (city) collected.value.destination = city
-  if (days > 0) collected.value.days = days
-  input.value = String(q.q)
-  if (String(q.auto) === '1' && !messages.value.length) {
+  if (String(q.auto) === '1') {
     // 先把 query 抹掉再发：刷新页面不该重复跑一次、也不该重复计一次调用
     router.replace({ path: '/plan' })
+    startFresh({ destination: city, days, text })
     setTimeout(() => send(), 350)
+  } else {
+    input.value = text
+    if (city) collected.value.destination = city
+    if (days > 0) collected.value.days = days
   }
-}
-
-async function send() {
-  const text = input.value.trim()
-  if (!text || busy.value) return
-  // 正在看历史快照时发言 = 回到自己的对话再接着聊，避免把历史快照冲花
-  if (historyView.value) backToLive()
-  input.value = ''
-  messages.value.push({ role: 'user', text })
-  const payloadMessages = messages.value.map((m) => ({ role: m.role, text: m.text }))
-  busy.value = true
-  logs.value = []
-  historyView.value = false
-  scrollBottom()
-  let aiText = ''
-  let gotPlan = false
-  messages.value.push({ role: 'ai', text: '', streaming: true })
-  try {
-    await streamPlan(
-      { history: [], user_input: text, prev_collected: collected.value, session_id: sessionId.value, messages: payloadMessages },
-      {
-        onLog: (l) => { logs.value.push(`[${l.node}] ${l.message}`); scrollBottom() },
-        onToken: (t) => { aiText += t; messages.value[messages.value.length - 1].text = aiText; scrollBottom() },
-        onResult: (r) => {
-          if (r.error) { messages.value[messages.value.length - 1].text = `出错了：${r.error}`; return }
-          collected.value = r.collected || collected.value
-          if (r.done && r.itinerary?.days) {
-            gotPlan = true
-            result.value = r
-            currentPlanId = r.plan_id || null
-            drawPlan(true)
-            typeOut(composeReply(r.itinerary))
-            saveSnapshot()
-            loadHistory()
-            fetchStayMatches()
-          }
-        },
-      },
-    )
-    if (!gotPlan) messages.value[messages.value.length - 1].streaming = false
-  } catch (e) {
-    messages.value[messages.value.length - 1].text = `连接失败：${e.message}（确认后端 8000 已启动）`
-    messages.value[messages.value.length - 1].streaming = false
-  } finally {
-    busy.value = false
-    scrollBottom()
-  }
-}
-
-// ---- 住宿推荐 × 高德真实数据（实拍图/评分/真距 + OTA 平台跳转）----
-const stayMatches = ref({})     // 住宿名 → 高德真实 POI（匹配不到为 null，卡片隐藏）
-const nearbyHotels = ref([])    // 锚点周边真实酒店（补位用，保证都有实拍图）
-let matchKey = ''
-
-/** 按出行人数给"大床 vs 双床"建议；用户没提人数就不生成（产品口径） */
-function partyAdvice(p) {
-  const s = String(p || '').trim()
-  if (!s) return null
-  if (/小孩|儿童|娃|婴儿/.test(s)) return `家庭房，或大床房＋加床（多数酒店可免费加婴儿床，预订前电话确认）`
-  if (/3人|三人|四人|朋友|闺蜜|同事/.test(s)) return `双床房（每人一床最省心）`
-  if (/情侣|夫妻|蜜月/.test(s)) return `大床房（氛围更好；习惯分床就选双床）`
-  return `双床房为主；同行人数若超过 2 人建议双床＋加床`
-}
-
-function fmtDist(m) {
-  const n = Number(m)
-  return !n ? '' : n >= 1000 ? (n / 1000).toFixed(1) + ' km' : Math.round(n) + ' 米'
-}
-
-/** 住宿展示板：AI 推荐里匹配到真实 POI 的 + 周边真实酒店补位（凑满 6 家，全部带实拍图） */
-const stayBoard = computed(() => {
-  const stays = result.value?.itinerary?.stays || []
-  const out = []
-  for (const s of stays) {
-    const real = stayMatches.value[s.name]
-    if (real) out.push({ kind: 'stay', stay: s, real })
-  }
-  for (const n of nearbyHotels.value) {
-    if (out.length >= 6) break
-    out.push({ kind: 'nearby', real: n })
-  }
-  return out
-})
-
-async function fetchStayMatches() {
-  const names = (result.value?.itinerary?.stays || []).map((s) => s.name).filter(Boolean).slice(0, 6)
-  if (!names.length) return
-  const anchor = days.value.flatMap((d) => d.spots || []).find((s) => s.lng && s.lat)
-  const city = collected.value.destination || collected.value.city || ''
-  const key = `${city}|${names.join('|')}|${anchor ? anchor.lng.toFixed(4) + ',' + anchor.lat.toFixed(4) : 'none'}`
-  if (key === matchKey) return  // 同一行程不重复匹配
-  matchKey = key
-  try {
-    const r = await api.post('/api/hotels/match', {
-      city, lng: anchor?.lng ?? null, lat: anchor?.lat ?? null, names,
-    })
-    stayMatches.value = r.matches || {}
-    nearbyHotels.value = r.nearby || []
-  } catch {
-    stayMatches.value = {}
-    nearbyHotels.value = []
-  }
-}
-
-// ================= 历史 =================
-async function loadHistory() {
-  if (!user.value) return
-  try { history.value = (await api.get('/api/plan/history')).items } catch { /* 游客忽略 */ }
 }
 
 // ================= 删除历史方案（含二次确认与撤销） =================
@@ -421,20 +255,6 @@ function clearToast() {
   toast.value = null
 }
 
-/** 清空当前编辑区（删除的是正在看的那条时用）。
- *  keepLive=true 表示删的是历史条目、实时对话还在 → 保住 liveSnapshot，别一起清掉 */
-function clearWorkspace({ keepLive = false } = {}) {
-  result.value = null
-  messages.value = []
-  logs.value = []
-  collected.value = {}
-  currentPlanId = null
-  if (!keepLive) liveSnapshot = null
-  historyView.value = false
-  activeDay.value = 0
-  drawPlan(true)   // 无行程时只清标记与路线
-}
-
 function showUndoToast(title, planId) {
   clearToast()
   toast.value = { text: `已删除「${title}」`, planId, seconds: UNDO_SECONDS }
@@ -448,101 +268,53 @@ function showUndoToast(title, planId) {
 
 async function confirmDelete(h, ev) {
   ev?.stopPropagation?.()
-  const idx = history.value.findIndex((x) => x.id === h.id)
-  const title = h.title || `${h.city} ${h.days}天`
-  // currentPlanId 精确指向"当前打开的方案"：命中才需要清场（避免删别的条目把当前会话冲掉）
-  const wasViewing = currentPlanId === h.id
-  const isLivePlan = wasViewing && !historyView.value
   pendingDelete.value = null
   try {
-    await api.del(`/api/plan/${h.id}`)
-    await loadHistory()
-    if (wasViewing) {
-      // 正在看的就是被删的那条 → 清空编辑区，再自动选中相邻记录
-      clearWorkspace({ keepLive: !isLivePlan })
-      const rest = history.value
-      const next = rest[Math.min(idx, rest.length - 1)]
-      if (next) await loadPlan(next.id)
-    }
-    showUndoToast(title, h.id)
+    const { id, title } = await deletePlan(h)
+    showUndoToast(title, id)
   } catch (e) {
     alert(`删除失败：${e.message}`)
   }
 }
 
 /** 撤销：8 秒窗口内把记录恢复回来并重新打开 */
-async function undoDelete() {
-  if (!toast.value?.planId) return
-  const id = toast.value.planId
+async function undoDeleteClick() {
+  const id = toast.value?.planId
+  if (!id) return
   clearToast()
   try {
-    await api.post(`/api/plan/${id}/restore`)
-    await loadHistory()
-    await loadPlan(id)
+    await undoDelete(id)
   } catch (e) {
     alert(`撤销失败：${e.message}`)
   }
 }
 
-/** 旧记录（升级前保存、无聊天快照）也能打开：用行程内容补一份对话 */
-function stubChat(p) {
-  const it = p.itinerary || {}
-  const ds = it.days || []
-  const city = p.intent?.destination || '目的地'
-  // 注意：这里不能用 spotTotal（它反映的是当前结果，此刻还没切到这条历史）
-  const hasSpots = ds.some((d) => (d.spots || []).length > 0)
-  const old = hasSpots ? '' : '（升级前的旧方案：当时还没存聊天与地图视角，行程可能为空）'
-  return [
-    { role: 'user', text: `去${city}玩 ${ds.length} 天` },
-    { role: 'ai', text: (composeReply(it) || '（旧方案无内容）') + (old ? `\n\n${old}` : '') },
-  ]
-}
+// ================= 生命周期 =================
+watch(scrollKey, scrollBottom)                      // 新内容进来就滚到底
+watch(activeDay, () => drawPlan(false))             // 分日筛选
+watch(mapCommand, () => syncMap())                  // 会话层要求换视角
 
-async function loadPlan(id) {
-  try {
-    const p = await api.get(`/api/plan/${id}`)
-    // 历史方案的需求现场（城市/人数等）一并还原：住宿匹配按它的城市搜、床型建议按它的人数给，
-    // 否则会拿"当前实时对话"的 collected 张冠李戴（体检报告严重项 1）
-    collected.value = p.intent || {}
-    // 只在第一次离开实时对话时暂存（切历史条目之间、删除后重建都不覆盖，避免把实时对话弄丢）
-    if (!historyView.value && !liveSnapshot) {
-      liveSnapshot = { messages: messages.value, result: result.value, logs: logs.value, collected: collected.value }
-    }
-    historyView.value = true
-    showHistory.value = false
-    messages.value = p.chat?.length ? p.chat : stubChat(p)
-    result.value = { itinerary: p.itinerary, verify_logs: p.verify_logs, weather: {}, plan_id: p.id, saved: true }
-    currentPlanId = p.id
-    activeDay.value = 0
-    logs.value = []
-    const ms = p.map_state || {}
-    if (map && Array.isArray(ms.center) && ms.center.length === 2 && ms.zoom) {
-      map.setZoomAndCenter(ms.zoom, ms.center)
-      drawPlan(false)
-    } else {
-      drawPlan(true)
-    }
-    fetchStayMatches()
-    scrollBottom()
-  } catch (e) { alert(e.message) }
-}
+onMounted(() => {
+  hydrate()            // 先把上次的会话接回来（刷新/关标签页也能续上）
+  applyPrefill()       // 再看有没有首页带过来的新需求
+  refreshHistory()
+  scrollBottom()
+  initMap()
+})
 
-function backToLive() {
-  historyView.value = false
-  if (liveSnapshot) {
-    messages.value = liveSnapshot.messages
-    result.value = liveSnapshot.result
-    logs.value = liveSnapshot.logs
-    collected.value = liveSnapshot.collected
-    liveSnapshot = null
+// 组件销毁时把地图实例一并回收：不 destroy 的话每次进页面都会多留一份监听与画布
+onBeforeUnmount(() => {
+  if (map) {
+    try { map.destroy() } catch { /* 高德内部异常不影响页面卸载 */ }
+    map = null
   }
-  currentPlanId = result.value?.plan_id || null
-  activeDay.value = 0
-  drawPlan(true)
-}
-
-onMounted(() => { loadHistory(); initMap(); applyPrefill() })
+  overlays = []
+  pinMarkers = []
+  infoWin = null
+  mapReady.value = false
+})
 </script>
+
 
 <template>
   <div class="wrap plan-wrap">
@@ -593,6 +365,11 @@ onMounted(() => { loadHistory(); initMap(); applyPrefill() })
           <span class="lk" @click="backToLive">← 返回当前对话</span>
         </div>
 
+        <!-- 生成中提示：既解释"为什么回来还在转"，也告诉用户切页面不会中断 -->
+        <div v-if="busy" class="run-hint">
+          ⏳ AI 正在生成路线，切换页面不会中断，回到这里可以接着看
+        </div>
+
         <div class="chat-box" ref="chatBox">
           <div v-if="!messages.length" class="empty">
             试试输入：<b>"去杭州玩 2 天，喜欢安静的地方"</b><br />
@@ -607,14 +384,14 @@ onMounted(() => { loadHistory(); initMap(); applyPrefill() })
         </div>
         <!-- 快捷条件：目的地联想 + 你想去多久（选中后并入需求，澄清少问一轮） -->
         <div class="chat-addons" :class="{ locked: busy }">
-          <RegionPicker :initial="prefillCity" @select="onRegionPick" />
+          <RegionPicker :initial="pickerCity" @select="onRegionPick" />
           <DateRangePicker @select="onDateRangePick" @clear="onDateRangePick(null)" />
         </div>
         <div class="chat-input">
           <input v-model="input" :disabled="busy" maxlength="500"
                  placeholder="输入目的地或告诉我你的想法"
-                 @keyup.enter="send" />
-          <button class="btn-send" :disabled="busy || !input.trim()" @click="send">
+                 @keyup.enter="send()" />
+          <button class="btn-send" :disabled="busy || !input.trim()" @click="send()">
             {{ busy ? '规划中…' : '发送' }}
           </button>
         </div>
@@ -659,7 +436,7 @@ onMounted(() => { loadHistory(); initMap(); applyPrefill() })
         <!-- 删除后的轻量提示（含撤销入口） -->
         <div v-if="toast" class="toast">
           <span>{{ toast.text }}</span>
-          <button class="undo" @click="undoDelete">撤销（{{ toast.seconds }}s）</button>
+          <button class="undo" @click="undoDeleteClick">撤销（{{ toast.seconds }}s）</button>
         </div>
 
       </section>
@@ -797,6 +574,7 @@ onMounted(() => { loadHistory(); initMap(); applyPrefill() })
 .hist-travel { color: #6a7d6a; }
 .back-live { padding: 7px 16px; font-size: 12px; background: var(--green-soft); color: var(--green); border-bottom: 1px solid var(--line); }
 .back-live .lk { cursor: pointer; font-weight: 700; margin-left: 8px; }
+.run-hint { padding: 7px 16px; font-size: 12px; background: #fff8e6; color: #7a6520; border-bottom: 1px solid #e8d9a0; }
 .chat-box { flex: 1; overflow-y: auto; padding: 14px 16px; min-height: 0; }
 .msg { display: flex; margin-bottom: 10px; }
 .msg.user { justify-content: flex-end; }
