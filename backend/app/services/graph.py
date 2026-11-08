@@ -74,12 +74,15 @@ async def verify_node(state: PlanState) -> dict:
             True,
         )
         replaced = sum(1 for l in logs if l["action"] == "replaced")
-        deduped = sum(1 for l in logs if l["action"] == "dedupe")
+        # 按"天"去重，不能直接数日志条数：同一天可能产生两条去重记录
+        # （核实前按名字合并一次、核实后按 POI 编号再合并一次），
+        # 数条数会出现"2 天行程却说合并了 3 天"这种明显不实的提示。
+        dedupe_days = {l.get("spot") for l in logs if l["action"] == "dedupe"}
         # 过检数量按"实际保留下来的地点数"算：logs 里还混着去重记录，不能拿 len(logs) 当地点数
         total = sum(len(d.get("spots") or []) for d in new_itinerary.get("days") or [])
         tail = f"，替换 {replaced} 个虚构地点" if replaced else "，全部真实"
-        if deduped:
-            tail += f"，合并 {deduped} 天里的重复地点"
+        if dedupe_days:
+            tail += f"，合并 {len(dedupe_days)} 天里的重复地点"
         return {
             "itinerary": new_itinerary,
             "verify_logs": logs,
