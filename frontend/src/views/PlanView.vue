@@ -63,6 +63,16 @@ function colorOf(day) {
   return DAY_COLORS[(day - 1) % DAY_COLORS.length]
 }
 
+/* 住宿类地点识别：模型偶尔把当晚酒店也排进时间轴（实测出现过"铁通精品商务酒店"），
+ * 混在景点列表里就像多了一个游玩点。这里只做标注、不改数据 —— 用户一眼能看出
+ * "这是住宿不是景点"，也不至于误删他真正想住的民宿体验。 */
+const LODGING_RE = /(酒店|宾馆|民宿|客栈|旅馆|公寓|度假村|青旅|招待所)/
+function isLodging(s) {
+  const t = String(s.poi_type || '')
+  if (t.includes('住宿服务')) return true
+  return LODGING_RE.test(t) || LODGING_RE.test(String(s.name || ''))
+}
+
 /* ================= 生成进度（等待 2 分钟不能让人以为死机） =================
  * 生成一次要调两次大模型：澄清 + 排行程（后者要吐出一大段 JSON，实测 2 分多钟），
  * 之后再逐个地点过高德核实、查天气。全程后端只在 4 个节点各发一条日志，
@@ -574,7 +584,8 @@ onBeforeUnmount(() => {
               <div v-for="(s, i) in d.spots" :key="i" class="spot-row">
                 <span class="spot-idx" :style="{ background: colorOf(d.day) }">{{ i + 1 }}</span>
                 <div class="spot-info">
-                  <b>{{ s.name }}<span v-if="s.replacedNote" class="v-badge">已替换</span></b>
+                  <b>{{ s.name }}<span v-if="s.replacedNote" class="v-badge">已替换</span><span
+                    v-if="isLodging(s)" class="lodging-badge" title="这是住宿地点，不是游玩景点">住宿</span></b>
                   <small>{{ s.time ? s.time + ' · ' : '' }}{{ s.address || s.district || '' }}</small>
                 </div>
                 <span v-if="s.access?.mode" class="access-chip" :title="s.access.note || ''">
@@ -803,6 +814,8 @@ onBeforeUnmount(() => {
 .spot-info b { font-size: 12.5px; display: block; }
 .spot-info small { color: var(--text-sub); font-size: 11.5px; }
 .v-badge { font-size: 10px; color: #c0392b; border: 1px solid #e5b4b4; border-radius: 8px; padding: 0 5px; margin-left: 4px; }
+/* 住宿标注：蓝灰，跟红色"已替换"区分开，不抢注意力 */
+.lodging-badge { font-size: 10px; color: #3b6b8f; border: 1px solid #c2d6e4; background: #f0f6fa; border-radius: 8px; padding: 0 5px; margin-left: 4px; }
 .mini-map { font-size: 11.5px; color: var(--green); white-space: nowrap; }
 .vlog { margin-top: 10px; font-size: 12px; }
 .vlog summary { cursor: pointer; color: #666; }

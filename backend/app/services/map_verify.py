@@ -51,6 +51,9 @@ def _amap_search(client: httpx.Client, name: str, city: str) -> dict | None:
             "lng": lng,
             "lat": lat,
             "address": poi.get("address", ""),
+            # 高德的 POI 分类（如"住宿服务;宾馆酒店"）。前端靠它把酒店和景点区分开：
+            # 模型有时会把当晚酒店也排进时间轴，混在景点里看着像多了一个游玩点。
+            "poi_type": poi.get("type", ""),
         }
     except (httpx.HTTPError, ValueError, KeyError):
         return None
@@ -73,6 +76,8 @@ def _db_lookup(db, name: str, city: str) -> dict | None:
         "lng": spot.lng,
         "lat": spot.lat,
         "address": spot.address,
+        # 本地库的 tags 就是采集时存的高德分类词，和接口侧的 poi_type 同义
+        "poi_type": spot.tags or "",
     }
 
 
@@ -87,6 +92,7 @@ def _db_substitute(db, city: str, used_ids: set[str]) -> dict | None:
                 "lng": spot.lng,
                 "lat": spot.lat,
                 "address": spot.address,
+                "poi_type": spot.tags or "",
             }
     return None
 
