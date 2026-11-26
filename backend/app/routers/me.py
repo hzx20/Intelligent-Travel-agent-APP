@@ -1,9 +1,10 @@
 """个人中心接口（v0.6）：我的收藏 / 我发布的攻略 / 编辑资料。"""
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
+from sqlalchemy import update
 
 from app.db.database import get_db
 from app.db.models import Favorite, Guide, Spot, User
@@ -34,6 +35,7 @@ class GuideItem(BaseModel):
 
 class ProfileOut(BaseModel):
     id: int
+    version: int
     username: str
     nickname: str
     avatar: str
@@ -46,6 +48,7 @@ class ProfileOut(BaseModel):
 
 
 class ProfileIn(BaseModel):
+    version: int | None = Field(default=None, ge=1)
     nickname: Optional[str] = Field(default=None, min_length=1, max_length=50)
     avatar: Optional[str] = Field(default=None, max_length=500)
 
@@ -57,15 +60,19 @@ class ProfileIn(BaseModel):
         return v
 
 
+class ProfileWrite(ProfileIn):
+    version: int = Field(ge=1)
+
+
 def _fmt(dt) -> str:
     return dt.strftime("%Y-%m-%d %H:%M")
 
 
-@router.get("/profile", response_model=ProfileOut)
-def my_profile(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def _profile(db, user):
     """个人中心总览：资料 + 收藏/攻略统计。"""
     return ProfileOut(
         id=user.id,
+        version=user.profile_version,
         username=user.username,
         nickname=user.nickname,
         avatar=user.avatar,
@@ -76,9 +83,16 @@ def my_profile(db: Session = Depends(get_db), user: User = Depends(get_current_u
     )
 
 
+@router.get('/profile', response_model=ProfileOut)
+def my_profile(response: Response, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    response.headers['Cache-Control'] = 'no-store'
+    return _profile(db, user)
+
+
 @router.get("/favorites", response_model=list[FavoriteOut])
-def my_favorites(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def my_favorites(response: Response, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """我收藏的景点（按收藏时间倒序）。"""
+    response.headers['Cache-Control'] = 'no-store'
     rows = (
         db.query(Favorite, Spot)
         .join(Spot, Favorite.spot_id == Spot.id)
@@ -93,8 +107,9 @@ def my_favorites(db: Session = Depends(get_db), user: User = Depends(get_current
 
 
 @router.get("/guides", response_model=list[GuideItem])
-def my_guides(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def my_guides(response: Response, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """我发布的攻略。"""
+    response.headers['Cache-Control'] = 'no-store'
     guides = (
         db.query(Guide)
         .filter(Guide.user_id == user.id)
@@ -114,14 +129,27 @@ def my_guides(db: Session = Depends(get_db), user: User = Depends(get_current_us
 @router.patch("/profile", response_model=ProfileOut)
 def update_profile(
     body: ProfileIn,
+    response: Response,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
     """编辑个人资料（昵称/头像，只改传了的字段）。"""
-    if body.nickname is not None:
-        user.nickname = body.nickname.strip() or user.nickname
-    if body.avatar is not None:
-        user.avatar = body.avatar
+    if body.version is None:
+        raise HTTPException(428, '请重新加载资料并使用支持版本检查的客户端。')
+    values = {'profile_version': User.profile_version + 1}
+    if body.nickname is not None: values['nickname'] = body.nickname.strip()
+    if body.avatar is not None: values['avatar'] = body.avatar
+    claimed = db.execute(update(User).where(User.id == user.id, User.profile_version == body.version)
+                         .values(**values).execution_options(synchronize_session=False))
+    if claimed.rowcount != 1:
+        db.rollback()
+        raise HTTPException(409, '个人资料已更新，本次未覆盖任何内容。请保留输入并核对云端资料。')
     db.commit()
     db.refresh(user)
-    return my_profile(db, user)
+    response.headers['Cache-Control'] = 'no-store'
+    return _profile(db, user)
+
+
+@router.patch('/profile/edit', response_model=ProfileOut)
+def update_profile_checked(body: ProfileWrite, response: Response, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    return update_profile(body, response, db, user)

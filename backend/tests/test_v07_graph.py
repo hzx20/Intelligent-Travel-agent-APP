@@ -43,6 +43,8 @@ def _mem_db():
 
 
 FAKE_PLAN_ITEMS_SHAPE = {
+    "budget_format": "items_and_additions_v1",
+    "additional_costs": [],
     "title": "杭州两日",
     "summary": "湖畔古刹慢游",
     "days": [
@@ -77,7 +79,12 @@ def test_generate_shape_regression_items_to_spots(monkeypatch):
 
     async def fake_chat(messages, temperature=0.5, timeout_ms=60000):
         import json as _json
-        return _json.dumps(FAKE_PLAN_ITEMS_SHAPE, ensure_ascii=False)
+        import copy
+        reply = copy.deepcopy(FAKE_PLAN_ITEMS_SHAPE)
+        for day in reply['days']:
+            for item in day['items']:
+                item['cost_category'] = '门票' if item['type'] == '景点' else '其他'
+        return _json.dumps(reply, ensure_ascii=False)
 
     monkeypatch.setattr(itinerary_module, "chat", fake_chat)
 
@@ -91,23 +98,24 @@ def test_generate_shape_regression_items_to_spots(monkeypatch):
     assert [s["name"] for s in d1] == ["西湖", "不存在的景点XYZ"], "空 poi 条目应被丢弃"
     assert d1[0]["time"] == "09:00", "time 等原始字段应保留"
 
-    # 核实：db 命中 + 虚构地点同城替换，且全部带真实坐标（地图标点靠它）
+    # 核实：库内匹配标点，未找到的安排保留原名。
     db = _mem_db()
     try:
         _seed_db(db)
         new_itin, logs = map_verify.verify_itinerary_spots(it, "杭州", db, amap_enabled=False)
         actions = {l["spot"]: l["action"] for l in logs}
         assert actions["西湖"] == "db"
-        assert actions["不存在的景点XYZ"] == "replaced"
+        assert actions["不存在的景点XYZ"] == "unverified"
         all_spots = [s for day in new_itin["days"] for s in day["spots"]]
         assert len(all_spots) == 3, "第2天灵隐寺也应在列"
-        assert all(s.get("lng") and s.get("lat") for s in all_spots), "全部地点必须带坐标"
+        assert all_spots[1]['lng'] is None and all_spots[1]['lat'] is None
+        assert all(s.get("lng") and s.get("lat") for s in (all_spots[0], all_spots[2]))
     finally:
         db.close()
 
 
-def test_verify_db_hit_and_substitute():
-    """本地命中走 db；查无此地替换为同城景点；日志齐全。"""
+def test_verify_db_hit_and_preserve_missing_identity():
+    """本地命中走 db，查无此地保留原安排与核实状态。"""
     db = _mem_db()
     try:
         _seed_db(db)
@@ -122,13 +130,12 @@ def test_verify_db_hit_and_substitute():
         )
         actions = {l["spot"]: l["action"] for l in logs}
         assert actions["西湖"] == "db"
-        assert actions["不存在的景点XYZ"] == "replaced", "虚构地点应被同城替代"
+        assert actions["不存在的景点XYZ"] == "unverified"
         assert actions["灵隐寺"] == "db"
         d1_names = [s["name"] for s in new_itin["days"][0]["spots"]]
-        assert "不存在的景点XYZ" not in d1_names, "替换后原虚构名不应残留"
-        assert d1_names[1] in ("灵隐寺", "西溪湿地"), "替代景点应来自真实库"
-        sub = new_itin["days"][0]["spots"][1]
-        assert sub["lng"] and sub["lat"], "替代景点必须带真实坐标（供地图标点）"
+        assert d1_names[1] == "不存在的景点XYZ"
+        unresolved = new_itin["days"][0]["spots"][1]
+        assert unresolved["lng"] is None and unresolved["lat"] is None
     finally:
         db.close()
 
@@ -167,23 +174,30 @@ def test_graph_compiled_and_flows():
     assert any("澄清" in l for l in result["logs"]), "过程日志应含节点信息"
 
 
-def test_plan_stream_sse_guest(client):
-    """SSE 接口：游客完整走通 澄清追问 流（真调智谱）。"""
-    c, Session = client
+def test_plan_stream_sse_guest(client, monkeypatch):
+    """Guest clarification flows through the real graph and SSE without a provider."""
+    from app.services import clarify
+    c, _ = client
+    calls = []
+
+    async def reply(messages, *, temperature):
+        calls.append(messages[-1]['content'])
+        return json.dumps({'collected':{'destination':'成都'}, 'missing':['days'],
+                           'question':'你计划在成都玩几天？'}, ensure_ascii=False)
+
+    monkeypatch.setattr(clarify, 'chat', reply)
     resp = c.post(
         "/api/plan/stream",
         json={"history": [], "user_input": "我想去成都玩", "prev_collected": {}},
     )
     assert resp.status_code == 200
-    body = resp.text
-    assert "event: log" in body and "event: result" in body and "event: done" in body
-    # 解析 result 事件
-    for line in body.splitlines():
-        if line.startswith("data: ") and '"done"' in line:
-            data = json.loads(line[6:])
-            if data.get("done") is False:
-                assert data["question"], "追问文案应在 result 中"
-            break
+    events = [part.splitlines() for part in resp.text.strip().split('\n\n')]
+    names = [part[0] for part in events]
+    assert 'event: log' in names and names[-2:] == ['event: result', 'event: done']
+    data = json.loads(events[-2][1].removeprefix('data: '))
+    assert data['done'] is False and data['question'] == '你计划在成都玩几天？'
+    assert data['collected']['destination'] == '成都' and data['plan_id'] is None
+    assert len(calls) == 1 and '我想去成都玩' in calls[0]
 
 
 def test_plan_history_endpoints(client):

@@ -63,18 +63,19 @@ H = {"Authorization": f"Bearer {token}"}
 me = c.get("/api/me/profile", headers=H).json()
 check("资料卡昵称", me["nickname"] == "走查员", f"id={me['id']}")
 user_id_holder["id"] = me["id"]
-check("改昵称", c.patch("/api/me/profile", headers=H, json={"nickname": "走查员2"}).json()["nickname"] == "走查员2")
+check("改昵称", c.patch("/api/me/profile", headers=H, json={"nickname": "走查员2", "version": c.get('/api/me/profile',headers=H).json()['version']}).json()["nickname"] == "走查员2")
 check("空昵称被拒 422", c.patch("/api/me/profile", headers=H, json={"nickname": "  "}).status_code == 422)
 check("错误密码登录失败", c.post("/api/auth/login", json={"username": u, "password": "wrong"}).status_code in (400, 401))
 
 print("\n【3】收藏 → 取消收藏")
-f1 = c.post(f"/api/spots/{spot['id']}/favorite", headers=H).json()
+fv = c.get(f"/api/spots/{spot['id']}/favorite-state",headers=H).json()['favorite_version']
+f1 = c.put(f"/api/spots/{spot['id']}/favorite-state", headers=H,json={'favorited':True,'version':fv}).json()
 check("收藏成功", f1["favorited"] is True and f1["favorite_count"] >= 1)
 check("详情变已收藏", c.get(f"/api/spots/{spot['id']}", headers=H).json()["favorited"] is True)
 check("我的收藏列表", any(x["spot"]["id"] == spot["id"] for x in c.get("/api/me/favorites", headers=H).json()))
-f2 = c.post(f"/api/spots/{spot['id']}/favorite", headers=H).json()
+f2 = c.put(f"/api/spots/{spot['id']}/favorite-state", headers=H,json={'favorited':False,'version':f1['favorite_version']}).json()
 check("再点取消收藏", f2["favorited"] is False)
-c.post(f"/api/spots/{spot['id']}/favorite", headers=H)  # 收回来，留作后台查看用
+c.put(f"/api/spots/{spot['id']}/favorite-state", headers=H,json={'favorited':True,'version':f2['favorite_version']})
 
 print("\n【4】评论 → 软删")
 cm = c.post(f"/api/spots/{spot['id']}/comments", headers=H, json={"content": "走查留痕：值得一去", "rating": 5}).json()
@@ -135,8 +136,11 @@ check("禁止停用自己 400", c.patch(f"/api/admin/users/{me['id']}?is_active=
 check("自停用被拒后仍可用", c.get("/api/me/profile", headers=HA).status_code == 200)
 
 print("\n【8】清理")
-check("删攻略", c.delete(f"/api/guides/{gid}", headers=H).status_code == 204)
+guide_snapshot = c.get(f'/api/guides/{gid}',headers=H).json()
+check("删攻略", c.delete(f"/api/guides/{gid}/content", params={'version':guide_snapshot['version'],'revision':guide_snapshot['revision']},headers=H).status_code == 204)
 with engine.begin() as conn:
+    for table in ('comment_creation_requests','spot_favorite_states','guide_creation_requests'):
+        conn.execute(text(f'DELETE FROM {table} WHERE user_id = :i'), {'i':me['id']})
     conn.execute(text("DELETE FROM favorites WHERE user_id = :i"), {"i": me["id"]})
     conn.execute(text("DELETE FROM comments WHERE user_id = :i"), {"i": me["id"]})
     conn.execute(text("DELETE FROM users WHERE username = :u"), {"u": u})

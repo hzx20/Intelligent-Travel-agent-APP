@@ -4,8 +4,14 @@
 
 # 系统与依赖杂物
 node_modules/
+dist/
+.venv/
 __pycache__/
 .pytest_cache/
 .DS_Store
 .workbuddy/
+.tools/
+.release-candidates/
 backend/data/
+frontend/playwright-results/
+frontend/playwright-report/

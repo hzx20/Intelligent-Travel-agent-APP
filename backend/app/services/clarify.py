@@ -18,11 +18,11 @@ SYSTEM_PROMPT = """你是旅行规划助手的需求收集器。根据【已收�
   "collected": {
     "destination": "目的地城市，如 成都（不确定则省略该字段）",
     "days": 数字天数（不确定则省略）,
-    "dates": "具体日期，如 10月1日-3日（没说则省略）",
+    "dates": "具体日期，保留用户给出的年份和范围，如 2026年10月1日至3日；未说年份时不要推断，如 10月1日至3日（没说日期则省略）",
     "party": "人数构成，如 2大1小（没说则省略）",
     "budget": "预算数字（元），没说则省略",
     "pace": "节奏：悠闲/紧凑/中等（没说则省略）",
-    "preferences": "特殊偏好，如 带5岁小孩/爱美食/亲子（没说则省略）"
+    "preferences": "特殊偏好。保留用户明确说过的第几天、室内为主、每天午餐/休息、步行限制等原话及作用范围（没说则省略）"
   },
   "missing": ["还缺的必需字段名，只能从 destination 和 days 里选"],
   "question": "若 missing 非空，给一句自然的中文追问，一次最多问两件事，语气友好；若齐全则为 null"
@@ -31,7 +31,8 @@ SYSTEM_PROMPT = """你是旅行规划助手的需求收集器。根据【已收�
 规则：
 1. 用户本轮输入可能补充、修正之前的信息，以最新说法为准；
 2. 不得编造用户没说过的信息；
-3. 只输出 JSON。"""
+3. 在 preferences 中保留用户之前提出且没有撤销的要求。正反要求不能互换，不得把具体日期或每天安排概括为宽泛偏好；
+4. 只输出 JSON。"""
 
 
 async def clarify_turn(history, user_input, prev_collected=None):
@@ -51,14 +52,8 @@ async def clarify_turn(history, user_input, prev_collected=None):
     parsed = extract_json(reply)
 
     collected = {**prev_collected, **(parsed.get("collected") or {})}
-    raw_missing = parsed.get("missing")
-    if not isinstance(raw_missing, list):
-        raw_missing = []
-    missing = [
-        k
-        for k in raw_missing
-        if k in REQUIRED and (k not in collected or collected[k] is None or collected[k] == "")
-    ]
+    # 模型返回的 missing 可能漏项；是否放行必须由实际收集到的字段决定。
+    missing = [k for k in REQUIRED if collected.get(k) in (None, "")]
     done = len(missing) == 0
 
     return {

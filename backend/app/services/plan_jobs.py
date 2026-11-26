@@ -1,296 +1,396 @@
-"""后台规划任务（v1.3）：让"正在生成"活过 HTTP 请求。
+"""Durable original /plan jobs with expiring exclusive execution leases.
 
-为什么要有这一层？
-    在 v1.2 及以前，规划是直接跑在 SSE 响应生成器里的：
-
-        return StreamingResponse(event_stream())   # 生成逻辑写在 event_stream 里
-
-    这种写法有个致命前提——**请求必须一直连着**。用户一点别的页面、刷新一下、
-    或者把标签页关掉，连接就断了，Starlette 会顺手取消这个响应生成器，
-    里面的生成任务当场死亡。用户看到的现象就是"切走 = 白等"，
-    只能事后去历史方案里捡那次跑到一半的结果。
-
-    现在改成"下单 + 轮询"：
-        POST   /api/plan/jobs        建任务，立刻返回 job_id（不阻塞、不挂连接）
-        GET    /api/plan/jobs/{id}   取增量事件（?since=上次收到的最大 seq）
-        GET    /api/plan/jobs/active 找回"我最近一条还在跑的任务"（刷新/重开页面用）
-        DELETE /api/plan/jobs/{id}   主动取消（开新会话时顺手掐掉，别白烧 token）
-
-    任务是 asyncio.create_task 起的，生命周期跟 HTTP 请求完全无关：
-    切页面、刷新、关标签页都不影响它，回到页面时按 job_id 续上就能看到进度。
-
-为什么事件要缓存在内存里？
-    因为前端会"断线重连"。重连时把 since 之后的事件补给它，
-    用户看到的就是连续的过程日志，而不是"回来只剩一个结果"。
-
-已知限制（重要，别踩）：
-    1. 任务存在进程内存，只适合单 worker。本项目 uvicorn 就是 --workers 1。
-       哪天要扩到多 worker，得把 _jobs 换成 Redis 或落一张任务表，
-       否则轮询可能打到另一个进程上，查不到这个 job_id。
-    2. 进程重启任务就没了。这是内存方案的代价，可接受：
-       真正要紧的行程结果在任务完成时已经落库（ai_plans），不会丢。
+HTTP requests create/read/cancel database rows. Conditional claims and fenced
+writes select one executor across workers. A lost process may be retried once
+after its lease expires. History and final state commit together.
+Guest IDs are unlisted opaque capabilities; guests have no active lookup.
 """
 from __future__ import annotations
-
 import asyncio
+import hashlib
 import json
 import logging
 import time
 import uuid
 from dataclasses import dataclass, field
-
+from sqlalchemy import delete, update
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException
 from app.db.database import SessionLocal
-from app.db.models import AiPlan
+from app.db.models import AiPlan, PlanGenerationJob, PlanCreationRequest, User
 
-logger = logging.getLogger("uvicorn.error")
-
-# 完成的任务保留多久：用户关掉页面过一阵再回来，仍能取到结果。
-JOB_TTL_SEC = 30 * 60
-
-# 落库用的 session 工厂。抽成模块级变量，是为了测试能换成内存库；
-# 生产环境它就是 SessionLocal。
+logger = logging.getLogger('uvicorn.error')
 SESSION_FACTORY = SessionLocal
+JOB_TTL_SEC = 30 * 60
+LEASE_SECONDS = 60
+MAX_ATTEMPTS = 2
+MAX_LOCAL_WORKERS = 4
+MAX_SNAPSHOT_MSGS = 200
+MAX_MSG_TEXT = 4000
+_jobs: dict[str, 'PlanJob'] = {}  # Execution handles only; never a read source.
+_scheduler = None
+_stopping = False
 
-# job_id -> PlanJob。单进程内存表，理由见模块开头"已知限制"。
-_jobs: dict[str, "PlanJob"] = {}
+
+def _json(value):
+    return json.dumps(value,ensure_ascii=False,separators=(',',':'))
+
+
+class LostLease(Exception):
+    pass
 
 
 @dataclass
 class PlanJob:
-    """一次生成任务的全部状态。线程/协程安全靠"同一事件循环内单线程"保证。"""
-
     id: str
-    user_id: int                 # 0 = 游客（不落库，只看结果）
-    session_id: str = ""
-    status: str = "running"      # running | done | error | cancelled
-    seq: int = 0                 # 事件序号（只增），前端靠它做增量拉取
+    user_id: int
+    session_id: str = ''
+    status: str = 'running'
+    seq: int = 0
     events: list[dict] = field(default_factory=list)
-    text: str = ""               # token 累计文本（追问文案），便于重连时整体补齐
-    result: dict | None = None   # 最终 result 事件的内容
-    plan_id: int | None = None   # 落库后的记录 id（游客为 None）
-    error: str = ""
-    request: dict = field(default_factory=dict)  # 原始请求，重连时用来重建对话
-    created_at: float = field(default_factory=time.time)
-    updated_at: float = field(default_factory=time.time)
+    text: str = ''
+    result: dict | None = None
+    plan_id: int | None = None
+    error: str = ''
+    request: dict = field(default_factory=dict)
+    created_at: float = 0
+    updated_at: float = 0
+    attempts: int = 0
+    lease_token: str = ''
     task: asyncio.Task | None = None
 
-    def emit(self, kind: str, data: dict) -> None:
-        """追加一条事件。kind 与旧 SSE 的事件名保持一致：log / token / result。"""
-        self.seq += 1
-        self.events.append({"seq": self.seq, "type": kind, "data": data})
-        if kind == "token":
-            self.text += str(data.get("text") or "")
-        self.updated_at = time.time()
+    def emit(self, kind, data):
+        events = [*self.events,{'seq':self.seq+1,'type':kind,'data':data}]
+        text = '' if kind == 'reset' else self.text
+        if kind == 'token': text += str(data.get('text') or '')
+        with SESSION_FACTORY() as db:
+            claimed = db.execute(update(PlanGenerationJob).where(*_fence(self))
+                .values(seq=self.seq+1,events_json=_json(events),text=text,updated_at=time.time()))
+            if claimed.rowcount != 1: raise LostLease()
+            db.commit()
+        self.seq += 1; self.events = events; self.text = text
 
-    def snapshot(self, since: int = 0) -> dict:
-        """给前端的一帧：since 之后的新事件 + 当前状态。
-
-        只回增量是有意的：生成过程可能几十条日志，每次都全量回一遍没必要。
-        """
-        return {
-            "job_id": self.id,
-            "status": self.status,
-            "seq": self.seq,
-            "events": [e for e in self.events if e["seq"] > since],
-            "text": self.text,
-            "result": self.result,
-            "plan_id": self.plan_id,
-            "error": self.error,
-        }
+    def snapshot(self, since=0):
+        return {'job_id':self.id,'status':self.status,'seq':self.seq,
+                'events':[e for e in self.events if e['seq'] > since],
+                'text':self.text,'result':self.result,'plan_id':self.plan_id,'error':self.error}
 
 
-def _gc() -> None:
-    """清掉过期的已完成任务。建新任务时顺手扫一遍，成本可以忽略。"""
+def _loaded(row):
+    return PlanJob(id=row.id,user_id=row.user_id or 0,session_id=row.session_id,
+                   status=row.status,seq=row.seq,events=json.loads(row.events_json),text=row.text,
+                   result=json.loads(row.result_json) if row.result_json else None,
+                   plan_id=row.plan_id,error=row.error,request=json.loads(row.request_json),
+                   created_at=row.created_at,updated_at=row.updated_at,attempts=row.attempts,
+                   lease_token=row.lease_token)
+
+
+def _fence(job):
+    return (PlanGenerationJob.id == job.id,PlanGenerationJob.status == 'running',
+            PlanGenerationJob.lease_token == job.lease_token,PlanGenerationJob.lease_until > time.time())
+
+
+def _new_row(user_id,payload):
     now = time.time()
-    for jid, job in list(_jobs.items()):
-        if job.status != "running" and now - job.updated_at > JOB_TTL_SEC:
-            _jobs.pop(jid, None)
+    return PlanGenerationJob(id=uuid.uuid4().hex,user_id=user_id or None,
+        session_id=str(payload.get('session_id') or ''),request_json=_json(payload),created_at=now,updated_at=now)
 
 
-def create_job(*, user_id: int, payload: dict) -> PlanJob:
-    """建任务并立刻开跑。调用方（路由）马上就能拿到 job_id 返回前端。
+def _kick(job):
+    try: _start_job(job.id)
+    except Exception: logger.exception('Planning task committed; awaiting scheduler job=%s',job.id)
 
-    必须在事件循环里调用（路由是 async，满足）。
-    """
-    _gc()
-    job = PlanJob(
-        id=uuid.uuid4().hex,
-        user_id=user_id,
-        session_id=str(payload.get("session_id") or ""),
-        request=payload,
-    )
-    _jobs[job.id] = job
-    # 不 await：让它在后台自己跑。task 引用存在 job 上，防止被垃圾回收。
+
+def create_job(*, user_id, payload):
+    payload = {**payload,'messages':clean_messages(payload.get('messages'))}
+    with SESSION_FACTORY() as db:
+        row = _new_row(user_id,payload)
+        db.add(row); db.commit(); job = _loaded(row)
+    _kick(job)
+    return job
+
+
+def _creation_context(user_id,payload,request_id,guest_key):
+    if not user_id and not guest_key: raise HTTPException(422,'游客创建需携带本次提交凭证。')
+    if user_id and guest_key: raise HTTPException(422,'账号提交不能携带游客凭证。')
+    owner = f'user:{user_id}' if user_id else 'guest:'+hashlib.sha256(str(guest_key).encode()).hexdigest()
+    payload = {**payload,'messages':clean_messages(payload.get('messages'))}
+    digest = hashlib.sha256(json.dumps(payload,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    return owner,str(request_id),payload,digest
+
+
+def _check_receipt(receipt,digest):
+    if receipt.payload_hash!=digest: raise HTTPException(409,'本次规划内容与原提交不一致，请先核对。')
+
+
+def _creation_out(row,request_id,user_id,status=None):
+    return {'job_id':row.id if row else None,'status':status or row.status,
+            'request_id':request_id,'owner_id':user_id}
+
+
+def create_once(*,user_id,payload,request_id,guest_key=None):
+    owner,rid,payload,digest = _creation_context(user_id,payload,request_id,guest_key)
+    for _ in range(3):
+        with SESSION_FACTORY() as db:
+            receipt = db.query(PlanCreationRequest).filter_by(owner_key=owner,request_id=rid).first()
+            if receipt:
+                _check_receipt(receipt,digest)
+                row = db.get(PlanGenerationJob,receipt.job_id) if receipt.job_id else None
+                if row is None or row.status!='running' and row.updated_at<time.time()-JOB_TTL_SEC:
+                    raise HTTPException(410,'本次规划已取消或过期，不会重新创建。请核对历史方案。')
+                return _creation_out(row,rid,user_id),False
+            row = _new_row(user_id,payload)
+            db.add(row);db.flush()
+            db.add(PlanCreationRequest(owner_key=owner,user_id=user_id or None,request_id=rid,payload_hash=digest,job_id=row.id))
+            try: db.commit(); job=_loaded(row)
+            except IntegrityError: db.rollback();continue
+        _kick(job)
+        return _creation_out(row,rid,user_id),True
+    raise HTTPException(409,'本次提交正在确认，请继续使用原标识重试。')
+
+
+def cancel_creation(*,user_id,payload,request_id,guest_key=None):
+    """Reserve cancellation even when the original create has not arrived yet."""
+    owner,rid,payload,digest = _creation_context(user_id,payload,request_id,guest_key)
+    for _ in range(8):
+        with SESSION_FACTORY() as db:
+            receipt = db.query(PlanCreationRequest).filter_by(owner_key=owner,request_id=rid).first()
+            if receipt is None:
+                db.add(PlanCreationRequest(owner_key=owner,user_id=user_id or None,request_id=rid,payload_hash=digest,cancelled=True))
+                try: db.commit();return _creation_out(None,rid,user_id,'cancelled')
+                except IntegrityError: db.rollback();continue
+            _check_receipt(receipt,digest)
+            row = db.get(PlanGenerationJob,receipt.job_id) if receipt.job_id else None
+            if row is None or row.status!='running' and row.updated_at<time.time()-JOB_TTL_SEC:
+                return _creation_out(None,rid,user_id,'cancelled' if receipt.cancelled else 'expired')
+            if row.status!='running': return _creation_out(row,rid,user_id)
+            result = {'done':False,'cancelled':True}
+            events = [*json.loads(row.events_json),{'seq':row.seq+1,'type':'result','data':result}]
+            changed = db.execute(update(PlanGenerationJob).where(PlanGenerationJob.id==row.id,
+                PlanGenerationJob.status=='running',PlanGenerationJob.seq==row.seq)
+                .values(status='cancelled',seq=row.seq+1,events_json=_json(events),result_json=_json(result),
+                        lease_token='',lease_until=0,updated_at=time.time()))
+            if changed.rowcount!=1:db.rollback();continue
+            receipt.cancelled=True
+            db.commit();reply=_creation_out(row,rid,user_id,'cancelled');jid=row.id
+        _cancel_local(jid)
+        return reply
+    raise HTTPException(409,'停止状态正在变化，请继续核对本次提交。')
+
+
+def _cancel_local(job_id):
+    runtime = _jobs.get(job_id)
+    if runtime and runtime.task:
+        task=runtime.task;task.get_loop().call_soon_threadsafe(task.cancel)
+
+
+def get_job(job_id, user_id):
+    with SESSION_FACTORY() as db:
+        row = db.get(PlanGenerationJob,job_id)
+        if row is None or (row.user_id or 0) != user_id: return None
+        if row.status != 'running' and row.updated_at < time.time()-JOB_TTL_SEC: return None
+        return _loaded(row)
+
+
+def find_active(user_id):
+    if not user_id: return None
+    with SESSION_FACTORY() as db:
+        row = db.query(PlanGenerationJob).filter_by(user_id=user_id,status='running').order_by(PlanGenerationJob.created_at.desc()).first()
+        return _loaded(row) if row else None
+
+
+def cancel_job(job_id,user_id):
+    for _ in range(8):
+        with SESSION_FACTORY() as db:
+            row = db.get(PlanGenerationJob,job_id)
+            if row is None or (row.user_id or 0) != user_id: return False
+            if row.status != 'running': return True
+            job = _loaded(row)
+            result = {'done':False,'cancelled':True}
+            events = [*job.events,{'seq':job.seq+1,'type':'result','data':result}]
+            changed = db.execute(update(PlanGenerationJob).where(PlanGenerationJob.id==job_id,
+                PlanGenerationJob.status=='running',PlanGenerationJob.seq==job.seq)
+                .values(status='cancelled',seq=job.seq+1,events_json=_json(events),result_json=_json(result),
+                        lease_token='',lease_until=0,updated_at=time.time()))
+            if changed.rowcount != 1: db.rollback(); continue
+            db.commit()
+        _cancel_local(job_id)
+        return True
+    from fastapi import HTTPException
+    raise HTTPException(409,'任务状态正在变化，请重试取消。')
+
+
+def _claim(job_id):
+    now = time.time(); token = uuid.uuid4().hex
+    with SESSION_FACTORY() as db:
+        claimed = db.execute(update(PlanGenerationJob).where(PlanGenerationJob.id==job_id,
+            PlanGenerationJob.status=='running',PlanGenerationJob.lease_until<=now,
+            PlanGenerationJob.attempts<MAX_ATTEMPTS).values(lease_token=token,lease_until=now+LEASE_SECONDS,
+                attempts=PlanGenerationJob.attempts+1,updated_at=now))
+        if claimed.rowcount != 1: db.rollback(); return None
+        db.commit(); job = _loaded(db.get(PlanGenerationJob,job_id))
+    if job.attempts > 1: job.emit('reset',{'message':'服务重新连接，正在恢复本次生成。'})
+    return job
+
+
+def _start_job(job_id):
+    if _stopping or job_id in _jobs or len(_jobs)>=MAX_LOCAL_WORKERS: return
+    job = _claim(job_id)
+    if job is None: return
+    _jobs[job_id] = job
     job.task = asyncio.create_task(run_job(job))
-    return job
+    def finished(task):
+        if _jobs.get(job_id) is job: _jobs.pop(job_id,None)
+        if not task.cancelled() and task.exception(): logger.error('Planning worker failed: %s',type(task.exception()).__name__)
+    job.task.add_done_callback(finished)
 
 
-def get_job(job_id: str, user_id: int) -> PlanJob | None:
-    """取任务，并校验归属：别人的 job_id 一律当作不存在。"""
-    job = _jobs.get(job_id)
-    if job is None or job.user_id != user_id:
-        return None
-    return job
+async def _heartbeat(job):
+    while True:
+        await asyncio.sleep(max(0.1,LEASE_SECONDS/3))
+        try:
+            with SESSION_FACTORY() as db:
+                alive = db.execute(update(PlanGenerationJob).where(*_fence(job))
+                    .values(lease_until=time.time()+LEASE_SECONDS))
+                db.commit()
+            if alive.rowcount == 1: continue
+        except Exception:
+            logger.exception('Planning lease renewal failed job=%s',job.id)
+        if job.task: job.task.cancel()
+        return
 
 
-def find_active(user_id: int) -> PlanJob | None:
-    """找"我最近一条还在跑的任务"。
+def _finish(job, result, status='done', final=None):
+    """Fence and save history/result in one transaction; cancellation wins CAS."""
+    with SESSION_FACTORY() as db:
+        claimed = db.execute(update(PlanGenerationJob).where(*_fence(job)).values(status='finishing'))
+        if claimed.rowcount != 1: raise LostLease()
+        plan_id = None;plan_version=None;plan_revision=None
+        if final and job.user_id and result.get('done') and result.get('itinerary'):
+            user = db.get(User,job.user_id)
+            if user is None or not user.is_active:
+                result = {'done':False,'error':'账号当前不可用，本次生成已停止。'}
+                status = 'error'
+            else:
+                itinerary = result['itinerary']
+                record = AiPlan(user_id=job.user_id,session_id=job.session_id,status='completed',
+                    intent_json=_json(final.get('collected') or {}),process_json=_json(final.get('verify_logs') or []),
+                    result_json=_json(itinerary),title=str(itinerary.get('title') or '')[:100],
+                    summary=str(itinerary.get('summary') or '')[:300],chat_json=_json(clean_messages(job.request.get('messages'))))
+                try:
+                    with db.begin_nested():
+                        db.add(record); db.flush(); plan_id = record.id;plan_version=record.version;plan_revision=record.revision
+                except Exception:
+                    # Preserve the generated result even when history cannot
+                    # be saved; the task completion itself still must commit.
+                    logger.exception('规划历史落库失败 job=%s',job.id)
+                    plan_id = None
+        result = {**result,'plan_id':plan_id,'saved':plan_id is not None,'plan_version':plan_version,'plan_revision':plan_revision}
+        events = [*job.events,{'seq':job.seq+1,'type':'result','data':result}]
+        db.execute(update(PlanGenerationJob).where(PlanGenerationJob.id==job.id)
+            .values(status=status,seq=job.seq+1,events_json=_json(events),result_json=_json(result),
+                    plan_id=plan_id,error=result.get('error',''),lease_token='',lease_until=0,updated_at=time.time()))
+        db.commit()
 
-    用途：用户关掉标签页再打开（sessionStorage 已经没了），
-    登录用户可以靠这条把它接回来，不至于让后端白跑一趟却看不到结果。
 
-    游客（user_id=0）直接返回 None：游客没有身份，所有人共用 0 这个桶，
-    真按它查会把别人的输入和行程当成"你的任务"顶上来——宁可不恢复。
-    """
-    if not user_id:
-        return None
-    running = [j for j in _jobs.values() if j.user_id == user_id and j.status == "running"]
-    if not running:
-        return None
-    return max(running, key=lambda j: j.created_at)
-
-
-def cancel_job(job_id: str, user_id: int) -> bool:
-    """主动取消（开新会话时用）。取消不是错误，前端只提示一句"已取消"。"""
-    job = get_job(job_id, user_id)
-    if job is None:
-        return False
-    if job.task is not None and not job.task.done():
-        job.task.cancel()
-    return True
-
-
-async def iter_updates(state: dict):
-    """逐节点产出 (节点名, 节点更新, 本次新增日志)。
-
-    单独抽成模块级函数有两个理由：
-      1. 测试可以把它换成假的生成器，不花真模型的钱、也不依赖网络；
-      2. 编排细节（LangGraph）和任务生命周期解耦，将来换框架只动这里。
-    """
+async def iter_updates(state):
     from app.services.graph import plan_graph
-
     emitted = 0
     async for chunk in plan_graph.astream(state):
-        for node_name, updates in chunk.items():
-            # 节点 updates 里的 logs 是"从头累计"的全量，
-            # 直接全发会让每条日志重复 N 遍，所以按已发数量切片
-            logs = updates.get("logs") or []
-            new_logs = logs[emitted:]
-            emitted += len(new_logs)
-            yield node_name, updates, new_logs
+        for node_name,updates in chunk.items():
+            logs = updates.get('logs') or []
+            new_logs = logs[emitted:]; emitted += len(new_logs)
+            yield node_name,updates,new_logs
 
 
-async def run_job(job: PlanJob) -> None:
-    """任务主体：跑图 → 推事件 → 落库 → 收尾。
-
-    这里刻意不碰任何 HTTP 对象：断开与否和它无关。
-    """
+async def run_job(job):
+    heartbeat = asyncio.create_task(_heartbeat(job))
     req = job.request
-    state = {
-        "history": req.get("history") or [],
-        "user_input": req.get("user_input") or "",
-        "prev_collected": req.get("prev_collected") or {},
-        "logs": [],
-    }
-    final: dict = {}
+    state = {'history':req.get('history') or [],'user_input':req.get('user_input') or '',
+             'prev_collected':req.get('prev_collected') or {},'logs':[]}
+    final = {}
     try:
-        async for node_name, updates, new_logs in iter_updates(state):
-            for log in new_logs:
-                job.emit("log", {"node": node_name, "message": log})
-            final.update(updates)
-            # 澄清未完成：把追问文本按两字一块推出去，前端拼起来就是打字机效果
-            if node_name == "clarify" and not updates.get("done"):
-                question = str(updates.get("question") or "")
-                for i in range(0, len(question), 2):
-                    job.emit("token", {"text": question[i:i + 2]})
-                    await asyncio.sleep(0.03)
-
-        done = bool(final.get("done"))
-        plan_id = None
-        # 登录用户且确实生成了行程 → 落库。游客不落库（历史列表也只对登录用户开放）
-        if job.user_id and done and final.get("itinerary"):
-            plan_id = _save_plan(job, final)
-
-        job.plan_id = plan_id
-        job.result = {
-            "done": done,
-            "question": final.get("question") or "",
-            "collected": final.get("collected") or {},
-            "itinerary": final.get("itinerary") or {},
-            "verify_logs": final.get("verify_logs") or [],
-            "weather": final.get("weather") or {},
-            "plan_id": plan_id,
-            "saved": plan_id is not None,
-        }
-        job.emit("result", job.result)
-        job.status = "done"
-    except asyncio.CancelledError:
-        # 用户主动取消（开了新会话 / 点了停止）：走正常收尾，不当异常往上抛
-        job.status = "cancelled"
-        job.emit("result", {"done": False, "cancelled": True})
-        job.updated_at = time.time()
+        if job.user_id:
+            with SESSION_FACTORY() as db:
+                owner = db.get(User,job.user_id)
+                allowed = owner is not None and owner.is_active
+            if not allowed:
+                _finish(job,{'done':False,'error':'账号当前不可用，本次生成已停止。'},status='error')
+                return
+        async with asyncio.timeout(10*60):
+            async for node_name,updates,new_logs in iter_updates(state):
+                for log in new_logs: job.emit('log',{'node':node_name,'message':str(log)[:4000]})
+                final.update(updates)
+                if node_name=='clarify' and not updates.get('done'):
+                    question = str(updates.get('question') or '')[:4000]
+                    for i in range(0,len(question),16):
+                        job.emit('token',{'text':question[i:i+16]}); await asyncio.sleep(0.03)
+        result = {'done':bool(final.get('done')),'question':final.get('question') or '',
+                  'collected':final.get('collected') or {},'itinerary':final.get('itinerary') or {},
+                  'verify_logs':final.get('verify_logs') or [],'weather':final.get('weather') or {}}
+        _finish(job,result,final=final)
+    except (asyncio.CancelledError,LostLease):
+        # Shutdown leaves the lease to expire; explicit cancellation is already
+        # committed. Neither may overwrite cancellation or a newer executor.
+        pass
     except Exception:
-        # 异常详情只进后端日志：str(e) 可能带出内部路径与库名
-        logger.exception("后台规划任务失败 job=%s", job.id)
-        job.error = "生成失败，请稍后重试"
-        job.status = "error"
-        job.emit("result", {"done": False, "error": job.error})
+        logger.exception('后台规划任务失败 job=%s',job.id)
+        from app.core.config import settings
+        error = '未配置 AI 密钥，请联系站点管理员' if not settings.zhipu_api_key else '生成失败，请稍后重试'
+        try: _finish(job,{'done':False,'error':error},status='error')
+        except LostLease: pass
     finally:
-        job.updated_at = time.time()
+        heartbeat.cancel(); await asyncio.gather(heartbeat,return_exceptions=True)
         job.task = None
 
 
-def _save_plan(job: PlanJob, final: dict) -> int | None:
-    """把行程写进 ai_plans，返回记录 id。
-
-    注意：这里必须自己开 session。路由里那个 db 是请求作用域的，
-    请求一结束就被关掉了，后台任务再拿它写库会炸。
-    """
-    itinerary = final.get("itinerary") or {}
-    db = SESSION_FACTORY()
-    try:
-        record = AiPlan(
-            user_id=job.user_id,
-            session_id=job.session_id,
-            status="completed",
-            intent_json=json.dumps(final.get("collected") or {}, ensure_ascii=False),
-            process_json=json.dumps(final.get("verify_logs") or [], ensure_ascii=False),
-            result_json=json.dumps(itinerary, ensure_ascii=False),
-            title=str(itinerary.get("title") or "")[:100],
-            summary=str(itinerary.get("summary") or "")[:300],
-            chat_json=json.dumps(clean_messages(job.request.get("messages")), ensure_ascii=False),
-        )
-        db.add(record)
+def _maintenance():
+    now = time.time()
+    with SESSION_FACTORY() as db:
+        expired=db.query(PlanGenerationJob.id).filter(PlanGenerationJob.status!='running',PlanGenerationJob.updated_at<now-JOB_TTL_SEC)
+        db.execute(update(PlanCreationRequest).where(PlanCreationRequest.job_id.in_(expired)).values(job_id=None))
+        db.execute(delete(PlanGenerationJob).where(PlanGenerationJob.status!='running',PlanGenerationJob.updated_at<now-JOB_TTL_SEC))
+        exhausted = db.query(PlanGenerationJob).filter(PlanGenerationJob.status=='running',
+            PlanGenerationJob.lease_until<=now,PlanGenerationJob.attempts>=MAX_ATTEMPTS).all()
+        for row in exhausted:
+            error = '服务多次中断，本次生成已停止，请重新开始。'
+            result = {'done':False,'error':error}
+            events = [*json.loads(row.events_json),{'seq':row.seq+1,'type':'result','data':result}]
+            db.execute(update(PlanGenerationJob).where(PlanGenerationJob.id==row.id,
+                PlanGenerationJob.status=='running',PlanGenerationJob.lease_until<=now,PlanGenerationJob.seq==row.seq)
+                .values(status='error',seq=row.seq+1,events_json=_json(events),result_json=_json(result),
+                        error=error,lease_token='',lease_until=0,updated_at=now))
         db.commit()
-        db.refresh(record)
-        return record.id
-    except Exception:
-        # 落库失败不该让用户丢掉这次生成结果：日志留痕，结果照常返回（saved=False）
-        logger.exception("规划结果落库失败 job=%s", job.id)
-        db.rollback()
-        return None
-    finally:
-        db.close()
+        return [row[0] for row in db.query(PlanGenerationJob.id).filter(PlanGenerationJob.status=='running',
+                PlanGenerationJob.lease_until<=now,PlanGenerationJob.attempts<MAX_ATTEMPTS).order_by(PlanGenerationJob.created_at).limit(20)]
 
 
-# 与 routers/planner.py 里的上限保持一致：防异常客户端把超大文本写进库
-MAX_SNAPSHOT_MSGS = 200
-MAX_MSG_TEXT = 4000
+async def _scheduler_loop():
+    while True:
+        try:
+            for job_id in _maintenance(): _start_job(job_id)
+        except Exception: logger.exception('Planning scheduler failed')
+        await asyncio.sleep(1)
 
 
-def clean_messages(msgs) -> list[dict]:
-    """快照清洗：只留 {role, text}，条数和单条长度封顶。
+def start_scheduler():
+    global _scheduler,_stopping
+    _stopping = False
+    _scheduler = asyncio.create_task(_scheduler_loop())
 
-    落库用的是清洗后的列表，而不是"来什么存什么"——
-    messages 来自前端原样上传，不封顶的话异常客户端能借接口把超大文本写进 SQLite。
-    正常前端的对话量（单轮几十字、全程几十条）完全不受影响。
-    """
-    out: list[dict] = []
+
+async def stop_scheduler():
+    global _scheduler,_stopping
+    _stopping = True
+    tasks = [job.task for job in list(_jobs.values()) if job.task]
+    if _scheduler: tasks.append(_scheduler); _scheduler = None
+    for task in tasks: task.cancel()
+    if tasks: await asyncio.gather(*tasks,return_exceptions=True)
+    _jobs.clear()
+
+
+def clean_messages(msgs):
+    out = []
     for m in (msgs or [])[:MAX_SNAPSHOT_MSGS]:
-        if not isinstance(m, dict):
-            continue
-        out.append({
-            "role": str(m.get("role") or "user")[:10],
-            "text": str(m.get("text") or "")[:MAX_MSG_TEXT],
-        })
+        if isinstance(m,dict): out.append({'role':str(m.get('role') or 'user')[:10],'text':str(m.get('text') or '')[:MAX_MSG_TEXT]})
     return out

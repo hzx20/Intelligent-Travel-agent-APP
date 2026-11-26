@@ -45,4 +45,4 @@ def test_regions_grouping_and_order(client):
 def test_regions_empty_db(client):
     c, _ = client
     r = c.get("/api/spots/regions").json()
-    assert r == {"cities": []}
+    assert r == {"cities": [], "total": 0}

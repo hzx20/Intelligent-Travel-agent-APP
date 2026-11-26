@@ -55,7 +55,7 @@ def test_snapshot_owner_only(client):
     assert c.patch(f"/api/plan/{p.id}/snapshot", headers={"Authorization": f"Bearer {t2}"},
                    json={"map_state": {"center": [120.1, 30.2], "zoom": 13}}).status_code == 404
     ok = c.patch(f"/api/plan/{p.id}/snapshot", headers={"Authorization": f"Bearer {t1}"},
-                 json={"map_state": {"center": [120.15, 30.27], "zoom": 14}})
+                 json={"version":p.version,"revision":p.revision,"map_state": {"center": [120.15, 30.27], "zoom": 14}})
     assert ok.status_code == 200 and ok.json()["ok"] is True
 
 
@@ -71,7 +71,7 @@ def test_snapshot_save_and_restore(client):
     chat = [{"role": "user", "text": "去杭州玩 2 天"},
             {"role": "ai", "text": "已生成杭州两日…"}]
     r = c.patch(f"/api/plan/{p.id}/snapshot", headers=H,
-                json={"messages": chat, "map_state": {"center": [120.15, 30.27], "zoom": 13.5}})
+                json={"version":p.version,"revision":p.revision,"messages": chat, "map_state": {"center": [120.15, 30.27], "zoom": 13.5}})
     assert r.status_code == 200
 
     detail = c.get(f"/api/plan/{p.id}", headers=H).json()
@@ -81,13 +81,13 @@ def test_snapshot_save_and_restore(client):
 
     # 只更新地图，不影响聊天；超长聊天截到最近 60 条
     c.patch(f"/api/plan/{p.id}/snapshot", headers=H,
-            json={"map_state": {"center": [120.2, 30.3], "zoom": 15}})
+            json={"version":detail['version'],"revision":detail['revision'],"map_state": {"center": [120.2, 30.3], "zoom": 15}})
     detail2 = c.get(f"/api/plan/{p.id}", headers=H).json()
     assert detail2["chat"] == chat
     assert detail2["map_state"]["zoom"] == 15
 
     long_chat = [{"role": "user", "text": f"消息{i}"} for i in range(80)]
-    c.patch(f"/api/plan/{p.id}/snapshot", headers=H, json={"messages": long_chat})
+    c.patch(f"/api/plan/{p.id}/snapshot", headers=H, json={"version":detail2['version'],"revision":detail2['revision'],"messages": long_chat})
     detail3 = c.get(f"/api/plan/{p.id}", headers=H).json()
     assert len(detail3["chat"]) == 60, "快照最多保留最近 60 条，防止无限膨胀"
 

@@ -11,6 +11,7 @@
 - ai_plans       AI 路线规划记录（管理员后台查看）
 """
 from datetime import datetime
+from uuid import uuid4
 
 from sqlalchemy import (
     Boolean,
@@ -52,6 +53,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(200))
     nickname: Mapped[str] = mapped_column(String(50), default="")
+    profile_version: Mapped[int] = mapped_column(Integer, default=1, server_default='1')
     avatar: Mapped[str] = mapped_column(String(500), default="")
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)  # 管理员可停用账户
@@ -98,6 +100,16 @@ class Favorite(Base):
     spot: Mapped["Spot"] = relationship()
 
 
+class SpotFavoriteState(Base):
+    __tablename__ = 'spot_favorite_states'
+    __table_args__ = (UniqueConstraint('user_id','spot_id',name='uq_spot_favorite_state'),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'),index=True)
+    spot_id: Mapped[int] = mapped_column(ForeignKey('spots.id'),index=True)
+    favorited: Mapped[bool] = mapped_column(Boolean,default=False)
+    version: Mapped[int] = mapped_column(Integer,default=0)
+
+
 class Comment(Base):
     __tablename__ = "comments"
 
@@ -110,6 +122,19 @@ class Comment(Base):
     created_at: Mapped[datetime] = mapped_column(default=now_local)
 
     spot: Mapped["Spot"] = relationship(back_populates="comments")
+    creation_requests: Mapped[list["CommentCreationRequest"]] = relationship(back_populates='comment')
+
+
+class CommentCreationRequest(Base):
+    __tablename__ = 'comment_creation_requests'
+    __table_args__ = (UniqueConstraint('user_id','request_id',name='uq_comment_creation_request'),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'),index=True)
+    spot_id: Mapped[int] = mapped_column(ForeignKey('spots.id'),index=True)
+    request_id: Mapped[str] = mapped_column(String(36))
+    payload_hash: Mapped[str] = mapped_column(String(64))
+    comment_id: Mapped[int | None] = mapped_column(ForeignKey('comments.id',ondelete='SET NULL'),nullable=True)
+    comment: Mapped["Comment | None"] = relationship(back_populates='creation_requests')
 
 
 class Guide(Base):
@@ -123,12 +148,26 @@ class Guide(Base):
     cover_image: Mapped[str] = mapped_column(String(500), default="")
     views: Mapped[int] = mapped_column(Integer, default=0)  # v0.8：浏览量（详情页每次打开 +1）
     is_draft: Mapped[bool] = mapped_column(Boolean, default=False)  # v0.8：草稿不进公开列表
+    version: Mapped[int] = mapped_column(Integer, default=1, server_default='1')
+    revision: Mapped[str] = mapped_column(String(36), default=lambda: str(uuid4()))
     created_at: Mapped[datetime] = mapped_column(default=now_local)
     updated_at: Mapped[datetime] = mapped_column(default=now_local, onupdate=now_local)
 
     user: Mapped["User"] = relationship(back_populates="guides")
     images: Mapped[list["GuideImage"]] = relationship(back_populates="guide", cascade="all, delete-orphan")
     spots: Mapped[list["Spot"]] = relationship(secondary=guide_spots_table)
+    creation_requests: Mapped[list["GuideCreationRequest"]] = relationship(back_populates='guide')
+
+
+class GuideCreationRequest(Base):
+    __tablename__ = 'guide_creation_requests'
+    __table_args__ = (UniqueConstraint('user_id', 'request_id', name='uq_guide_creation_request'),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
+    request_id: Mapped[str] = mapped_column(String(36))
+    payload_hash: Mapped[str] = mapped_column(String(64))
+    guide_id: Mapped[int | None] = mapped_column(ForeignKey('guides.id', ondelete='SET NULL'), nullable=True)
+    guide: Mapped["Guide | None"] = relationship(back_populates='creation_requests')
 
 
 class GuideImage(Base):
@@ -150,6 +189,9 @@ class AiPlan(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     session_id: Mapped[str] = mapped_column(String(50), index=True)  # 对应一次规划会话
+    version: Mapped[int] = mapped_column(Integer,default=1,server_default='1')
+    revision: Mapped[str] = mapped_column(String(36),default=lambda:str(uuid4()))
+    restore_until: Mapped[float | None] = mapped_column(Float,nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="draft")  # draft/completed/failed
     intent_json: Mapped[str] = mapped_column(Text, default="{}")  # 澄清后的需求（城市/天数/偏好等）
     process_json: Mapped[str] = mapped_column(Text, default="[]")  # 规划过程（LangGraph 节点轨迹）
@@ -162,3 +204,70 @@ class AiPlan(Base):
     created_at: Mapped[datetime] = mapped_column(default=now_local)
 
     user: Mapped["User"] = relationship(back_populates="ai_plans")
+
+
+class PlanGenerationJob(Base):
+    """Original /plan jobs; only execution handles remain process-local."""
+    __tablename__ = 'plan_generation_jobs'
+    id: Mapped[str] = mapped_column(String(32),primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey('users.id'),nullable=True,index=True)
+    session_id: Mapped[str] = mapped_column(String(50),default='')
+    status: Mapped[str] = mapped_column(String(20),default='running',index=True)
+    seq: Mapped[int] = mapped_column(Integer,default=0)
+    events_json: Mapped[str] = mapped_column(Text,default='[]')
+    text: Mapped[str] = mapped_column(Text,default='')
+    result_json: Mapped[str | None] = mapped_column(Text,nullable=True)
+    request_json: Mapped[str] = mapped_column(Text)
+    plan_id: Mapped[int | None] = mapped_column(Integer,nullable=True)
+    error: Mapped[str] = mapped_column(String(300),default='')
+    attempts: Mapped[int] = mapped_column(Integer,default=0)
+    lease_token: Mapped[str] = mapped_column(String(32),default='')
+    lease_until: Mapped[float] = mapped_column(Float,default=0,index=True)
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float,index=True)
+    creation_requests: Mapped[list['PlanCreationRequest']] = relationship(back_populates='job')
+
+
+class PlanCreationRequest(Base):
+    __tablename__ = 'plan_creation_requests'
+    __table_args__ = (UniqueConstraint('owner_key','request_id',name='uq_plan_creation_request'),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    owner_key: Mapped[str] = mapped_column(String(80))
+    user_id: Mapped[int | None] = mapped_column(ForeignKey('users.id'),nullable=True,index=True)
+    request_id: Mapped[str] = mapped_column(String(36))
+    payload_hash: Mapped[str] = mapped_column(String(64))
+    job_id: Mapped[str | None] = mapped_column(ForeignKey('plan_generation_jobs.id',ondelete='SET NULL'),nullable=True,index=True)
+    cancelled: Mapped[bool] = mapped_column(Boolean,default=False)
+    job: Mapped['PlanGenerationJob | None'] = relationship(back_populates='creation_requests')
+
+
+class ChannelInventory(Base):
+    """模拟渠道按酒店、房型、日期维护的库存快照。价格以货币最小单位保存。"""
+    __tablename__ = "channel_inventory"
+    __table_args__ = (UniqueConstraint("channel", "hotel_id", "room_id", "stay_date", name="uq_channel_inventory"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    channel: Mapped[str] = mapped_column(String(40), index=True)
+    hotel_id: Mapped[str] = mapped_column(String(80))
+    hotel_name: Mapped[str] = mapped_column(String(160))
+    room_id: Mapped[str] = mapped_column(String(80))
+    room_name: Mapped[str] = mapped_column(String(160))
+    stay_date: Mapped[str] = mapped_column(String(10), index=True)
+    available: Mapped[int] = mapped_column(Integer)
+    price_minor: Mapped[int] = mapped_column(Integer)
+    currency: Mapped[str] = mapped_column(String(3))
+    updated_at: Mapped[datetime] = mapped_column(default=now_local, onupdate=now_local)
+
+
+class ChannelSyncRun(Base):
+    """同步结果与请求摘要；不保存完整外部数据。"""
+    __tablename__ = "channel_sync_runs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    request_id: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    payload_hash: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(20))
+    item_count: Mapped[int] = mapped_column(Integer, default=0)
+    attempts: Mapped[int] = mapped_column(Integer, default=1)
+    created_at: Mapped[datetime] = mapped_column(default=now_local)
+    updated_at: Mapped[datetime] = mapped_column(default=now_local, onupdate=now_local)

@@ -1,9 +1,13 @@
 <script setup>
 /** 景点详情：大图 + 收藏切换 + 数据来源跳转 + 评论列表与发表 */
-import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { api } from '../api'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from 'vue-router'
+import { api, BASE } from '../api'
 import { useAuth } from '../store/auth'
+import SpotToTrip from '../components/SpotToTrip.vue'
+import { registerAuthChangeGuard } from '../store/authChangeGuard'
+import { guardTripUnload } from '../utils/tripDraftGuard'
+import { newCommentAttempt, readCommentAttempt, saveCommentAttempt, clearCommentAttempt } from '../store/commentAttempt'
 
 const route = useRoute()
 const { user, openLogin } = useAuth()
@@ -14,6 +18,16 @@ const commentText = ref('')
 const commentRating = ref(0)
 const commentBusy = ref(false)
 const commentMsg = ref('')
+const collectDirty = ref(false), favError = ref(''), favUncertain = ref(false), commentUncertain = ref(false), checking = ref(false), checkMsg = ref('')
+const pendingFavorite = ref(null), favConflict = ref(false), pendingComment = ref(null), commentRecoveryError = ref('')
+const hasDraft = computed(() => Boolean(collectDirty.value || commentText.value || commentRating.value || commentUncertain.value || favUncertain.value))
+const pageBusy = computed(() => favBusy.value || commentBusy.value)
+let unregisterAuthGuard = null
+function confirmDeparture() { return !(hasDraft.value || pageBusy.value) || window.confirm('本页还有未保存输入、待确认结果或正在进行的操作。离开后本页内容可能丢失，确定离开吗？') }
+function beforeUnload(event) { guardTripUnload(event,hasDraft.value,pageBusy.value) }
+onBeforeRouteLeave(confirmDeparture); onBeforeRouteUpdate(confirmDeparture)
+onMounted(() => { window.addEventListener('beforeunload',beforeUnload); unregisterAuthGuard = registerAuthChangeGuard(confirmDeparture) })
+onBeforeUnmount(() => { loadSequence++; window.removeEventListener('beforeunload',beforeUnload); unregisterAuthGuard?.() })
 
 /** 「用 AI 排进行程」：带着这个城市和景点名跳到规划页，自动发起。
  *  景点板块由此从"浏览终点"变成"规划起点"——不跟规划助手抢流量，而是给它送人。 */
@@ -30,59 +44,116 @@ const mainType = computed(() => {
   return tags.split(',').map((t) => t.trim()).filter(Boolean)[0] || '景点'
 })
 
+let loadSequence = 0
+const active = (run,id,uid) => run === loadSequence && id === route.params.id && uid === user.value?.id
 async function load() {
+  const run = ++loadSequence, id = route.params.id, uid = user.value?.id
+  detail.value = null; error.value = ''
+  collectDirty.value = false; favBusy.value = false; commentBusy.value = false; checking.value = false
+  commentText.value = ''; commentRating.value = 0; commentMsg.value = ''; favError.value = ''; favUncertain.value = false; commentUncertain.value = false; checkMsg.value = ''
+  pendingFavorite.value = null; favConflict.value = false; pendingComment.value = null; commentRecoveryError.value = ''
   try {
-    detail.value = await api.get(`/api/spots/${route.params.id}`)
+    const result = await api.get(`/api/spots/${id}`)
+    if (!active(run,id,uid)) return
+    if (result?.spot?.id !== Number(id) || !Array.isArray(result.comments) || typeof result.favorited !== 'boolean') throw new Error('无法确认当前景点，请重新加载后再试。')
+    detail.value = result
+    if (uid) {
+      try {
+        const attempt = readCommentAttempt(uid,Number(id))
+        if (attempt) { pendingComment.value = attempt; commentUncertain.value = true; commentText.value = attempt.payload.content; commentRating.value = attempt.payload.rating || 0 }
+      } catch (e) { commentRecoveryError.value = e.message; commentUncertain.value = true }
+    }
   } catch (e) {
-    error.value = e.message
+    if (active(run,id,uid)) error.value = e.message
   }
 }
 
 async function toggleFav() {
   if (!user.value) { openLogin('login'); return } // 未登录 → 唤起登录弹窗
-  if (favBusy.value) return
-  favBusy.value = true
+  if (favBusy.value || checking.value || favConflict.value || !detail.value) return
+  if (!Number.isSafeInteger(detail.value.favorite_version) || detail.value.favorite_version < 0) { favError.value = '当前服务不支持可靠收藏，请更新后重新加载。'; return }
+  const run = loadSequence, id = route.params.id, uid = user.value.id
+  const body = pendingFavorite.value || Object.freeze({favorited:!detail.value.favorited,version:detail.value.favorite_version})
+  favBusy.value = true; favError.value = ''
   try {
-    const r = await api.post(`/api/spots/${detail.value.spot.id}/favorite`)
+    const r = await api.put(`/api/spots/${detail.value.spot.id}/favorite-state`,body)
+    if (!active(run,id,uid)) return
+    if (r?.favorited !== body.favorited || !Number.isSafeInteger(r.favorite_count) || r.favorite_count < 0 || !Number.isSafeInteger(r.favorite_version) || r.favorite_version < Math.max(body.version,detail.value.favorite_version)) { const e = new Error('收藏结果无法确认，请先核对。'); e.outcomeUnknown = true; throw e }
     detail.value.favorited = r.favorited
     detail.value.favorite_count = r.favorite_count
+    detail.value.favorite_version = r.favorite_version; pendingFavorite.value = null; favUncertain.value = false; favConflict.value = false
   } catch (e) {
-    alert(e.message)
+    if (active(run,id,uid)) {
+      favError.value = [404,405,428].includes(e.status) ? '当前服务无法可靠保存收藏，请更新服务或核对景点状态。' : e.message
+      if (e.outcomeUnknown || e.code?.startsWith('SESSION_') || e.status === 409) pendingFavorite.value = body
+      favUncertain.value = Boolean(pendingFavorite.value); favConflict.value = e.status === 409
+    }
   } finally {
-    favBusy.value = false
+    if (active(run,id,uid)) favBusy.value = false
   }
 }
 
 function setRating(n) {
+  if (commentBusy.value || commentUncertain.value) return
   commentRating.value = commentRating.value === n ? 0 : n
 }
 
 async function submitComment() {
+  if (commentBusy.value || commentRecoveryError.value || checking.value || !detail.value) return
   if (!user.value) { openLogin('login'); return }
   if (!commentText.value.trim()) { commentMsg.value = '写点什么再发布吧'; return }
+  const run = loadSequence, id = route.params.id, uid = user.value.id
   commentBusy.value = true
   commentMsg.value = ''
   try {
-    const body = { content: commentText.value.trim() }
-    if (commentRating.value) body.rating = commentRating.value
-    const c = await api.post(`/api/spots/${detail.value.spot.id}/comments`, body)
-    detail.value.comments.unshift(c) // 新评论插到最前
+    const capability = await api.get('/api/spots/write-capabilities')
+    if (!active(run,id,uid)) return
+    if (capability?.idempotent_comments !== true) throw Error('当前服务不支持可靠评论发布，请更新后再试。')
+    let attempt = pendingComment.value
+    if (!attempt) {
+      const next = newCommentAttempt({content:commentText.value.trim(),rating:commentRating.value || null})
+      saveCommentAttempt(uid,Number(id),next); attempt = next; pendingComment.value = next; commentUncertain.value = true
+    }
+    const c = await api.post(`/api/spots/${id}/comments/create`, {...attempt.payload,request_id:attempt.request_id})
+    if (!active(run,id,uid)) return
+    if (!Number.isSafeInteger(c?.id) || c.id < 1 || c.content !== attempt.payload.content || c.rating !== attempt.payload.rating || c.request_id !== attempt.request_id || c.spot_id !== Number(id)) throw Error('评论结果无法确认，请继续本次发布以找回同一条评论。')
+    clearCommentAttempt(uid,Number(id),attempt.request_id)
+    if (!detail.value.comments.some(comment => comment.id === c.id)) detail.value.comments.unshift(c)
     commentText.value = ''
     commentRating.value = 0
     commentMsg.value = '发布成功'
+    pendingComment.value = null; commentUncertain.value = false
   } catch (e) {
-    commentMsg.value = e.message
+    if (active(run,id,uid)) { commentMsg.value = [404,405].includes(e.status) ? '无法完成可靠评论发布，请核对服务或景点状态；不会退回旧发布接口。' : e.message; commentUncertain.value = Boolean(pendingComment.value || commentRecoveryError.value) }
   } finally {
-    commentBusy.value = false
+    if (active(run,id,uid)) commentBusy.value = false
   }
 }
-
-onMounted(load)
+async function checkInteractions() {
+  if (!detail.value || checking.value || pageBusy.value) return
+  const run = loadSequence, id = route.params.id, uid = user.value?.id
+  checking.value = true; checkMsg.value = ''
+  try {
+    const result = await api.get(`/api/spots/${id}`)
+    if (!active(run,id,uid)) return
+    if (result?.spot?.id !== Number(id) || !Array.isArray(result.comments) || typeof result.favorited !== 'boolean' || !Number.isSafeInteger(result.favorite_version) || result.favorite_version < (detail.value.favorite_version || 0)) throw new Error('无法核对当前景点状态，请稍后再试。')
+    detail.value = {...detail.value,favorited:result.favorited,favorite_count:result.favorite_count,favorite_version:result.favorite_version,comments:result.comments}
+    favUncertain.value = false; favError.value = ''; pendingFavorite.value = null; favConflict.value = false
+    checkMsg.value = '已读取最新收藏和评论，本页评论输入及原次发布标识仍保留。'
+  } catch (e) { if (active(run,id,uid)) checkMsg.value = e.message }
+  finally { if (active(run,id,uid)) checking.value = false }
+}
+function resumeComment() {
+  if (!commentUncertain.value || commentBusy.value || !user.value || !window.confirm('这次评论可能已经发布。放弃只清除本标签重试信息，不删除评论；请先核对评论列表，确定放弃吗？')) return
+  try { clearCommentAttempt(user.value.id,Number(route.params.id),pendingComment.value?.request_id); pendingComment.value = null; commentRecoveryError.value = ''; commentUncertain.value = false; commentMsg.value = '' }
+  catch { commentMsg.value = '无法清除本次发布信息，请检查浏览器存储后重试。' }
+}
+watch(() => [route.params.id,user.value?.id], load, {immediate:true,flush:'sync'})
 </script>
 
 <template>
   <div class="wrap">
-    <p v-if="error" class="empty">{{ error }}</p>
+    <p v-if="error" class="empty" role="alert">{{ error }} <button @click="load">重新加载景点</button></p>
     <p v-else-if="!detail" class="loading">加载中…</p>
     <template v-else>
       <div class="crumb">当前位置：旅游景点 / {{ detail.spot.city }} / <b>{{ detail.spot.name }}</b></div>
@@ -100,13 +171,17 @@ onMounted(load)
           <span v-else-if="detail.spot.price" class="badge-price">¥{{ detail.spot.price }} 起</span>
           <span v-else class="badge-free">票价以景区公示为准</span>
           <router-link class="plan-btn" :to="planLink">用 AI 排进行程 →</router-link>
-          <button class="fav-btn" :class="{ on: detail.favorited }" :disabled="favBusy" @click="toggleFav">
+          <SpotToTrip :detail="detail" @dirty="collectDirty = $event" />
+          <button class="fav-btn" :class="{ on: detail.favorited }" :disabled="favBusy || checking || favUncertain" @click="toggleFav">
             {{ detail.favorited ? '❤ 已收藏' : '♡ 收藏' }} · {{ detail.favorite_count }} 人
           </button>
           <a v-if="detail.source_url" class="src-link" :href="detail.source_url" target="_blank" rel="noopener">
             ↗ 在{{ detail.source }}查看
           </a>
         </div>
+        <p v-if="favError" role="alert">{{ favError }}</p>
+        <button v-if="pendingFavorite" class="interaction-retry" type="button" :disabled="favBusy || checking || favConflict" @click="toggleFav">继续这次收藏操作</button>
+        <div class="interaction-check"><button type="button" :disabled="checking || pageBusy" @click="checkInteractions">核对收藏和评论</button><p v-if="checkMsg" role="status">{{ checkMsg }}</p></div>
         <p class="tags" v-if="detail.spot.tags">标签：{{ detail.spot.tags.split(',').join(' / ') }}</p>
         <p class="desc" v-if="detail.description">{{ detail.description }}</p>
 
@@ -146,7 +221,7 @@ onMounted(load)
         >
           <img
             class="pos-map" alt="景区位置图"
-            :src="`/api/map/static?points=${detail.spot.lng},${detail.spot.lat}&size=640*240&zoom=14&label=0&path=0`"
+            :src="`${BASE}/api/map/static?points=${detail.spot.lng},${detail.spot.lat}&size=640*240&zoom=14&label=0&path=0`"
             @error="$event.target.closest('.panel').style.display = 'none'"
           />
         </a>
@@ -158,16 +233,17 @@ onMounted(load)
       <div class="panel editor">
         <p v-if="!user" class="hint">想留下一句？<span class="lk" @click="openLogin('login')">登录</span> 后即可评论与收藏。</p>
         <template v-else>
-          <textarea v-model="commentText" rows="3" maxlength="500" placeholder="分享你的游览体验（1-500 字）…"></textarea>
+          <textarea v-model="commentText" aria-label="游览评论" :readonly="commentUncertain" :disabled="commentBusy" rows="3" maxlength="500" placeholder="分享你的游览体验（1-500 字）…"></textarea>
           <div class="editor-row">
             <span class="stars">
-              <span v-for="n in 5" :key="n" :class="{ on: n <= commentRating }" @click="setRating(n)">★</span>
+              <button v-for="n in 5" :key="n" type="button" :aria-label="`评分 ${n} 星`" :aria-pressed="n === commentRating" :disabled="commentBusy || commentUncertain" :class="{ on: n <= commentRating }" @click="setRating(n)">★</button>
             </span>
-            <span class="msg">{{ commentMsg }}</span>
-            <button class="btn-send" :disabled="commentBusy" @click="submitComment">
-              {{ commentBusy ? '发布中…' : '发布评论' }}
+            <span class="msg" role="status">{{ commentMsg }}</span>
+            <button class="btn-send" :disabled="commentBusy || checking || Boolean(commentRecoveryError)" @click="submitComment">
+              {{ commentBusy ? '发布中…' : pendingComment ? '继续这次发布' : '发布评论' }}
             </button>
           </div>
+          <p v-if="commentUncertain" class="comment-pending">本次发布的信息已按账号和景点保留在本标签页，刷新后可继续找回同一条评论；未提交输入仍只在本页。核对列表不会自动再次发布。{{ commentRecoveryError }}<button type="button" :disabled="commentBusy" @click="resumeComment">放弃本次发布</button></p>
         </template>
       </div>
 
@@ -187,6 +263,7 @@ onMounted(load)
 </template>
 
 <style scoped>
+.interaction-check,.comment-pending{font-size:12px;line-height:1.7;margin:12px 0;color:var(--text-sub)}.interaction-retry,.interaction-check button,.comment-pending button,.empty button{min-height:44px;border:1px solid var(--green-border);border-radius:8px;background:white;color:var(--green);padding:8px 12px;font:inherit}.interaction-retry:disabled,.interaction-check button:disabled,.comment-pending button:disabled{opacity:.5}.panel p[role=alert]{font-size:12px;color:#a33;line-height:1.7}.stars{display:inline-flex}.stars button{min-width:36px;min-height:44px;border:0;background:none;font:inherit}.editor-row{flex-wrap:wrap}
 .crumb { font-size: 12px; color: #888; margin-bottom: 12px; }
 .hero {
   height: 260px; border-radius: 12px; overflow: hidden;
@@ -239,8 +316,8 @@ onMounted(load)
 }
 .editor textarea:focus { outline: none; border-color: var(--green); }
 .editor-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
-.stars span { font-size: 20px; color: #ddd; cursor: pointer; }
-.stars span.on { color: #e8a33d; }
+.stars button { font-size: 20px; color: #999; cursor: pointer; }
+.stars button.on { color: #a96b12; }
 .msg { font-size: 12px; color: var(--green); flex: 1; }
 .btn-send {
   background: var(--green); color: #fff; border: none;

@@ -53,7 +53,7 @@ def test_me_profile_favorites_guides(client):
     assert len(guides) == 1 and guides[0]["title"] == "杭州一日"
 
     # 改昵称
-    r = c.patch("/api/me/profile", json={"nickname": "改名艾"}, headers=_auth(u1)).json()
+    r = c.patch("/api/me/profile", json={"nickname": "改名艾", "version":prof['version']}, headers=_auth(u1)).json()
     assert r["nickname"] == "改名艾"
     assert c.patch("/api/me/profile", json={"nickname": "  "}, headers=_auth(u1)).status_code == 422
 

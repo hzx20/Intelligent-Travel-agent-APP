@@ -3,13 +3,16 @@
  *  这里只负责收集需求，不发任何请求——提交后带着参数跳到 /plan，
  *  由 PlanView 读 query 自动发起规划，用户不用把刚说的话再打一遍。
  *  参数：d=城市 / days=天数（仅当用户没自己打字时才带）/ q=原话 / auto=1 */
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref, watch, onBeforeUnmount } from 'vue'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import RegionPicker from './regionpicker.vue'
+import {useAuth} from '../store/auth'
+import {registerAuthChangeGuard} from '../store/authChangeGuard'
 
 const router = useRouter()
+const {user}=useAuth()
 
-/** 全站景点数由首页按 /api/spots/regions 累加后传进来。
+/** 全站景点数由首页读取 /api/spots/regions 的 total 后传进来。
  *  不在文案里写死数字：写死过一次 530，实际库里是 500，改完数据就变成了假话。 */
 defineProps({ totalSpots: { type: Number, default: 0 } })
 
@@ -17,6 +20,15 @@ const text = ref('')      // 用户输入的需求原话
 const city = ref('')      // 条件行选中的城市（纯城市名，与后端地图核实口径一致）
 const days = ref(3)       // 条件行的天数
 const inputEl = ref(null)
+const regionDraft=ref(''),submitting=ref(false)
+const hasDraft=computed(()=>Boolean(text.value.trim()||city.value||regionDraft.value.trim()||days.value!==3))
+const leave=()=>!hasDraft.value||window.confirm('还有未发送的规划需求，离开或切换账号会丢失本页输入，确定继续吗？')
+const removeGuard=registerAuthChangeGuard(leave)
+onBeforeRouteLeave(()=>submitting.value||leave())
+const beforeUnload=e=>{if(hasDraft.value){e.preventDefault();e.returnValue=''}}
+window.addEventListener('beforeunload',beforeUnload)
+watch(()=>user.value?.id||0,()=>{text.value='';city.value='';regionDraft.value='';days.value=3},{flush:'sync'})
+onBeforeUnmount(()=>{removeGuard();window.removeEventListener('beforeunload',beforeUnload)})
 
 const EXAMPLES = [
   { label: '成都 3 天亲子', q: '成都 3 天，带 5 岁孩子，节奏想轻松一点' },
@@ -28,15 +40,19 @@ const EXAMPLES = [
 const composed = computed(() => {
   const t = text.value.trim()
   if (t) return t
-  return city.value ? `去${city.value}玩 ${days.value} 天` : ''
+  const destination=city.value||regionDraft.value.trim()
+  return destination ? `去${destination}玩 ${days.value} 天` : ''
 })
 
 function useExample(e) {
+  if((text.value.trim()||city.value||regionDraft.value.trim())&&text.value!==e.q&&!window.confirm('替换会覆盖当前规划需求，确定使用这条灵感吗？'))return
   text.value = e.q
+  city.value='';regionDraft.value=''
   inputEl.value?.focus()
 }
 
-function submit() {
+async function submit() {
+  if(submitting.value)return
   const q = composed.value
   // 空着点按钮不装死：把光标送回输入框，让人知道该从这儿开始
   if (!q) { inputEl.value?.focus(); return }
@@ -45,13 +61,15 @@ function submit() {
   // 用户自己打了字，就以文字为准，不再塞天数参数——
   // 否则会出现"文字说 2 天、参数说 3 天"的打架，AI 收到两份互相矛盾的需求
   if (!text.value.trim()) query.days = String(days.value)
-  router.push({ path: '/plan', query })
+  submitting.value=true
+  try{await router.push({ path: '/plan', query })}finally{submitting.value=false}
 }
 
 /** 首页城市卡点进来：把城市和一句话预填好，让用户改完直接出发 */
 function prefill(c) {
+  if((text.value.trim()||city.value||regionDraft.value.trim())&&!window.confirm('替换会覆盖当前规划需求，确定使用这条灵感吗？'))return false
   city.value = c
-  text.value = `去${c}玩 ${days.value} 天`
+  text.value = '';regionDraft.value=''
   inputEl.value?.focus()
 }
 defineExpose({ prefill })
@@ -62,8 +80,8 @@ defineExpose({ prefill })
     <p class="eyebrow">AI 智能旅行规划</p>
     <h1>说一句话，帮你把行程排好</h1>
     <p class="sub">
-      覆盖成都、杭州、西安、北京、三亚 5 座城市<template v-if="totalSpots">、{{ totalSpots }} 个真实地点</template>。
-      每个地点先用高德核实是否真的存在，再按游览顺序连成路线。
+      从目的地、天数和偏好开始<template v-if="totalSpots">，当前景点库收录 {{ totalSpots }} 个地点</template>。
+      生成后结合地图核对地点与路线，再决定每天的安排。
     </p>
 
     <!-- 主输入：一整句话描述需求 -->
@@ -71,24 +89,28 @@ defineExpose({ prefill })
       <input
         ref="inputEl"
         v-model="text"
+        aria-label="规划需求"
+        :disabled="submitting"
         class="ask-input"
         maxlength="200"
         placeholder="例如：成都 3 天，带 5 岁孩子"
         @keyup.enter="submit"
       />
-      <button class="ask-btn" @click="submit">
+      <button class="ask-btn" :disabled="submitting" @click="submit">
         生成我的路线<span class="arr">→</span>
       </button>
     </div>
 
     <!-- 条件行：不想打字的人也能两下点完 -->
-    <div class="cond-row">
+    <div class="cond-row" :inert="submitting || undefined">
       <div class="city-wrap">
         <RegionPicker
+          :key="user?.id || 0"
           :initial="city"
           placement="down"
           placeholder="目的地，如：成都"
           @select="city = $event.city || ''"
+          @draft="regionDraft = $event"
         />
       </div>
       <label class="day-pick">
@@ -108,16 +130,17 @@ defineExpose({ prefill })
 
     <!-- 能力标签：一句话说清这东西和普通搜索框的区别 -->
     <div class="caps">
-      <span>地图逐点核实</span><i />
+      <span>地点信息核对</span><i />
       <span>在途耗时估算</span><i />
       <span>出行难度评估</span><i />
-      <span>真实酒店推荐</span><i />
-      <span>天气预报</span>
+      <span>住宿建议</span><i />
+      <span>天气参考</span>
     </div>
   </div>
 </template>
 
 <style scoped>
+.ex-chip{min-height:44px}.ask-input:focus-visible,.ask-btn:focus-visible,.ex-chip:focus-visible{outline:3px solid #548b73;outline-offset:3px}
 .hero-card {
   background: #fff;
   border: 1px solid var(--green-border);

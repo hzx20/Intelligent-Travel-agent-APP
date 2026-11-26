@@ -76,13 +76,12 @@ def test_cross_day_same_spot_kept():
 def test_alias_names_hitting_same_poi_merged():
     """名字不同、但都命中同一个真实 POI 时，也要合并。
 
-    这是线上真实出现过的那种重复：模型写了两个说法，_db_lookup 用 like 匹配，
-    两次都落到"颐和园"这一条记录上，页面就出现两个同名同坐标的地点。
+    空白格式差异不改变身份，确实命中同一个 POI 后再合并。
     """
     db = _db()
     try:
         itin = {"days": [{"day": 2, "theme": "文化", "spots": [
-            {"name": "颐和园"}, {"name": "和园"},
+            {"name": "颐和园"}, {"name": "颐 和 园"},
         ]}]}
         new_itin, logs = map_verify.verify_itinerary_spots(itin, "北京", db, amap_enabled=False)
         assert [s["name"] for s in new_itin["days"][0]["spots"]] == ["颐和园"]

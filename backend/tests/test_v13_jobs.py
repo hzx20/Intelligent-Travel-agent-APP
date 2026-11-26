@@ -137,6 +137,9 @@ def test_job_saves_history_for_logged_in_user(client, fake_graph):
     assert data["status"] == "done"
     assert data["plan_id"], "登录用户的完整规划应落库并返回 plan_id"
     assert data["result"]["saved"] is True
+    saved_detail=c.get(f"/api/plan/{data['plan_id']}",headers=headers).json()
+    assert data['result']['plan_version']==saved_detail['version']==1
+    assert data['result']['plan_revision']==saved_detail['revision']
 
     hist = c.get("/api/plan/history", headers=headers).json()
     assert any(h["id"] == data["plan_id"] for h in hist["items"]), "历史列表应能查到这条"
@@ -148,6 +151,10 @@ def test_job_saves_history_for_logged_in_user(client, fake_graph):
     # 落库用的是任务请求里带过来的对话快照（后台任务自己开 session 写，不用请求那个）
     assert json.loads(rec.chat_json)[0]["text"] == "去杭州玩 2 天"
     db.close()
+
+    changed=c.patch(f"/api/plan/{data['plan_id']}/snapshot/edit",headers=headers,json={'version':1,'revision':saved_detail['revision'],'messages':[{'role':'ai','text':'后续快照'}]})
+    assert changed.status_code==200 and changed.json()['version']==2
+    assert c.get(f'/api/plan/jobs/{job_id}',headers=headers).json()['result']['plan_version']==1
 
 
 def test_active_job_can_be_found_again(client, fake_graph):

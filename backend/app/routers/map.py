@@ -10,16 +10,91 @@
     代价是不能拖动缩放——换来看一眼就懂的路线全貌，够用。
 """
 import httpx
-from fastapi import APIRouter, HTTPException, Query
+import threading
+import time
+from typing import Literal
+from cachetools import TTLCache
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import Response
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.config import settings
+from app.core.provider_budget import amap_get
+from app.services import map_places, trip_routes
 
 router = APIRouter(prefix="/api/map", tags=["map"])
 
 STATIC_URL = "https://restapi.amap.com/v3/staticmap"
 LABELS = "ABCDEFGHIJKLMNOPQRST"  # 静态地图标记只支持单字符编号
 MAX_POINTS = 20
+
+
+class PlaceSearchIn(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    keyword: str = Field(min_length=1, max_length=80)
+    city: str = Field(min_length=1, max_length=50)
+
+    @field_validator('keyword', 'city')
+    @classmethod
+    def nonblank(cls, value):
+        value = value.strip()
+        if not value:
+            raise ValueError('请输入关键词和城市')
+        return value
+
+
+class GuestRoutePoint(BaseModel):
+    lng: float = Field(ge=-180, le=180, allow_inf_nan=False)
+    lat: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    amap_id: str = Field(default='', max_length=100)
+
+
+class NearbyPlaceSearchIn(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    category: Literal['food', 'museum']
+    origin: GuestRoutePoint
+
+
+class GuestRouteIn(BaseModel):
+    origin: GuestRoutePoint
+    destination: GuestRoutePoint
+    mode: Literal['walking', 'driving'] = 'walking'
+
+
+# Bounded per-peer, per-process rate limiting; deployments also need proxy limits.
+_guest_route_peers = TTLCache(maxsize=2048, ttl=60)
+_guest_route_lock = threading.Lock()
+
+
+@router.post('/guest-route')
+def guest_route(body: GuestRouteIn, request: Request, response: Response):
+    peer = request.client.host if request.client else 'unknown'
+    now = time.monotonic()
+    with _guest_route_lock:
+        recent = [stamp for stamp in _guest_route_peers.get(peer, ()) if now - stamp < 60]
+        if len(recent) >= 30:
+            raise HTTPException(429, '路线查询较频繁，请稍后重试')
+        recent.append(now)
+        _guest_route_peers[peer] = recent
+    response.headers['Cache-Control'] = 'private, no-store'
+    try:
+        route = trip_routes.get_route(body.origin, body.destination, body.mode)
+    except trip_routes.RouteUnavailable as exc:
+        return {'status':'unavailable', 'message':str(exc)}
+    return {'status':'ok', 'source':'高德地图', **route}
+
+
+@router.post('/place-search')
+def place_search(body: PlaceSearchIn | NearbyPlaceSearchIn, response: Response):
+    try:
+        if isinstance(body, NearbyPlaceSearchIn):
+            items = map_places.search_nearby(body.origin.lng, body.origin.lat, body.category, body.origin.amap_id)
+        else:
+            items = map_places.search_places(body.keyword, body.city)
+    except map_places.PlaceSearchUnavailable as exc:
+        raise HTTPException(503, str(exc)) from None
+    response.headers['Cache-Control'] = 'no-store'
+    return {'items': items}
 
 
 @router.get("/config")
@@ -86,7 +161,7 @@ def static_map(
                         headers={"Cache-Control": "public, max-age=86400"})
 
     try:
-        resp = httpx.get(STATIC_URL, params=params, timeout=12)
+        resp = amap_get(STATIC_URL, params=params, timeout=12)
     except httpx.HTTPError:
         raise HTTPException(502, "地图服务暂不可用")
 

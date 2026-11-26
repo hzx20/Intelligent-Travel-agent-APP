@@ -1,7 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
-  { path: '/', component: () => import('../views/HomeView.vue') },
+  { path: '/', component: () => import('../views/TripsView.vue') },
+  { path: '/inspiration', component: () => import('../views/HomeView.vue') },
+  { path: '/travel-data', component: () => import('../views/TravelDataView.vue') },
+  { path: '/trips/new', component: () => import('../views/TripCreateView.vue') },
+  { path: '/trips/:id', component: () => import('../views/TripDetailView.vue') },
+  { path: '/share', component: () => import('../views/TripSharedView.vue'), props: { mode: 'view' } },
+  { path: '/invite', component: () => import('../views/TripSharedView.vue'), props: { mode: 'edit' } },
   { path: '/spots', component: () => import('../views/SpotsView.vue') },
   { path: '/spots/:id', component: () => import('../views/SpotDetailView.vue') },
   { path: '/plan', component: () => import('../views/PlanView.vue') },
@@ -10,6 +16,7 @@ const routes = [
   { path: '/guides/:id', component: () => import('../views/GuideDetailView.vue') },
   { path: '/guides/:id/edit', component: () => import('../views/GuideEditView.vue') },
   { path: '/me', component: () => import('../views/MeView.vue') },
+  { path: '/footprints', component: () => import('../views/FootprintsView.vue') },
   { path: '/admin', component: () => import('../views/AdminView.vue') },
 ]
 

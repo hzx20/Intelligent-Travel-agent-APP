@@ -83,6 +83,41 @@ def test_hotels_amap_down_graceful(monkeypatch):
     assert body["ok"] is False and body["items"] == [] and body["note"]
 
 
+def test_hotels_cache_keeps_city_specific_links(fake_amap):
+    from urllib.parse import unquote
+
+    c = TestClient(app)
+    first = c.get("/api/hotels", params={"lng": 120.14, "lat": 30.25, "city": "杭州"}).json()
+    second = c.get("/api/hotels", params={"lng": 120.14, "lat": 30.25, "city": "上海"}).json()
+    assert "杭州" in unquote(first["items"][0]["links"]["ctrip"])
+    assert "上海" in unquote(second["items"][0]["links"]["ctrip"])
+    assert len(fake_amap) == 2
+
+
+def test_hotels_recovers_after_upstream_failure(monkeypatch):
+    calls = []
+
+    def _get(url, params=None, timeout=None):
+        calls.append(url)
+        if len(calls) == 1:
+            raise httpx.ConnectError("temporary failure")
+        return types.SimpleNamespace(json=lambda: FAKE_POIS)
+
+    monkeypatch.setattr(httpx, "get", _get)
+    hotels_router.CACHE.clear()
+    c = TestClient(app)
+    assert c.get("/api/hotels?lng=120.14&lat=30.25").json()["ok"] is False
+    assert c.get("/api/hotels?lng=120.14&lat=30.25").json()["ok"] is True
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize("query", [
+    "lng=181&lat=30", "lng=120&lat=-91", "lng=120&lat=30&radius=0",
+])
+def test_hotels_rejects_invalid_coordinates_and_radius(query):
+    assert TestClient(app).get(f"/api/hotels?{query}").status_code == 422
+
+
 # ---------- POST /api/hotels/match（住宿推荐 × 高德真实数据 匹配） ----------
 
 def _fake_text_search(monkeypatch):

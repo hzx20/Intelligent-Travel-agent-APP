@@ -6,7 +6,9 @@ import base64
 import hashlib
 import hmac
 import secrets
+import os
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 
 import jwt
 
@@ -40,16 +42,23 @@ def verify_password(password: str, stored: str) -> bool:
         return False
 
 
+@lru_cache(maxsize=1)
 def _jwt_secret() -> str:
-    """优先取 .env 配置的 jwt_secret（经 Settings 读入）；未配置时用开发期派生值。
+    """未配置时生成本机持久随机密钥；部署时应显式配置 JWT_SECRET。"""
+    if settings.jwt_secret:
+        return settings.jwt_secret
+    from app.db.database import DATA_DIR
 
-    派生值绑定智谱 key——key 一换所有 token 失效，全体被登出；上云前务必配置正式值。
-    （注意：.env 由 pydantic-settings 读进 Settings，不会进 os.environ，
-    所以这里必须读 settings 而不是 os.getenv——后者永远拿不到 .env 里的值）
-    """
-    return settings.jwt_secret or "dev-secret::" + hashlib.sha256(
-        settings.zhipu_api_key.encode()
-    ).hexdigest()
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    path = DATA_DIR / ".jwt_secret"
+    try:
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:
+        return path.read_text(encoding="utf-8").strip()
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        secret = secrets.token_urlsafe(48)
+        f.write(secret)
+    return secret
 
 
 def create_token(user_id: int) -> str:
@@ -65,5 +74,5 @@ def decode_token(token: str) -> int | None:
     try:
         payload = jwt.decode(token, _jwt_secret(), algorithms=["HS256"])
         return int(payload["sub"])
-    except (jwt.PyJWTError, ValueError, TypeError):
+    except (jwt.PyJWTError, ValueError, TypeError, KeyError):
         return None

@@ -1,24 +1,19 @@
 /** 极简 API 层：fetch 封装 + token 自动携带 */
-const TOKEN_KEY = 'tp_token'
+import { beginSessionRequest, beginSessionCheck, beginSessionAuthentication } from '../store/sessionToken'
+import { transportFailure } from '../utils/apiFailure'
+export { getToken, setToken } from '../store/sessionToken'
 
 // 生产构建挂在 /travel/ 子路径下，接口也要跟着加前缀；
 // dev 时 BASE_URL 是 '/'，拼接结果仍是原来的 /api/...
 export const BASE = import.meta.env.BASE_URL.replace(/\/$/, '')
 
-export function getToken() {
-  return localStorage.getItem(TOKEN_KEY) || ''
-}
-export function setToken(t) {
-  t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY)
-}
-
-async function request(method, url, body, { timeout = 0 } = {}) {
+async function request(method, url, body, { timeout = 15000, readOnly = false } = {}, identityCheck = null) {
   const headers = { 'Content-Type': 'application/json' }
-  const token = getToken()
+  const authentication = method === 'POST' && ['/api/auth/login', '/api/auth/register'].includes(url)
+  const session = identityCheck || (authentication ? beginSessionAuthentication() : beginSessionRequest()), token = session.token
   if (token) headers.Authorization = `Bearer ${token}`
-  /* timeout 默认 0 = 不设限（生成任务这类长请求本来就要等）。
-   * 但"可选的富数据"接口必须给上限：酒店匹配内部要连高德，个别网络环境下会挂住，
-   * 不设超时的话 loading 永远转下去，用户看到的就是"正在匹配…"卡死。 */
+  // Ordinary requests have a bound. Model/OCR calls explicitly choose longer
+  // limits; timeout: 0 remains an explicit opt-out. Never retry writes here.
   const ctrl = timeout > 0 && typeof AbortController !== 'undefined' ? new AbortController() : null
   const timer = ctrl ? setTimeout(() => ctrl.abort(), timeout) : null
   try {
@@ -28,26 +23,67 @@ async function request(method, url, body, { timeout = 0 } = {}) {
       body: body ? JSON.stringify(body) : undefined,
       signal: ctrl ? ctrl.signal : undefined,
     })
+    session.check()
     if (!resp.ok) {
       let detail = `HTTP ${resp.status}`
       try { detail = (await resp.json()).detail || detail } catch { /* keep */ }
+      session.check()
       const err = new Error(detail)
       err.status = resp.status   // 调用方靠它区分 404（任务过期）和网络抖动
+      err.outcomeUnknown = !readOnly && !['GET', 'HEAD'].includes(method) && resp.status >= 500
+      if (err.outcomeUnknown) err.message += '。结果暂时无法确认，请先核对已保存内容，再决定是否重试。'
       throw err
     }
     if (resp.status === 204) return null // 删除等无响应体
-    return await resp.json()
-  } finally {
+    const data = await resp.json()
+    session.check()
+    return data
+  } catch (error) { session.check(); throw transportFailure(error, readOnly ? 'GET' : method) } finally {
     if (timer) clearTimeout(timer)
   }
+}
+
+export function fetchSessionUser(token) {
+  return request('GET', '/api/auth/me', undefined, { timeout: 10000 }, beginSessionCheck(token))
+}
+
+async function photoRequest(method, url, file, version) {
+  const headers = {}
+  const session = beginSessionRequest(), token = session.token
+  if (token) headers.Authorization = `Bearer ${token}`
+  if (file) { headers['Content-Type'] = file.type; headers['X-Trip-Version'] = String(version) }
+  const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), 30000) : null
+  try {
+    const resp = await fetch(BASE + url, { method, headers, body: file || undefined, cache: 'no-store', signal: ctrl?.signal })
+    session.check()
+    if (!resp.ok) {
+      let detail = `HTTP ${resp.status}`
+      try { detail = (await resp.json()).detail || detail } catch { /* use status */ }
+      session.check()
+      const err = new Error(detail); err.status = resp.status
+      err.outcomeUnknown = method !== 'GET' && resp.status >= 500
+      if (err.outcomeUnknown) err.message += '。结果暂时无法确认，请先核对已保存内容，再决定是否重试。'
+      throw err
+    }
+    const data = await (file ? resp.json() : resp.blob())
+    session.check()
+    return data
+  } catch (error) {
+    session.check()
+    throw transportFailure(error, method)
+  } finally { if (timer) clearTimeout(timer) }
 }
 
 export const api = {
   get: (url, opts) => request('GET', url, undefined, opts),
   post: (url, body, opts) => request('POST', url, body, opts),
+  put: (url, body, opts) => request('PUT', url, body, opts),
   patch: (url, body, opts) => request('PATCH', url, body, opts),
   del: (url, opts) => request('DELETE', url, undefined, opts),
   raw: (method, url) => request(method, url),
+  photo: (url) => photoRequest('GET', url),
+  uploadPhoto: (url, file, version) => photoRequest('POST', url, file, version),
 }
 
 /**
@@ -60,9 +96,11 @@ export const api = {
  */
 export const planJob = {
   /** 建任务，立刻返回 {job_id} —— 不等生成 */
-  create: (payload) => request('POST', '/api/plan/jobs', payload),
+  capabilities: () => request('GET','/api/plan/jobs/capabilities'),
+  create: (payload) => request('POST', '/api/plan/jobs/create', payload),
+  cancelCreation: (payload) => request('POST','/api/plan/jobs/create/cancel',payload),
   /** 拉增量：since 传上次收到的最大 seq，只回比它新的事件 */
-  poll: (id, since = 0) => request('GET', `/api/plan/jobs/${encodeURIComponent(id)}?since=${since}`),
+  poll: (id, since = 0) => request('GET', `/api/plan/jobs/${encodeURIComponent(id)}?since=${since}`, undefined, { timeout: 10000 }),
   /** 找回"我最近一条还在跑的任务"（关掉页面再打开时用） */
   active: () => request('GET', '/api/plan/jobs/active'),
   /** 取消（开新会话时顺手掐掉旧任务，别白烧模型调用） */
@@ -76,22 +114,25 @@ export const planJob = {
  */
 export async function streamPlan(payload, { onLog, onToken, onResult, onDone, signal } = {}) {
   const headers = { 'Content-Type': 'application/json' }
-  const token = getToken()
+  const session = beginSessionRequest(), token = session.token
   if (token) headers.Authorization = `Bearer ${token}`
   const resp = await fetch(BASE + '/api/plan/stream', {
     method: 'POST', headers, body: JSON.stringify(payload), signal,
   })
+  session.check()
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
   const reader = resp.body.getReader()
   const decoder = new TextDecoder()
   let buf = ''
-  while (true) {
+  try { while (true) {
     const { done, value } = await reader.read()
+    session.check()
     if (done) break
     buf += decoder.decode(value, { stream: true })
     const parts = buf.split('\n\n')
     buf = parts.pop()
     for (const part of parts) {
+      session.check()
       let ev = 'message', data = ''
       for (const line of part.split('\n')) {
         if (line.startsWith('event: ')) ev = line.slice(7).trim()
@@ -106,5 +147,5 @@ export async function streamPlan(payload, { onLog, onToken, onResult, onDone, si
         else if (ev === 'done') onDone?.()
       } catch { /* 跳过不完整块 */ }
     }
-  }
+  } } finally { await reader.cancel().catch(() => {}) }
 }

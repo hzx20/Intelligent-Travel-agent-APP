@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.db.database import get_db
 from app.db.models import User
@@ -27,6 +28,7 @@ class UserOut(BaseModel):
     id: int
     username: str
     nickname: str
+    profile_version: int
     avatar: str
     is_admin: bool
 
@@ -79,7 +81,12 @@ def register(body: RegisterIn, db: Session = Depends(get_db)):
         nickname=body.nickname or body.username,
     )
     db.add(user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # 并发注册时，两次预检查都可能通过；唯一约束才是最终裁判。
+        db.rollback()
+        raise HTTPException(status.HTTP_409_CONFLICT, "用户名已被注册")
     db.refresh(user)
     return user
 

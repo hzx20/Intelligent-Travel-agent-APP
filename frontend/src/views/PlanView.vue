@@ -8,28 +8,37 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { loadAmap } from '../utils/amap'
+import { waitForMapReady } from '../utils/mapReady'
+import { hasPlanCoordinates, isUnverifiedPlanPlace, planDayEntries } from '../utils/planLocation'
 import { usePlanSession } from '../store/planSession'
 import { useAuth } from '../store/auth'
 import { fmtDist, fmtMin, partyAdvice } from '../utils/format'
 import RegionPicker from '../components/regionpicker.vue'
 import DateRangePicker from '../components/daterangepicker.vue'
+import WeatherAttribution from '../components/WeatherAttribution.vue'
+import PlanBudgetSummary from '../components/PlanBudgetSummary.vue'
+import { estimatedMoney } from '../utils/planBudget'
 
 const route = useRoute()
 const router = useRouter()
 // 登录态：模板里要判断"显示历史面板 / 显示登录提示"，与 store 里的 user 是同一个 ref
 const { user } = useAuth()
 const {
-  messages, input, busy, logs, result, collected, history, historyView, activeDay,
+  messages, input, busy, stopping, stopError, pendingCreation, creationUncertain, creationRecoveryError, creationStatus, reconnecting, logs, result, collected, history, historyView, activeDay,
   showHistory, mapView, mapCommand, stayMatches, nearbyHotels, scrollKey, jobStartedAt,
+  historyLoading,historyError,historyDetailLoading,historyDetailError,historyOperation,historyNotice,snapshotState,
   stayLoading,
-  hydrate, send, startFresh, refreshHistory, loadPlan, backToLive, deletePlan,
+  hydrate, send, resumeCreation, stopCreation, discardCreation, stopGeneration, startFresh, refreshHistory, loadPlan, backToLive, deletePlan,
   undoDelete, setMapView,
+  retryHistoryOperation,checkHistoryOperation,endHistoryOperation,reloadSnapshot,retrySnapshot,checkSnapshot,discardSnapshot,
 } = usePlanSession()
 
 // ---- 地图状态（页面级：组件销毁时地图跟着销毁，会话状态不受影响）----
 const mapEl = ref(null)
 const mapReady = ref(false)
 const mapError = ref('')        // 'MISSING_KEY' | 其它错误信息
+const mapLoading = ref(false)
+let mapInitialization = null
 const chatBox = ref(null)
 let map = null
 let overlays = []               // 当前行程的标记+路线
@@ -135,11 +144,18 @@ function esc(s) {
 
 // ================= 地图 =================
 async function initMap() {
+  if (mapLoading.value || map || !mapEl.value) return
+  mapLoading.value = true
+  mapError.value = ''
   try {
     const AMap = await loadAmap()
     // 地图脚本是异步加载的：等待期间用户可能已经切走，此时容器没了就别再建实例
     if (!mapEl.value || map) return
     map = new AMap.Map(mapEl.value, { zoom: 11, center: [120.155, 30.274], viewMode: '2D' })
+    const instance = map
+    mapInitialization = new AbortController()
+    await waitForMapReady(instance, mapInitialization.signal)
+    if (!mapEl.value || map !== instance) return
     map.addControl(new AMap.ToolBar({ position: 'RB' }))
     map.addControl(new AMap.Scale())
     map.on('click', onMapClick)
@@ -149,10 +165,12 @@ async function initMap() {
     // 可能是"切页面回来"：优先还原上次看到的视角，没有才自适应整条行程
     syncMap({ restore: true })
   } catch (e) {
-    mapError.value = e.message === 'MISSING_KEY'
+    try { map?.destroy() } catch { /* 清理失败也要显示重试入口 */ }
+    map = null; mapReady.value = false
+    if (mapEl.value) mapError.value = e.message === 'MISSING_KEY'
       ? 'MISSING_KEY'
       : (e.message || '地图初始化失败')
-  }
+  } finally { mapInitialization = null; mapLoading.value = false }
 }
 
 /** 两点直线距离（公里）：用来判断这一段是不是"跨区"，跨区就画虚线 */
@@ -169,7 +187,7 @@ const FAR_KM = 30
 
 /** 把当前行程画到地图上（按 activeDay 过滤）：编号标记 + 分日颜色路线 */
 function drawPlan(fit = true) {
-  if (!map) return
+  if (!map || !mapReady.value) return
   if (overlays.length) { map.remove(overlays); overlays = [] }
   let seq = 0
   const pts = []
@@ -177,7 +195,7 @@ function drawPlan(fit = true) {
     const color = colorOf(d.day)
     const dayPts = []
     ;(d.spots || []).forEach((s) => {
-      if (!s.lng || !s.lat) return
+      if (!hasPlanCoordinates(s)) return
       seq += 1
       dayPts.push([s.lng, s.lat])
       const m = new AMap.Marker({
@@ -215,7 +233,7 @@ function drawPlan(fit = true) {
 
 /** 会话层发出的地图指令（新生成→自适应；打开历史→跳到当时视角） */
 function syncMap({ restore = false } = {}) {
-  if (!map) return
+  if (!map || !mapReady.value) return
   const cmd = mapCommand.value
   // 刚挂载时优先还原"上次看到的样子"，指令只在之后到达时才执行
   if (restore && mapView.value?.center?.length === 2 && mapView.value.zoom) {
@@ -232,7 +250,7 @@ function syncMap({ restore = false } = {}) {
 }
 
 function openInfo(s) {
-  if (!map || !s.lng || !s.lat) return
+  if (!map || !hasPlanCoordinates(s)) return
   const nav = `https://uri.amap.com/marker?position=${s.lng},${s.lat}&name=${encodeURIComponent(s.name)}&src=travel-planner&coordinate=gaode`
   infoWin = infoWin || new AMap.InfoWindow({ anchor: 'bottom-center' })
   infoWin.setContent(
@@ -314,8 +332,8 @@ function applyPrefill() {
   const days = Number(q.days || 0)
   if (String(q.auto) === '1') {
     // 先把 query 抹掉再发：刷新页面不该重复跑一次、也不该重复计一次调用
+    if(startFresh({ destination: city, days, text })===false)return
     router.replace({ path: '/plan' })
-    startFresh({ destination: city, days, text })
     setTimeout(() => send(), 350)
   } else {
     input.value = text
@@ -330,6 +348,8 @@ const pendingDelete = ref(null)   // 等待二次确认的条目 id
 const toast = ref(null)           // {text, planId, seconds}
 let toastTimer = null
 let undoCountdown = null
+let viewEpoch=0
+watch(()=>user.value?.id,()=>{++viewEpoch;pendingDelete.value=null;clearToast()},{flush:'sync'})
 
 function clearToast() {
   clearTimeout(toastTimer); clearInterval(undoCountdown)
@@ -337,38 +357,48 @@ function clearToast() {
   toast.value = null
 }
 
-function showUndoToast(title, planId) {
+function showUndoToast(title, planId, state) {
   clearToast()
-  toast.value = { text: `已删除「${title}」`, planId, seconds: UNDO_SECONDS }
+  if(!state?.can_restore||!state.restore_seconds_remaining)return
+  toast.value = { text: `已删除「${title}」`, planId, seconds: state.restore_seconds_remaining,version:state.version,revision:state.revision,title }
   undoCountdown = setInterval(() => {
     if (!toast.value) return
     toast.value.seconds -= 1
     if (toast.value.seconds <= 0) clearToast()
   }, 1000)
-  toastTimer = setTimeout(clearToast, UNDO_SECONDS * 1000 + 200)
+  toastTimer = setTimeout(clearToast, state.restore_seconds_remaining * 1000 + 200)
 }
 
 async function confirmDelete(h, ev) {
+  const epoch=viewEpoch
   ev?.stopPropagation?.()
   pendingDelete.value = null
   try {
-    const { id, title } = await deletePlan(h)
-    showUndoToast(title, id)
+    const deleted = await deletePlan(h)
+    if(epoch!==viewEpoch || !deleted)return
+    const {id,title}=deleted
+    showUndoToast(title, id, deleted)
   } catch (e) {
-    alert(`删除失败：${e.message}`)
+    if(epoch===viewEpoch)alert(`删除失败：${e.message}`)
   }
 }
 
 /** 撤销：8 秒窗口内把记录恢复回来并重新打开 */
 async function undoDeleteClick() {
-  const id = toast.value?.planId
-  if (!id) return
+  const epoch=viewEpoch
+  const state=toast.value
+  if (!state) return
   clearToast()
   try {
-    await undoDelete(id)
+    await undoDelete({...state,id:state.planId})
   } catch (e) {
-    alert(`撤销失败：${e.message}`)
+    if(epoch===viewEpoch)alert(`撤销失败：${e.message}`)
   }
+}
+async function resolveHistory(action){
+  const epoch=viewEpoch
+  const state=await (action==='check'?checkHistoryOperation():retryHistoryOperation())
+  if(epoch===viewEpoch&&state?.kind==='delete')showUndoToast(state.title,state.id,state)
 }
 
 // ================= 生命周期 =================
@@ -386,6 +416,8 @@ onMounted(() => {
 
 // 组件销毁时把地图实例一并回收：不 destroy 的话每次进页面都会多留一份监听与画布
 onBeforeUnmount(() => {
+  ++viewEpoch;clearToast()
+  mapInitialization?.abort()
   clearInterval(elapsedTimer)   // 秒表跟着页面走，别在后台空转
   elapsedTimer = null
   if (map) {
@@ -404,7 +436,7 @@ onBeforeUnmount(() => {
   <div class="wrap plan-wrap">
     <div class="split">
       <!-- 左：对话流 -->
-      <section class="chat">
+      <section class="chat" :class="{'has-creation':creationUncertain || creationRecoveryError}">
         <div class="chat-head">
           🧭 线路规划助手
           <small>告诉我目的地/天数/偏好，生成的每个地点先经高德核实，再实时画到右边地图</small>
@@ -415,13 +447,17 @@ onBeforeUnmount(() => {
 
         <!-- 历史快照列表：时间/标题/摘要，点击完整还原 -->
         <div v-if="showHistory" class="hist-list">
-          <p v-if="!history.length" class="hist-empty">还没有保存过的方案。生成一次行程就会自动存进来。</p>
+          <p v-if="!history.length && !historyLoading && !historyError" class="hist-empty">还没有保存过的方案。生成一次行程就会自动存进来。</p>
+          <p v-if="historyLoading" role="status" class="hist-empty">正在读取历史…</p>
+          <p v-if="historyError" role="alert" class="hist-empty">{{ historyError }} <button type="button" @click="refreshHistory">重试历史列表</button></p>
           <div v-for="h in history" :key="h.id" class="hist-item" @click="pendingDelete === h.id ? null : loadPlan(h.id)">
             <div class="hist-title">
+              <button type="button" class="hist-open" @click.stop="loadPlan(h.id)">
               {{ h.title || `${h.city} ${h.days}天` }}
               <span class="hist-meta">{{ h.city }} · {{ h.days }}天 · {{ h.spots }}个地点</span>
+              </button>
               <!-- 删除入口：悬停出现，点击不触发进入会话 -->
-              <button v-if="pendingDelete !== h.id" class="hist-del" title="删除这条方案"
+              <button v-if="pendingDelete !== h.id" class="hist-del" title="删除这条方案" :aria-label="`删除${h.title || '历史方案'}`" :disabled="Boolean(historyOperation)"
                       @click.stop="pendingDelete = h.id">🗑</button>
             </div>
             <div class="hist-summary">{{ h.summary || '（无摘要）' }}</div>
@@ -439,15 +475,40 @@ onBeforeUnmount(() => {
               确定删除「{{ h.title || '这条方案' }}」？删除后 8 秒内可撤销。
               <div class="confirm-btns">
                 <button class="mini" @click="pendingDelete = null">取消</button>
-                <button class="mini danger" @click="confirmDelete(h, $event)">删除</button>
+                <button class="mini danger" :disabled="Boolean(historyOperation)" @click="confirmDelete(h, $event)">删除</button>
               </div>
             </div>
           </div>
         </div>
         <div v-if="historyView" class="back-live">
           正在查看历史快照
-          <span class="lk" @click="backToLive">← 返回当前对话</span>
+          <button type="button" class="lk" @click="backToLive">← 返回当前对话</button>
         </div>
+        <p v-if="historyDetailLoading" class="history-feedback" role="status">正在读取历史方案…</p>
+        <p v-if="historyDetailError" class="history-feedback" role="alert">{{ historyDetailError }}</p>
+        <p v-if="historyNotice" class="history-feedback" role="status">{{ historyNotice }}</p>
+        <div v-if="historyOperation" class="history-feedback history-pending" role="status">
+          <b>{{ historyOperation.kind==='delete'?'删除':'恢复' }}「{{ historyOperation.title }}」{{ historyOperation.busy?'正在确认…':'结果待核对' }}</b>
+          <p>{{ historyOperation.error || '操作按原版本提交，等待服务器确认。' }}</p>
+          <p v-if="historyOperation.checked">服务器当前{{ historyOperation.checked.status==='deleted'?'已删除':'可见' }}，版本{{ historyOperation.checked.version }}；原次提交版本仍为{{ historyOperation.version }}。</p>
+          <div><button type="button" :disabled="historyOperation.busy" @click="resolveHistory('check')">核对服务器状态</button><button type="button" :disabled="historyOperation.busy" @click="resolveHistory('retry')">继续原次操作</button><button type="button" :disabled="historyOperation.busy" @click="endHistoryOperation">结束本次核对</button></div>
+        </div>
+        <div v-if="snapshotState && (snapshotState.saving || snapshotState.pending || snapshotState.queued || snapshotState.error)" class="history-feedback snapshot-feedback" role="status">
+          <p>{{ snapshotState.error || '正在保存聊天或地图快照…' }}</p>
+          <p v-if="snapshotState.checked">已核对：服务器{{ snapshotState.checked.status==='deleted'?'已删除':'仍可见' }}，版本{{ snapshotState.checked.version }}。本页输入和原次版本未替换。</p>
+          <div v-if="snapshotState.error"><button v-if="snapshotState.pending || snapshotState.queued" type="button" :disabled="snapshotState.saving || snapshotState.checking" @click="retrySnapshot">重试原次快照</button><button type="button" :disabled="snapshotState.saving || snapshotState.checking" @click="checkSnapshot">核对快照状态</button><button type="button" :disabled="snapshotState.saving || Boolean(historyOperation)" @click="reloadSnapshot">重新载入服务端快照</button><button type="button" :disabled="snapshotState.saving" @click="discardSnapshot">放弃本页快照</button></div>
+        </div>
+        <div v-if="creationUncertain || creationRecoveryError" class="creation-panel" role="status">
+          <b>{{ pendingCreation?.mode==='cancel' ? '停止提交待确认' : '本次提交待确认' }}</b>
+          <p>{{ creationStatus || '刷新后可继续确认同次提交，不会另建任务。' }} {{ creationRecoveryError }}</p>
+          <p>信息按账号保留在本标签；关闭标签或清存储可能失去恢复入口。</p>
+          <div>
+            <button type="button" :disabled="busy || stopping || Boolean(creationRecoveryError)" @click="resumeCreation">继续确认这次提交</button>
+            <button v-if="pendingCreation" type="button" :disabled="stopping || Boolean(creationRecoveryError)" @click="stopCreation">停止这次提交</button>
+            <button type="button" :disabled="busy || stopping" @click="discardCreation">放弃本标签恢复</button>
+          </div>
+        </div>
+        <p v-else-if="creationStatus" class="creation-message" role="status">{{ creationStatus }}</p>
 
         <!-- 生成中提示：任务跑在后端，页面只是看板 —— 这也是"切走不中断"的前提。
              除了说"在跑"，还要回答两个真正会让人焦虑的问题：等了多久、卡在哪一步。 -->
@@ -455,6 +516,7 @@ onBeforeUnmount(() => {
           <div class="rh-head">
             <span class="rh-spin" aria-hidden="true"></span>
             <b>AI 正在生成路线</b>
+            <button type="button" class="stop-generation" :disabled="stopping" @click="stopGeneration">{{ stopping ? '正在确认…' : '停止生成' }}</button>
             <span class="rh-time">已用 {{ elapsedText }}</span>
           </div>
           <div class="rh-steps">
@@ -466,8 +528,10 @@ onBeforeUnmount(() => {
               <i>{{ i <= doneStage ? '✓' : i + 1 }}</i>{{ st.label }}
             </span>
           </div>
+          <p v-if="reconnecting" class="rh-note" role="status">连接暂时中断，正在自动重试；后台任务可能仍在运行。</p>
+          <p v-if="stopError" class="rh-note" role="alert">{{ stopError }}</p>
           <p class="rh-note">
-            切到别的页面、刷新、关掉标签页都不会中断，回来就能看到结果。
+            切换页面或刷新可继续查看进度，中断后最多自动恢复一次。任务结束后可找回30分钟；游客关闭标签页后可能无法找回，已保存方案仍可从历史查看。
             <template v-if="slowHint">排行程要模型一次写完整个行程表，模型忙时 3～5 分钟也可能，请再等一下。</template>
             <template v-else>通常 1～3 分钟。</template>
           </p>
@@ -491,32 +555,33 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <!-- 快捷条件：目的地联想 + 你想去多久（选中后并入需求，澄清少问一轮） -->
-        <div class="chat-addons" :class="{ locked: busy }">
-          <RegionPicker :initial="pickerCity" @select="onRegionPick" />
+        <div class="chat-addons" :class="{ locked: busy || creationUncertain || Boolean(creationRecoveryError) }" :inert="busy || creationUncertain || Boolean(creationRecoveryError)">
+          <RegionPicker :key="user?.id || 0" :initial="pickerCity" @select="onRegionPick" />
           <DateRangePicker @select="onDateRangePick" @clear="onDateRangePick(null)" />
         </div>
         <div class="chat-input">
-          <input v-model="input" :disabled="busy" maxlength="500"
+          <input v-model="input" :disabled="busy || creationUncertain || Boolean(creationRecoveryError)" maxlength="500"
                  placeholder="输入目的地或告诉我你的想法"
                  @keyup.enter="send()" />
-          <button class="btn-send" :disabled="busy || !input.trim()" @click="send()">
+          <button class="btn-send" :disabled="busy || creationUncertain || Boolean(creationRecoveryError) || !input.trim()" @click="send()">
             {{ busy ? '规划中…' : '发送' }}
           </button>
         </div>
       </section>
 
       <!-- 右：动态地图主区域 -->
-      <section class="map-side">
+      <section class="map-side" :aria-busy="mapLoading">
         <div ref="mapEl" class="map-box"></div>
 
+        <div class="map-overlays">
         <!-- 地图不可用时的降级引导（行程列表仍可看） -->
-        <div v-if="mapError" class="map-fallback">
+        <div v-if="mapLoading" class="map-fallback" role="status">正在加载地图，仍可继续规划行程…</div>
+        <div v-else-if="mapError" class="map-fallback" role="status">
           <template v-if="mapError === 'MISSING_KEY'">
-            🗺️ 动态地图还没配置钥匙：在项目根目录 <b>.env</b> 里补上
-            <code>AMAP_JS_KEY=你的key</code> 和 <code>AMAP_JS_SECURITY_CODE=你的安全密钥</code>
-            （高德「Web端(JS API)」类型），保存后重启后端即可点亮。下面的行程列表不受影响。
+            🗺️ 地图暂不可用，请稍后重试。下方行程列表仍可查看。
           </template>
-          <template v-else>⚠️ 地图加载失败：{{ mapError }}（刷新页面重试）</template>
+          <template v-else>⚠️ 地图加载失败：{{ mapError }}</template>
+          <button class="chip" type="button" @click="initMap">重试地图</button>
         </div>
 
         <!-- 天气 -->
@@ -525,15 +590,18 @@ onBeforeUnmount(() => {
           <span v-for="c in result.weather.casts.slice(0, 3)" :key="c.date">
             {{ c.date.slice(5) }} {{ c.day }} {{ c.temp_low }}~{{ c.temp_high }}℃
           </span>
+          <WeatherAttribution :attributions="result.weather.attributions" />
         </div>
 
         <!-- 工具条：分日筛选 + 清除打点 -->
+        <div v-if="days.length" class="map-notice" aria-label="地图说明">连线仅示意地点顺序，非实际道路；交通时间和费用为估算。</div>
         <div class="map-toolbar" v-if="days.length">
           <button class="chip" :class="{ on: activeDay === 0 }" @click="setDay(0)">全部</button>
           <button v-for="d in days" :key="d.day" class="chip" :class="{ on: activeDay === d.day }" @click="setDay(d.day)">
             <span class="dot" :style="{ background: colorOf(d.day) }"></span>第{{ d.day }}天 {{ d.theme }}
           </button>
           <button class="chip pin-chip" @click="clearPins">🧹 清除打点</button>
+        </div>
         </div>
 
         <div v-if="!result && mapReady" class="map-empty-hint">
@@ -553,6 +621,7 @@ onBeforeUnmount(() => {
     <!-- 信息区：地图下方独立展示（随页面滚动完整可见，不截断不折叠） -->
     <section v-if="result" class="info-below">
       <div class="info-body">
+            <PlanBudgetSummary :itinerary="result.itinerary" />
             <p v-if="!visibleDays.length" class="empty-p">这个方案没有可展示的地点。</p>
             <div v-for="d in visibleDays" :key="d.day" class="day-group">
               <div class="day-title">
@@ -581,17 +650,30 @@ onBeforeUnmount(() => {
                 <span class="peak">高峰 +{{ d.timing.peak_buffer_min }}′</span>
               </div>
               <div v-if="d.reason" class="day-reason">💡 {{ d.reason }}</div>
-              <div v-for="(s, i) in d.spots" :key="i" class="spot-row">
+              <p v-if="result.itinerary.schedule_requirements?.indoor_majority_days?.includes(d.day)" class="day-reason">按你的要求优先安排室内场馆，请出发前确认场馆和开放情况。</p>
+              <div v-for="(s, i) in planDayEntries(d)" :key="i" class="spot-row">
                 <span class="spot-idx" :style="{ background: colorOf(d.day) }">{{ i + 1 }}</span>
                 <div class="spot-info">
-                  <b>{{ s.name }}<span v-if="s.replacedNote" class="v-badge">已替换</span><span
-                    v-if="isLodging(s)" class="lodging-badge" title="这是住宿地点，不是游玩景点">住宿</span></b>
-                  <small>{{ s.time ? s.time + ' · ' : '' }}{{ s.address || s.district || '' }}</small>
+                  <b>{{ s.name }}<span v-if="s.timeBlock === '休息'" class="basis-tag">休息时段</span><span v-else-if="s.timeBlock === '餐饮'" class="basis-tag">餐厅待选</span><span v-else-if="s.timeBlock" class="basis-tag">{{ s.timeBlock }} · 未指定地点</span><span v-else-if="s.type === '室内场馆'" class="basis-tag">室内候选</span><span v-if="isUnverifiedPlanPlace(s)" class="unverified-badge">地点待核实</span><span v-else-if="s.replacedNote" class="v-badge">已替换</span><span
+                    v-if="!s.timeBlock && isLodging(s)" class="lodging-badge" title="这是住宿地点，不是游玩景点">住宿</span></b>
+                  <small v-if="s.timeBlock">{{ s.time }}<template v-if="s.duration_min"> · {{ fmtMin(s.duration_min) }}</template><template v-if="s.note"> · {{ s.note }}</template></small>
+                  <small v-else>{{ s.time }}<template v-if="!isUnverifiedPlanPlace(s) && (s.address || s.district)">{{ s.time ? ' · ' : '' }}{{ s.address || s.district }}</template></small>
+                  <small v-if="Object.hasOwn(s, 'cost_estimate')" class="cost-estimate">费用估算：{{ estimatedMoney(s.cost_estimate) }}<template v-if="s.cost_category"> · {{ s.cost_category }}</template></small>
+                  <small v-if="isUnverifiedPlanPlace(s)" class="unverified-note">{{ s.verification_note || '请先确认具体地点，再查看位置。' }}</small>
+                  <small v-else-if="s.verification_status === 'verified'" class="verification-scope">位置已匹配，开放、票价和适配情况待确认。</small>
+                  <details v-if="isUnverifiedPlanPlace(s) && Array.isArray(s.verification_candidates) && s.verification_candidates.length" class="place-candidates">
+                    <summary>查看可能的地点</summary>
+                    <ul>
+                      <li v-for="(candidate, index) in s.verification_candidates.slice(0, 5)" :key="index">
+                        {{ candidate.name }}<small v-if="candidate.address || candidate.district"> · {{ candidate.address || candidate.district }}</small>
+                      </li>
+                    </ul>
+                  </details>
                 </div>
-                <span v-if="s.access?.mode" class="access-chip" :title="s.access.note || ''">
+                <span v-if="!isUnverifiedPlanPlace(s) && s.access?.mode" class="access-chip" :title="s.access.note || ''">
                   {{ s.access.mode }}<template v-if="s.access.min"> {{ s.access.min }}′</template>
                 </span>
-                <a v-if="s.lng && s.lat" class="mini-map" target="_blank" rel="noopener"
+                <a v-if="hasPlanCoordinates(s)" class="mini-map" target="_blank" rel="noopener"
                    :href="`https://uri.amap.com/marker?position=${s.lng},${s.lat}&name=${encodeURIComponent(s.name)}&src=travel-planner&coordinate=gaode`">📍 高德</a>
               </div>
             </div>
@@ -657,6 +739,8 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.history-feedback{padding:8px 14px;font-size:12px;line-height:1.6;background:#f3f7f2;color:#405b48}.history-feedback p{margin:5px 0}.history-feedback>div{display:flex;flex-wrap:wrap;gap:6px}.history-feedback button,.hist-open,.back-live button{min-height:44px;border:1px solid var(--line);border-radius:7px;padding:7px 10px;background:#fff;color:var(--green);font:inherit}.history-pending,.snapshot-feedback{background:#fff8e6;color:#6a582b}.hist-open{border:0;background:none;text-align:left;padding:0 28px 0 0;max-width:100%;color:inherit;cursor:pointer}.history-feedback button:disabled{opacity:.5}.chat:has(.history-pending),.chat:has(.snapshot-feedback){min-height:56vh;height:auto}
+.creation-panel,.creation-message{font-size:12px;line-height:1.65;padding:12px 16px;background:#fff8e6;border-bottom:1px solid #e8d9a0;color:#665620}.creation-panel p{margin:6px 0}.creation-panel>div{display:flex;flex-wrap:wrap;gap:8px}.creation-panel button{min-height:44px;padding:8px 10px;border:1px solid #d6d8c7;border-radius:8px;background:#fff;color:#1a6e50;font:inherit}.creation-panel button:disabled{opacity:.5}
 .plan-wrap { max-width: 1280px; }
 .split { display: flex; gap: 14px; align-items: stretch; height: calc(100vh - 96px); min-height: 520px; }
 
@@ -673,6 +757,7 @@ onBeforeUnmount(() => {
 .hist-del { position: absolute; right: 12px; top: 8px; border: none; background: transparent; font-size: 13px; cursor: pointer; opacity: 0; transition: opacity .15s; padding: 2px 4px; border-radius: 6px; }
 .hist-item:hover .hist-del { opacity: .7; }
 .hist-del:hover { opacity: 1; background: #fde9e9; }
+.hist-item:focus-within .hist-del,.hist-del:focus-visible{opacity:1}
 /* 触屏没有 hover：删除入口常驻显示 */
 @media (hover: none) { .hist-del { opacity: .6; } }
 .hist-confirm { margin-top: 8px; background: #fff8e6; border: 1px solid #e8d9a0; border-radius: 8px; padding: 8px 10px; font-size: 12px; color: #7a6520; cursor: default; line-height: 1.6; }
@@ -688,7 +773,8 @@ onBeforeUnmount(() => {
 .back-live { padding: 7px 16px; font-size: 12px; background: var(--green-soft); color: var(--green); border-bottom: 1px solid var(--line); }
 .back-live .lk { cursor: pointer; font-weight: 700; margin-left: 8px; }
 .run-hint { padding: 9px 16px 10px; font-size: 12px; background: #fff8e6; color: #7a6520; border-bottom: 1px solid #e8d9a0; }
-.rh-head { display: flex; align-items: center; gap: 8px; }
+.rh-head { display: flex; align-items: center; gap: 8px; flex-wrap:wrap; }
+.stop-generation{min-height:44px;padding:8px 12px;border:1px solid var(--green-border);border-radius:8px;background:#fff;color:var(--green);font:inherit;font-size:12px}.stop-generation:disabled{opacity:.6}
 .rh-head b { font-size: 12.5px; }
 .rh-time { margin-left: auto; font-variant-numeric: tabular-nums; color: #8a6a1e; }
 /* 小圆圈：不用图片，纯 CSS 转圈，避免再压一个资源请求 */
@@ -738,11 +824,14 @@ onBeforeUnmount(() => {
 /* 右：地图 */
 .map-side { flex: 1; position: relative; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; min-width: 0; background: #eef2ee; }
 .map-box { position: absolute; inset: 0; }
-.map-fallback { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); max-width: 86%; background: #fff8e6; border: 1px solid #e8d9a0; color: #7a6520; border-radius: 10px; padding: 8px 14px; font-size: 12px; line-height: 1.7; z-index: 5; }
+.map-overlays { position:absolute;top:10px;left:10px;right:10px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;z-index:5;pointer-events:none; }
+.map-overlays > * { pointer-events:auto;max-width:100%; }
+.map-fallback { background: #fff8e6; border: 1px solid #e8d9a0; color: #7a6520; border-radius: 10px; padding: 8px 14px; font-size: 12px; line-height: 1.7; }
+.map-notice { padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.94);color:var(--text-sub);font-size:12px;line-height:1.6; }
 .map-fallback code { background: #f3ecd2; padding: 0 4px; border-radius: 4px; }
-.weather-chip { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,.94); border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; font-size: 12px; z-index: 5; }
+.weather-chip { background: rgba(255,255,255,.94); border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; font-size: 12px; }
 .weather-chip span { margin-right: 8px; }
-.map-toolbar { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 70%; z-index: 5; }
+.map-toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-self:flex-end;justify-content:flex-end; }
 .chip { background: rgba(255,255,255,.94); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
 .chip.on { background: var(--green); border-color: var(--green); color: #fff; }
 .pin-chip:hover { color: var(--green); }
@@ -814,6 +903,14 @@ onBeforeUnmount(() => {
 .spot-info b { font-size: 12.5px; display: block; }
 .spot-info small { color: var(--text-sub); font-size: 11.5px; }
 .v-badge { font-size: 10px; color: #c0392b; border: 1px solid #e5b4b4; border-radius: 8px; padding: 0 5px; margin-left: 4px; }
+.unverified-badge { font-size: 10px; color: #805715; border: 1px solid #dfc690; background: #fff8e8; border-radius: 8px; padding: 0 5px; margin-left: 4px; }
+.spot-info .unverified-note { display: block; margin-top: 3px; color: #805715; }
+.spot-info .verification-scope { display: block; margin-top: 3px; color: #63786b; }
+.place-candidates { margin-top: 5px; font-size: 12px; overflow-wrap: anywhere; }
+.place-candidates summary { cursor: pointer; padding: 4px 0; }
+.place-candidates ul { margin: 4px 0; padding-left: 1.4em; }
+.place-candidates li { margin-bottom: 3px; }
+.spot-info .cost-estimate { display: block; margin-top: 3px; }
 /* 住宿标注：蓝灰，跟红色"已替换"区分开，不抢注意力 */
 .lodging-badge { font-size: 10px; color: #3b6b8f; border: 1px solid #c2d6e4; background: #f0f6fa; border-radius: 8px; padding: 0 5px; margin-left: 4px; }
 .mini-map { font-size: 11.5px; color: var(--green); white-space: nowrap; }
@@ -825,6 +922,7 @@ onBeforeUnmount(() => {
 @media (max-width: 900px) {
   .split { flex-direction: column; height: auto; }
   .chat { width: 100%; height: 56vh; }
+  .chat.has-creation{height:auto;min-height:56vh}
   /* flex:none 必不可少：.map-side 默认 flex:1 即 flex-basis:0，
      竖排时基准轴变成高度，会把 height:60vh 直接压成 0 —— 手机上地图只剩一条缝。 */
   .map-side { flex: none; height: 60vh; }

@@ -1,4 +1,6 @@
-"""M4 天气服务：高德天气接口（并入行程结果）。
+"""M4 行程天气：配置和风天气 key 后优先使用和风，否则保留高德接口。
+
+和风凭据已配置但请求失败时返回失败状态，不静默切换数据来源。
 
 什么是 adcode？
     高德给每个行政区编的 6 位数字身份证（北京=110000、成都=510100）。
@@ -13,6 +15,7 @@
 import httpx
 
 from app.core.config import settings
+from app.core.provider_budget import amap_get
 
 API_URL = "https://restapi.amap.com/v3/weather/weatherInfo"
 DISTRICT_URL = "https://restapi.amap.com/v3/config/district"
@@ -71,7 +74,7 @@ def resolve_adcode(city_name: str) -> str:
         return _adcode_cache[key]
 
     try:
-        resp = httpx.get(
+        resp = amap_get(
             DISTRICT_URL,
             params={"key": settings.amap_api_key, "keywords": key, "subdistrict": "0"},
             timeout=8,
@@ -91,9 +94,16 @@ def fetch_weather(city_adcode: str | None = None, city_name: str = "") -> dict:
 
     没传 adcode 时自动解析：先字典 → 再高德行政区域查询 → 最后退回中文名。
     """
+    if settings.qweather_api_key and city_name:
+        from app.services import qweather
+        from app.services.supplier_http import SupplierError
+        try:
+            return qweather.fetch_weather(city_name)
+        except SupplierError as error:
+            return {"ok": False, "city": city_name, "provider": "qweather", "error": str(error)}
     adcode = city_adcode or resolve_adcode(city_name)
     try:
-        resp = httpx.get(
+        resp = amap_get(
             API_URL,
             params={
                 "key": settings.amap_api_key,

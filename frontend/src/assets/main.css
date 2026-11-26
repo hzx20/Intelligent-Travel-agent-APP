@@ -59,7 +59,7 @@ img { display: block; }
 }
 .nav .links a.router-link-active { background: var(--green); color: #fff; }
 .nav .user { font-size: 13px; color: #666; }
-.nav .user .lk { color: var(--green); cursor: pointer; font-weight: 600; }
+.nav .user .lk { color: var(--green); cursor: pointer; font: inherit; font-weight: 600; border: 0; background: none; padding: 3px 0; }
 
 /* 版心 */
 .wrap { width: 88%; max-width: 1180px; margin: 18px auto 40px; }
@@ -134,7 +134,7 @@ img { display: block; }
   user-select: none;
 }
 .pager .pg.on { background: var(--green); color: #fff; border-color: var(--green); }
-.pager .pg.disabled { opacity: .4; cursor: default; pointer-events: none; }
+.pager .pg.disabled, .pager .pg:disabled { opacity: .4; cursor: default; pointer-events: none; }
 .pager .pg.ellipsis { border: none; background: transparent; cursor: default; color: #999; }
 
 /* 首页轮播已移除：首屏让给线路规划助手，图片内容在景点卡片里已有 */

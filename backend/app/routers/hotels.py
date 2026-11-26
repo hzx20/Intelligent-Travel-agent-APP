@@ -15,6 +15,7 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
+from app.core.provider_budget import amap_get
 
 router = APIRouter(prefix="/api/hotels", tags=["hotels"])
 
@@ -75,7 +76,7 @@ def _to_item(poi: dict) -> dict:
 def _fetch_amap(lng: float, lat: float, radius: int) -> list[dict[str, Any]]:
     """调高德周边搜索，返回原始 POI 列表；接口异常返回空列表（不炸前端）。"""
     try:
-        resp = httpx.get(
+        resp = amap_get(
             AROUND_URL,
             params={
                 "key": settings.amap_api_key,
@@ -95,16 +96,17 @@ def _fetch_amap(lng: float, lat: float, radius: int) -> list[dict[str, Any]]:
     return [p for p in (data.get("pois") or []) if isinstance(p, dict)]
 
 
-@router.get("")
-def nearby_hotels(
-    lng: float = Query(..., description="锚点经度（行程第一天的核心景点）"),
-    lat: float = Query(..., description="锚点纬度"),
+def _nearby_hotels(
+    lng: float = Query(..., ge=-180, le=180, description="锚点经度（行程第一天的核心景点）"),
+    lat: float = Query(..., ge=-90, le=90, description="锚点纬度"),
     city: str = Query(default="", max_length=20),
-    radius: int = Query(default=3000, le=10000),
+    radius: int = Query(default=3000, ge=1, le=10000),
+    *, use_cache=True,
 ):
     """住处推荐：以行程锚点为圆心搜周边真实酒店（高德官方数据，带缓存）。"""
-    key = f"hotels:{lng:.4f}:{lat:.4f}:{radius}"
-    if key in CACHE:
+    # 链接包含城市，因此不同城市不能共享最终响应。
+    key = f"hotels:{lng:.4f}:{lat:.4f}:{radius}:{city}"
+    if use_cache and key in CACHE:
         return CACHE[key]
 
     items = [_to_item(p) for p in _fetch_amap(lng, lat, radius) if p.get("name")]
@@ -117,7 +119,9 @@ def nearby_hotels(
         "note": "" if items else "高德暂未返回该区域的酒店数据",
         "source": "高德地图开放平台（名称/地址/照片/距离真实可溯）",
     }
-    CACHE[key] = payload
+    # 上游故障和无结果都表现为空列表；不缓存空响应，避免故障恢复后仍被缓存挡住。
+    if items and use_cache:
+        CACHE[key] = payload
     return payload
 
 
@@ -166,7 +170,7 @@ def _amap_text_poi(name: str, city: str) -> dict | None:
         if types:
             params["types"] = types
         try:
-            resp = httpx.get(TEXT_URL, params=params, timeout=timeout)
+            resp = amap_get(TEXT_URL, params=params, timeout=timeout)
             data = resp.json()
         except (httpx.HTTPError, ValueError):
             continue
@@ -229,3 +233,24 @@ def match_stay_names(body: MatchIn):
     payload = {"ok": True, "matches": matches, "nearby": nearby}
     CACHE[key] = payload
     return payload
+
+
+def _valid_cached_hotels(value):
+    return (isinstance(value,dict) and isinstance(value.get('ok'),bool) and isinstance(value.get('items'),list)
+            and len(value['items'])<=10 and isinstance(value.get('note'),str) and isinstance(value.get('source'),str)
+            and all(isinstance(i,dict) and isinstance(i.get('name'),str) and isinstance(i.get('links'),dict) for i in value['items']))
+
+
+@router.get('')
+def nearby_hotels(lng:float=Query(...,ge=-180,le=180),lat:float=Query(...,ge=-90,le=90),
+                  city:str=Query(default='',max_length=20),radius:int=Query(default=3000,ge=1,le=10000)):
+    from app.core.shared_cache import provider_cache,CacheUnavailable
+    cache=provider_cache()
+    if cache is None:return _nearby_hotels(lng,lat,city,radius)
+    try:
+        value,_=cache.get_or_load(['amap-hotels-v1',settings.amap_api_key,lng,lat,radius,city],
+            lambda:_nearby_hotels(lng,lat,city,radius,use_cache=False),ttl=1800,validate=_valid_cached_hotels,
+            cacheable=lambda v:v['ok'] and bool(v['items']))
+        return value
+    except CacheUnavailable:
+        return {'ok':False,'items':[],'note':'酒店查询缓存暂不可用或查询仍在处理，请稍后重试','source':'高德地图开放平台'}

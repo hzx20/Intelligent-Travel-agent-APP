@@ -15,6 +15,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
 from app.core.config import settings
+from app.core.provider_budget import async_provider_slot, enabled
 
 # 智谱 OpenAI 兼容端点（ChatOpenAI 会自动在后面拼 /chat/completions）
 ZHIPU_BASE_URL = "https://open.bigmodel.cn/api/paas/v4"
@@ -35,13 +36,15 @@ def _to_lc_messages(messages):
 
 
 def _make_llm(temperature: float, timeout_ms: int) -> ChatOpenAI:
+    if not settings.zhipu_api_key:
+        raise RuntimeError("缺少 ZHIPU_API_KEY，请先配置后再使用 AI 规划")
     return ChatOpenAI(
         model=settings.glm_model,
         api_key=settings.zhipu_api_key,
         base_url=ZHIPU_BASE_URL,
         temperature=temperature,
         timeout=timeout_ms / 1000,
-        max_retries=1,
+        max_retries=0 if enabled() else 1,
     )
 
 
@@ -51,7 +54,8 @@ async def chat(messages, temperature: float = 0.5, timeout_ms: int = 60000) -> s
     与 Node 版 chat() 签名一致：chat(messages, {temperature, timeoutMs})
     """
     llm = _make_llm(temperature, timeout_ms)
-    resp = await llm.ainvoke(_to_lc_messages(messages))
+    async with async_provider_slot('chat'):
+        resp = await llm.ainvoke(_to_lc_messages(messages))
     content = resp.content
     if not content:
         raise RuntimeError("智谱API返回异常：无 content 字段")

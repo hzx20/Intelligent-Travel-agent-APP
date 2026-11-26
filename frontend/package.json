@@ -7,13 +7,32 @@
     "dev": "vite",
     "build": "vite build",
     "build:travel": "vite build --mode travel",
-    "preview": "vite preview"
+    "test:e2e:drafts": "playwright test --config playwright.config.mjs",
+    "test:e2e:accounts": "playwright test --config playwright.accounts.config.mjs",
+    "test:e2e:network": "playwright test --config playwright.network.config.mjs",
+    "test:e2e:creation": "playwright test --config playwright.creation.config.mjs",
+    "test:e2e:sharing": "playwright test --config playwright.sharing.config.mjs",
+    "test:e2e:guide-editor": "playwright test --config playwright.guide-editor.config.mjs",
+    "test:e2e:profile": "playwright test --config playwright.profile.config.mjs",
+    "test:e2e:guide-detail": "playwright test --config playwright.guide-detail.config.mjs",
+    "test:e2e:spot-collection": "playwright test --config playwright.spot-collection.config.mjs",
+    "test:e2e:spot-writes": "playwright test --config playwright.spot-writes.config.mjs",
+    "test:e2e:plan-recovery": "playwright test --config playwright.plan-recovery.config.mjs",
+    "test:e2e:plan-creation": "playwright test --config playwright.plan-creation.config.mjs",
+    "test:e2e:plan-history": "playwright test --config playwright.plan-history.config.mjs",
+    "test:e2e:trip-home": "playwright test --config playwright.trip-home.config.mjs",
+    "test:e2e:discovery": "playwright test --config playwright.discovery.config.mjs",
+    "test:e2e:workspace": "playwright test --config playwright.workspace.config.mjs",
+    "test:e2e:share-receiver": "playwright test --config playwright.share-receiver.config.mjs",
+    "preview": "vite preview",
+    "test:e2e:guide-import": "playwright test --config playwright.guide-import.config.mjs"
   },
   "dependencies": {
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@vitejs/plugin-vue": "^5.2.1",
     "vite": "^6.2.0"
   }

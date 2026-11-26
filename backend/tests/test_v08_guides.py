@@ -142,7 +142,8 @@ def test_update_delete_permission(client):
     # 作者改：标题/正文/图片/关联景点整体替换
     r = c.patch(
         f"/api/guides/{gid}",
-        json=_new_guide(title="改后的标题", images=["http://img/9.jpg"], spot_ids=[s2.id]),
+        json=_new_guide(title="改后的标题", images=["http://img/9.jpg"], spot_ids=[s2.id], version=1,
+                        revision=c.get(f'/api/guides/{gid}',headers=_auth(author)).json()['revision']),
         headers=_auth(author),
     )
     assert r.status_code == 200
@@ -156,7 +157,7 @@ def test_update_delete_permission(client):
     assert c.patch(f"/api/guides/{gid}", json=_new_guide(content="  "), headers=_auth(author)).status_code == 422
 
     # 管理员可删 → 204，之后查不到
-    assert c.delete(f"/api/guides/{gid}", headers=_auth(admin)).status_code == 204
+    assert c.delete(f"/api/guides/{gid}?version=2&revision={d['revision']}", headers=_auth(admin)).status_code == 204
     assert c.get(f"/api/guides/{gid}").status_code == 404
 
 

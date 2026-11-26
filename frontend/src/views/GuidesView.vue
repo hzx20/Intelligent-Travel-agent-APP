@@ -1,99 +1,65 @@
 <script setup>
-/** 攻略列表（v0.8）：多关键词检索 + 城市筛选 + 最新/最热排序 + 分页 + 写攻略入口 */
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { api } from '../api'
-import { useAuth } from '../store/auth'
-import { pageList } from '../utils/pagination'
+import {computed,onBeforeUnmount,ref,watch} from 'vue'
+import {useRoute,useRouter} from 'vue-router'
+import {api} from '../api'
+import {useAuth} from '../store/auth'
+import {createReadResource} from '../store/readResource'
+import {discoveryQuery,discoveryRoute,discoveryPath,validPage} from '../utils/discoveryData'
+import {pageList} from '../utils/pagination'
 
-const CITIES = ['全部城市', '成都', '杭州', '西安', '北京', '三亚']
-const router = useRouter()
-const { user, openLogin } = useAuth()
-
-const keyword = ref('')
-const searched = ref('')
-const city = ref('全部城市')
-const sort = ref('new')
-const items = ref([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = 10
-const pages = ref(1)
-const loading = ref(true)
-const error = ref('')
-
-async function load(p = 1) {
-  loading.value = true
-  try {
-    const params = new URLSearchParams({ page: p, page_size: pageSize, sort: sort.value })
-    if (city.value !== '全部城市') params.set('city', city.value)
-    if (searched.value) params.set('keyword', searched.value)
-    const r = await api.get(`/api/guides?${params}`)
-    items.value = r.items
-    total.value = r.total
-    page.value = r.page
-    pages.value = Math.max(1, Math.ceil(r.total / pageSize))
-    error.value = ''
-  } catch (e) {
-    error.value = e.message || '加载失败'
-    items.value = []
-  } finally {
-    loading.value = false
-  }
-}
-
-function search() {
-  searched.value = keyword.value.trim()
-  load(1)
-}
-function goPage(n) {
-  if (n < 1 || n > pages.value || n === page.value) return
-  load(n)
-}
-function writeGuide() {
-  if (!user.value) { openLogin('login'); return }
-  router.push('/guides/new')
-}
-const pageItems = computed(() => pageList(page.value, pages.value))
-onMounted(() => load(1))
+const kind='guides',route=useRoute(),router=useRouter(),{user,openLogin}=useAuth()
+const keyword=ref(''),city=ref(''),mode=ref('new')
+const resource=createReadResource({read:q=>api.get(discoveryPath(q,kind)),validate:(r,q)=>validPage(r,q,kind),initial:{items:[],total:0,page:1},owner:()=>user.value?.id||0})
+const source=resource.state,items=computed(()=>source.data.items),total=computed(()=>source.data.total),page=computed(()=>source.data.page),pages=computed(()=>Math.max(1,Math.ceil(total.value/10))),pageItems=computed(()=>pageList(page.value,pages.value))
+const CITIES=computed(()=>[...new Set(['','成都','杭州','西安','北京','三亚',city.value])])
+const applied=computed(()=>source.applied||discoveryQuery({},kind))
+watch(()=>[route.query,user.value?.id||0],([query,uid],previous)=>{
+  if(previous && uid!==previous[1])resource.reset()
+  const q=discoveryQuery(query,kind);keyword.value=q.keyword;city.value=q.city;mode.value=q.sort
+  resource.load(q)
+},{immediate:true,deep:true,flush:'sync'})
+onBeforeUnmount(()=>resource.dispose())
+async function commit(q){const before=route.fullPath;await router.push({query:discoveryRoute(q,kind)});if(before===route.fullPath)resource.load(q)}
+function search(){return commit({page:1,keyword:keyword.value.trim(),city:city.value,sort:mode.value})}
+function goPage(n){if(n<1||n>pages.value||n===page.value)return;return commit({...applied.value,page:n})}
+function writeGuide(){if(!user.value){openLogin('login');return}router.push('/guides/new')}
 </script>
 
 <template>
   <div class="wrap">
     <div class="filters">
       <input
-        v-model="keyword" class="finput"
+        v-model="keyword" aria-label="搜索攻略" maxlength="200" class="finput"
         placeholder="🔍 多个关键词空格分隔，如：成都 亲子（标题/正文/关联景点）"
         @keyup.enter="search"
       />
-      <select v-model="city" class="fsel" @change="search">
-        <option v-for="c in CITIES" :key="c" :value="c">{{ c }}</option>
+      <select v-model="city" aria-label="城市筛选" class="fsel" @change="search">
+        <option v-for="c in CITIES" :key="c" :value="c">{{ c || '全部城市' }}</option>
       </select>
-      <select v-model="sort" class="fsel" @change="search">
+      <select v-model="mode" aria-label="攻略排序" class="fsel" @change="search">
         <option value="new">最新发布</option>
         <option value="hot">最多浏览</option>
       </select>
       <button class="btn-search" @click="search">搜索</button>
     </div>
 
+    <p v-if="source.loaded" class="applied-query">当前结果：{{ applied.city || '全部城市' }} · {{ applied.sort === 'hot' ? '最多浏览' : '最新发布' }}<template v-if="applied.keyword"> · {{ applied.keyword }}</template></p>
     <div class="bar">
-      <b>全部攻略 <span class="tag">{{ total }} 篇</span></b>
+      <b>全部攻略 <span v-if="source.loaded" class="tag">{{ total }} 篇</span></b>
       <button class="btn-write" @click="writeGuide">✍️ 写攻略{{ user ? '' : '（登录后开放）' }}</button>
     </div>
 
-    <p v-if="error" class="empty">⚠️ 加载失败：{{ error }}<br /><small>先确认后端已启动（双击「启动网站.bat」），再刷新页面重试</small></p>
-    <p v-else-if="loading" class="loading">加载中…</p>
-    <p v-else-if="!items.length" class="empty">
-      {{ searched || city !== '全部城市' ? '没有符合条件的攻略，换个关键词试试' : '还没有攻略，来写第一篇吧 ✍️' }}
-    </p>
+    <p v-if="source.loading" class="loading" role="status">正在更新结果…</p>
+    <p v-if="source.error" class="empty list-error" role="alert">暂时无法更新：{{ source.error }} <span v-if="source.loaded">仍显示上次已加载的结果。</span><button :disabled="source.loading" @click="resource.retry">重试本次查询</button></p>
+    <p v-if="source.loaded && !source.loading && !source.error && !items.length" class="empty">{{ total && page > pages ? '当前页已超出结果范围，请返回第一页。' : '没有符合条件的内容，试试其他关键词或城市。' }} <button v-if="total && page > pages" @click="goPage(1)">返回第一页</button></p>
 
-    <div v-else class="aflow">
-      <div v-for="g in items" :key="g.id" class="acard" @click="router.push(`/guides/${g.id}`)">
+    <div v-if="items.length" class="aflow">
+      <router-link v-for="g in items" :key="g.id" class="acard" :to="`/guides/${g.id}`">
         <div
           class="cover"
           :style="g.cover_image ? { backgroundImage: `url(${g.cover_image})` } : {}"
         >
-          <span v-if="!g.cover_image" class="ph-txt">封面 · 图占位</span>
+          <span v-if="!g.cover_image" class="ph-txt">路线与旅行灵感</span>
         </div>
         <div class="ai">
           <b>{{ g.title }}</b>
@@ -103,21 +69,23 @@ onMounted(() => load(1))
           </small>
           <p class="desc">{{ g.summary }}</p>
         </div>
-      </div>
+      </router-link>
     </div>
 
-    <div v-if="pages > 1" class="pager">
-      <span class="pg" :class="{ disabled: page === 1 }" @click="goPage(page - 1)">上一页</span>
+    <nav v-if="pages > 1" class="pager" aria-label="攻略结果分页">
+      <button class="pg" :disabled="page === 1" @click="goPage(Math.min(page - 1,pages))">上一页</button>
       <template v-for="(p, i) in pageItems" :key="i">
-        <span v-if="p === '…'" class="pg ellipsis">…</span>
-        <span v-else class="pg" :class="{ on: p === page }" @click="goPage(p)">{{ p }}</span>
+        <span v-if="p === '...'" class="pg ellipsis">…</span>
+        <button v-else class="pg" :class="{ on: p === page }" :aria-current="(p === page) ? 'page' : undefined" @click="goPage(p)">{{ p }}</button>
       </template>
-      <span class="pg" :class="{ disabled: page === pages }" @click="goPage(page + 1)">下一页</span>
-    </div>
+      <button class="pg" :disabled="page === pages" @click="goPage(page + 1)">下一页</button>
+    </nav>
   </div>
 </template>
 
 <style scoped>
+.list-error{padding:16px;text-align:left}.list-error button,.empty button{min-height:44px;border:1px solid var(--green-border);border-radius:8px;background:#fff;color:var(--green);padding:8px 12px;margin-left:8px}.applied-query{font-size:12px;color:#73847b;line-height:1.7;margin:8px 0 12px;overflow-wrap:anywhere}.filters{flex-wrap:wrap}.finput{min-width:0;flex-basis:200px}.fsel,.btn-search,.btn-write,.pager .pg{min-height:44px}.pager{flex-wrap:wrap}.acard:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #548b73;outline-offset:3px}.ai{min-width:0;overflow-wrap:anywhere}
+
 .filters { display: flex; gap: 10px; margin-bottom: 12px; }
 .finput {
   flex: 1; border: 1px solid var(--line); border-radius: 10px;

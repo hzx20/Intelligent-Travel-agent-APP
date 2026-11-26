@@ -51,7 +51,8 @@ def test_delete_owner_only(client):
     # 别人的记录不能被删掉（权限挡住的应该是 404，而不是把别人数据删了）
     assert c.get(f"/api/plan/{other.id}", headers={"Authorization": f"Bearer {t2}"}).status_code == 200
 
-    r = c.delete(f"/api/plan/{p.id}", headers={"Authorization": f"Bearer {t1}"})
+    assert c.delete(f"/api/plan/{p.id}",headers={"Authorization":f"Bearer {t1}"}).status_code==428
+    r = c.delete(f"/api/plan/{p.id}", params={'version':p.version,'revision':p.revision},headers={"Authorization": f"Bearer {t1}"})
     assert r.status_code == 200 and r.json()["ok"] is True
 
 
@@ -65,7 +66,7 @@ def test_deleted_gone_from_list_and_detail(client):
     db.close()
     H = {"Authorization": f"Bearer {t}"}
 
-    assert c.delete(f"/api/plan/{p.id}", headers=H).status_code == 200
+    assert c.delete(f"/api/plan/{p.id}",params={'version':p.version,'revision':p.revision}, headers=H).status_code == 200
     ids = [x["id"] for x in c.get("/api/plan/history", headers=H).json()["items"]]
     assert p.id not in ids, "删除后不应出现在历史列表"
     assert keep.id in ids, "其他记录不受影响"
@@ -83,8 +84,9 @@ def test_restore_undo(client):
     db.close()
     H = {"Authorization": f"Bearer {t}"}
 
-    c.delete(f"/api/plan/{p.id}", headers=H)
-    r = c.post(f"/api/plan/{p.id}/restore", headers=H)
+    deleted=c.delete(f"/api/plan/{p.id}",params={'version':p.version,'revision':p.revision}, headers=H).json()
+    assert c.post(f"/api/plan/{p.id}/restore",headers=H).status_code==428
+    r = c.post(f"/api/plan/{p.id}/restore",json={'version':deleted['version'],'revision':deleted['revision']}, headers=H)
     assert r.status_code == 200 and r.json()["ok"] is True
 
     ids = [x["id"] for x in c.get("/api/plan/history", headers=H).json()["items"]]
@@ -103,6 +105,6 @@ def test_restore_needs_owner(client):
     p = _mk_plan(db, u1.id)
     db.close()
 
-    c.delete(f"/api/plan/{p.id}", headers={"Authorization": f"Bearer {t1}"})
+    c.delete(f"/api/plan/{p.id}",params={'version':p.version,'revision':p.revision}, headers={"Authorization": f"Bearer {t1}"})
     assert c.post(f"/api/plan/{p.id}/restore").status_code == 401
     assert c.post(f"/api/plan/{p.id}/restore", headers={"Authorization": f"Bearer {t2}"}).status_code == 404

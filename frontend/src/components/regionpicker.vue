@@ -5,6 +5,7 @@
  *  选中后向上抛 {city, district}，city 为纯城市名（下游地图核实按它精确匹配）。 */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { api } from '../api'
+import {validRegions} from '../utils/discoveryData'
 
 /** initial：外部带进来的初始城市（首页发令台 / 规划页预填时用），有值就当已选中回显
  *  placement：下拉弹出方向。'up' 向上（聊天页输入框在底部，必须向上）；'down' 向下（首页首屏上方空旷） */
@@ -14,7 +15,7 @@ const props = defineProps({
   placeholder: { type: String, default: '想去哪？输入市 / 区名，如：成都' },
 })
 
-const emit = defineEmits(['select'])
+const emit = defineEmits(['select','draft'])
 
 const query = ref('')        // 输入关键词 / 已选项的回显
 const open = ref(false)      // 下拉开合
@@ -23,6 +24,8 @@ const regions = ref([])      // [{city, count, districts: [{name, count}]}]
 const loadFailed = ref(false)
 const selected = ref(null)   // 已选 {city, district, label}
 const rootEl = ref(null)
+const listId='region-'+crypto.randomUUID()
+let disposed=false
 
 /** 初始城市回显：父组件传了城市就直接显示成已选中，否则会出现
  *  "上面输入框写着成都、下面的目的地却是空的"这种自相矛盾的状态 */
@@ -46,12 +49,14 @@ onMounted(async () => {
   document.addEventListener('click', onDocClick)
   try {
     const r = await api.get('/api/spots/regions')
+    if(disposed)return
+    if(!validRegions(r))throw Error('目的地暂不可用')
     regions.value = r.cities || []
   } catch {
-    loadFailed.value = true  // 联想降级：仍可手打目的地
+    if(!disposed)loadFailed.value = true  // 联想降级：仍可手打目的地
   }
 })
-onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
+onBeforeUnmount(() => {disposed=true;document.removeEventListener('click', onDocClick)})
 
 /** 点组件外部 → 收起下拉 */
 function onDocClick(e) {
@@ -81,6 +86,8 @@ const candidates = computed(() => {
 
 function onInput() {
   selected.value = null     // 重新输入 = 放弃已选，回到联想态
+  emit('select',{city:'',district:null})
+  emit('draft',query.value)
   open.value = true
   activeIdx.value = -1
 }
@@ -110,6 +117,7 @@ function pick(item) {
   open.value = false
   activeIdx.value = -1
   emit('select', { city: item.city, district: item.district })
+  emit('draft','')
 }
 
 function clearSel() {
@@ -117,23 +125,24 @@ function clearSel() {
   query.value = ''
   open.value = false
   emit('select', { city: '', district: null })
+  emit('draft','')
 }
 </script>
 
 <template>
   <div class="rp" ref="rootEl">
     <span class="rp-pin">📍</span>
-    <input v-model="query" class="rp-input" :placeholder="placeholder"
+    <input v-model="query" class="rp-input" :placeholder="placeholder" :aria-label="placeholder" role="combobox" aria-autocomplete="list" :aria-expanded="open" :aria-controls="listId" :aria-activedescendant="open && activeIdx >= 0 ? `${listId}-${activeIdx}` : undefined"
            @input="onInput" @focus="open = true" @keydown="onKeydown" />
     <button v-if="selected" class="rp-x" title="清除目的地" @click="clearSel">✕</button>
 
     <!-- 联想下拉：方向由 placement 决定，聊天页向上、首页首屏向下 -->
-    <div v-if="open" class="rp-drop" :class="placement">
-      <div v-if="loadFailed" class="rp-empty">地区数据加载失败，可直接在下方输入框描述目的地</div>
+    <div v-if="open" :id="listId" class="rp-drop" :class="placement" role="listbox">
+      <div v-if="loadFailed" class="rp-empty">目的地候选暂不可用，仍可在规划需求中输入目的地</div>
       <div v-else-if="!candidates.length" class="rp-empty">
         {{ query.trim() ? `没有匹配「${query.trim()}」的市 / 区，换个词试试` : '暂无候选城市' }}
       </div>
-      <div v-for="(c, i) in candidates" :key="c.label" class="rp-item"
+      <div v-for="(c, i) in candidates" :key="c.label" :id="`${listId}-${i}`" class="rp-item" role="option" :aria-selected="activeIdx === i"
            :class="{ on: i === activeIdx }" @mousedown.prevent="pick(c)" @mouseenter="activeIdx = i">
         <span class="rp-label">{{ c.label }}</span>
         <span class="rp-sub">{{ c.sub }}</span>

@@ -60,7 +60,7 @@ async def generate_node(state: PlanState) -> dict:
 
 
 async def verify_node(state: PlanState) -> dict:
-    """节点3：地图核实（M3）——查无此地自动替换。检索节点可替换（未来 Neo4j）。"""
+    """节点3：地图核实。无法唯一确认时保留原安排供核对。"""
     from app.db.database import SessionLocal
 
     db = SessionLocal()
@@ -73,20 +73,24 @@ async def verify_node(state: PlanState) -> dict:
             db,
             True,
         )
-        replaced = sum(1 for l in logs if l["action"] == "replaced")
         # 按"天"去重，不能直接数日志条数：同一天可能产生两条去重记录
         # （核实前按名字合并一次、核实后按 POI 编号再合并一次），
         # 数条数会出现"2 天行程却说合并了 3 天"这种明显不实的提示。
         dedupe_days = {l.get("spot") for l in logs if l["action"] == "dedupe"}
         # 过检数量按"实际保留下来的地点数"算：logs 里还混着去重记录，不能拿 len(logs) 当地点数
         total = sum(len(d.get("spots") or []) for d in new_itinerary.get("days") or [])
-        tail = f"，替换 {replaced} 个虚构地点" if replaced else "，全部真实"
+        unverified = sum(1 for l in logs if l["action"] == "unverified")
+        matched = sum(1 for day in new_itinerary.get('days', []) for spot in day.get('spots', [])
+                      if spot.get('verification_status') == 'verified')
+        tail = ""
+        if unverified:
+            tail += f"，{unverified} 个地点未能核实"
         if dedupe_days:
             tail += f"，合并 {len(dedupe_days)} 天里的重复地点"
         return {
             "itinerary": new_itinerary,
             "verify_logs": logs,
-            "logs": _log(state, f"地图核实：{total} 个地点过检" + tail),
+            "logs": _log(state, f"地图核实：{total} 个安排中，{matched} 个地点位置已匹配" + tail),
         }
     finally:
         db.close()

@@ -1,45 +1,21 @@
 <script setup>
-/** 首页 = 规划发令台。
- *  首屏是线路规划助手的入口（PlannerHero），景点内容整体下沉为次要区块：
- *  热门目的地（城市卡，点了把城市填回发令台）+ 猜你喜欢（8 条，不再翻页）。
- *  轮播已移除——5 秒自动切换抢注意力，图片内容在景点卡片里本来就有。 */
-import { onMounted, ref } from 'vue'
+import {computed,onMounted,onBeforeUnmount,ref,watch} from 'vue'
 import SpotCard from '../components/SpotCard.vue'
 import PlannerHero from '../components/PlannerHero.vue'
-import { api } from '../api'
-import { useAuth } from '../store/auth'
-
-const { user } = useAuth()
-const heroRef = ref(null)
-const cities = ref([])   // 热门目的地（按景点总数排序取前 5）
-const totalSpots = ref(0) // 全站真实景点数：首屏文案里那个数字必须跟库里对得上
-const guess = ref([])    // 猜你喜欢 8 条
-const loading = ref(true)
-const error = ref('')
-
-/** 城市卡的配色循环：五种低饱和渐变，跟全站自然绿不打架 */
-const TONES = ['t0', 't1', 't2', 't3', 't4']
-
-onMounted(async () => {
-  try {
-    const url = user.value ? '/api/spots/for-you?page=1' : '/api/spots/for-you-guest?page=1'
-    // 两个接口互不依赖，并行拿，少等一轮
-    const [regions, g] = await Promise.all([api.get('/api/spots/regions'), api.get(url)])
-    cities.value = (regions.cities || []).slice(0, 5)
-    totalSpots.value = (regions.cities || []).reduce((n, c) => n + (c.count || 0), 0)
-    guess.value = (g.items || []).slice(0, 8)
-  } catch (e) {
-    error.value = e.message || '加载失败'
-  } finally {
-    loading.value = false
-  }
-})
-
-/** 点城市卡：把城市填进上面的发令台，用户改完天数直接出发 */
-function pickCity(c) {
-  heroRef.value?.prefill(c)
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
+import {api} from '../api'
+import {useAuth} from '../store/auth'
+import {createReadResource} from '../store/readResource'
+import {validRegions,validRecommendations} from '../utils/discoveryData'
+const {user}=useAuth(),heroRef=ref(null)
+const regions=createReadResource({read:()=>api.get('/api/spots/regions'),validate:validRegions,initial:{cities:[],total:0}})
+const recommendations=createReadResource({read:()=>api.get(user.value?'/api/spots/for-you?page=1':'/api/spots/for-you-guest?page=1'),validate:validRecommendations,initial:{items:[],total:0},owner:()=>user.value?.id||0})
+const regionState=regions.state,recommendationState=recommendations.state
+const cities=computed(()=>regionState.data.cities.slice(0,5)),totalSpots=computed(()=>regionState.data.total||0),guess=computed(()=>recommendationState.data.items.slice(0,8))
+const TONES=['t0','t1','t2','t3','t4']
+onMounted(()=>regions.load())
+watch(()=>user.value?.id||0,()=>{recommendations.reset();recommendations.load()},{immediate:true,flush:'sync'})
+onBeforeUnmount(()=>{regions.dispose();recommendations.dispose()})
+function pickCity(c){if(heroRef.value?.prefill(c)!==false)window.scrollTo({top:0,behavior:'smooth'})}
 </script>
 
 <template>
@@ -64,63 +40,32 @@ function pickCity(c) {
         </div>
         <div class="step">
           <b>3</b>
-          <div><span>地图核实成线</span><small>每个地点查真，再按顺序连成路线</small></div>
+          <div><span>生成路线建议</span><small>核对地点信息，再决定如何安排行程</small></div>
         </div>
       </div>
 
-      <p v-if="error" class="empty">
-        ⚠️ 数据加载失败：{{ error }}<br />
-        <small>先确认后端已启动（双击「启动网站.bat」），再刷新页面重试</small>
-      </p>
-      <p v-else-if="loading" class="loading">加载中…</p>
-      <p v-else-if="!cities.length && !guess.length" class="empty">
-        还没有景点数据。先在 backend 目录跑一次采集脚本（scripts/fetch_pois.py），再刷新本页。
-      </p>
-
-      <template v-else>
-        <!-- 热门目的地：点一下就把城市填回发令台，让景点内容服务规划 -->
-        <template v-if="cities.length">
-          <div class="sec">热门目的地 <small>点一下，直接开始规划</small></div>
-          <div class="cities">
-            <button
-              v-for="(c, i) in cities"
-              :key="c.city"
-              class="city-card"
-              :class="TONES[i % TONES.length]"
-              @click="pickCity(c.city)"
-            >
-              <span class="ghost">{{ c.city.slice(0, 1) }}</span>
-              <b>{{ c.city }}</b>
-              <small>{{ c.count }} 个景点</small>
-              <span class="go">开始规划 →</span>
-            </button>
-          </div>
-        </template>
-
-        <!-- 猜你喜欢：只留 8 条，翻页交回景点列表页 -->
-        <template v-if="guess.length">
-          <div class="sec">
-            猜你喜欢
-            <small>{{ user ? `按 ${user.nickname} 的收藏偏好推荐` : '按全站收藏热度推荐 · 登录后更懂你' }}</small>
-            <router-link class="more" to="/spots">更多景点 →</router-link>
-          </div>
-          <div class="grid">
-            <SpotCard v-for="s in guess" :key="s.id" :spot="s" />
-          </div>
-        </template>
-
-        <!-- 攻略：一行轻量入口，不占首页主视线 -->
-        <router-link class="guide-strip" to="/guides">
-          <span class="gs-title">旅游攻略</span>
-          <span class="gs-sub">看看别人怎么安排，或者把你的路线写下来</span>
-          <span class="gs-arrow">→</span>
-        </router-link>
-      </template>
+      <section aria-labelledby="popular-title" class="discovery-section">
+        <h2 id="popular-title" class="sec">热门目的地 <small>点一下，开始规划</small></h2>
+        <p v-if="regionState.loading" class="loading" role="status">正在更新目的地…</p>
+        <p v-if="regionState.error" class="empty source-error" role="alert">目的地暂不可用：{{ regionState.error }} <button :disabled="regionState.loading" @click="regions.retry">重试目的地</button></p>
+        <div v-if="cities.length" class="cities"><button v-for="(c,i) in cities" :key="c.city" class="city-card" :class="TONES[i % TONES.length]" :aria-label="`用${c.city}开始规划`" @click="pickCity(c.city)"><span class="ghost" aria-hidden="true">{{ c.city.slice(0,1) }}</span><b>{{ c.city }}</b><small>{{ c.count }} 个景点</small><span class="go">开始规划 →</span></button></div>
+        <p v-else-if="regionState.loaded && !regionState.loading && !regionState.error" class="empty">暂无目的地推荐，也可以直接输入想去的地方。</p>
+      </section>
+      <section aria-labelledby="recommendation-title" class="discovery-section">
+        <h2 id="recommendation-title" class="sec">猜你喜欢 <small>{{ user ? `按 ${user.nickname || user.username} 的收藏偏好推荐` : '按收藏热度推荐' }}</small><router-link class="more" to="/spots">更多景点 →</router-link></h2>
+        <p v-if="recommendationState.loading" class="loading" role="status">正在更新推荐…</p>
+        <p v-if="recommendationState.error" class="empty source-error" role="alert">推荐暂不可用：{{ recommendationState.error }} <button :disabled="recommendationState.loading" @click="recommendations.retry">重试推荐</button></p>
+        <div v-if="guess.length" class="grid"><SpotCard v-for="s in guess" :key="s.id" :spot="s" /></div>
+        <p v-else-if="recommendationState.loaded && !recommendationState.loading && !recommendationState.error" class="empty">暂无推荐景点，可以去景点库发现更多地点。</p>
+      </section>
+      <router-link class="guide-strip" to="/guides"><span class="gs-title">旅游攻略</span><span class="gs-sub">看看别人怎么安排，或者把你的路线写下来</span><span class="gs-arrow">→</span></router-link>
     </div>
   </div>
 </template>
 
 <style scoped>
+.source-error{padding:16px;text-align:left}.source-error button{min-height:44px;border:1px solid var(--green-border);border-radius:8px;background:#fff;color:var(--green);padding:8px 12px;margin-left:8px}.discovery-section{margin-top:26px}.sec{flex-wrap:wrap}.city-card:focus-visible,.source-error button:focus-visible{outline:3px solid #548b73;outline-offset:3px}
+
 /* 首屏：不再是"硬撑满一屏"。
    以前这里是 min-height: min(620px, calc(100vh - 56px))，可内容只有 260px 高，
    1440×900 下上下各空出 150px，首屏和下面「三步说明」之间像被切断。

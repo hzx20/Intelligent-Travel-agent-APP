@@ -5,13 +5,18 @@
 - 写/改/删：必须登录，且只能是作者本人或管理员
 """
 from typing import Optional
+import hashlib
+import json
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import update
+from sqlalchemy.exc import IntegrityError
 
 from app.db.database import get_db
-from app.db.models import Guide, GuideImage, Spot, User, guide_spots_table
+from app.db.models import Guide, GuideImage, GuideCreationRequest, Spot, User, guide_spots_table
 from app.routers.auth import get_current_user, get_current_user_optional
 from app.routers.spots import SpotItem
 
@@ -44,6 +49,8 @@ class GuideListOut(BaseModel):
 
 class GuideDetailOut(BaseModel):
     id: int
+    version: int
+    revision: str
     title: str
     content: str
     city: str
@@ -74,6 +81,29 @@ class GuideIn(BaseModel):
         if not v:
             raise ValueError("标题和正文不能为空")
         return v
+
+    @field_validator('images')
+    @classmethod
+    def clean_images(cls, values):
+        return [value.strip() for value in values if value.strip()]
+
+
+class GuideCreate(GuideIn):
+    request_id: UUID | None = None
+
+
+class GuideCreateOnce(GuideCreate):
+    request_id: UUID
+
+
+class GuideWrite(GuideIn):
+    version: int | None = Field(default=None, ge=1)
+    revision: UUID | None = None
+
+
+class GuideWriteChecked(GuideWrite):
+    version: int = Field(ge=1)
+    revision: UUID
 
 
 def _fmt(dt) -> str:
@@ -182,9 +212,16 @@ def _visible(guide: Guide, user: User | None) -> bool:
     )
 
 
+@router.get('/write-capabilities')
+def write_capabilities(response: Response, user: User = Depends(get_current_user)):
+    response.headers['Cache-Control'] = 'no-store'
+    return {'idempotent_creation': True, 'versioned_writes': True}
+
+
 @router.get("/{guide_id}", response_model=GuideDetailOut)
 def guide_detail(
     guide_id: int,
+    response: Response,
     db: Session = Depends(get_db),
     user: User | None = Depends(get_current_user_optional),
 ):
@@ -197,8 +234,11 @@ def guide_detail(
         g.views = (g.views or 0) + 1
         db.commit()
     images = sorted(g.images, key=lambda i: i.sort_order)
+    response.headers['Cache-Control'] = 'no-store'
     return GuideDetailOut(
         id=g.id,
+        version=g.version,
+        revision=g.revision,
         title=g.title,
         content=g.content,
         city=g.city,
@@ -234,11 +274,30 @@ def _save_spots(db: Session, guide: Guide, spot_ids: list[int]):
 
 @router.post("", status_code=201)
 def create_guide(
-    body: GuideIn,
+    body: GuideCreate,
+    response: Response,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
     """发布/存草稿攻略（需登录）。"""
+    response.headers['Cache-Control'] = 'no-store'
+    payload = body.model_dump(exclude={'request_id'})
+    payload['city'] = body.city.strip()
+    payload['spot_ids'] = sorted(set(body.spot_ids))
+    digest = hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode('utf-8')).hexdigest()
+    def previous():
+        return db.query(GuideCreationRequest).filter_by(user_id=user.id, request_id=str(body.request_id)).first()
+    def replay(saved):
+        if saved.payload_hash != digest:
+            raise HTTPException(409, '这次创建信息与之前提交的不一致，请先核对已有攻略。')
+        g = db.get(Guide, saved.guide_id) if saved.guide_id is not None else None
+        if g is None or g.user_id != user.id:
+            raise HTTPException(410, '这次创建的攻略已不存在，不会重新发布。')
+        response.status_code = 200
+        return {'id': g.id, 'is_draft': g.is_draft, 'version': g.version, 'revision':g.revision}
+    if body.request_id:
+        saved = previous()
+        if saved: return replay(saved)
     g = Guide(
         user_id=user.id,
         title=body.title,
@@ -247,11 +306,24 @@ def create_guide(
         is_draft=body.is_draft,
     )
     db.add(g)
-    db.flush()  # 先拿到 g.id，再写图片/关联
-    _save_images(db, g, body.images)
-    _save_spots(db, g, body.spot_ids)
-    db.commit()
-    return {"id": g.id, "is_draft": g.is_draft}
+    try:
+        db.flush()  # 先拿到 g.id，再写图片/关联
+        _save_images(db, g, body.images)
+        _save_spots(db, g, body.spot_ids)
+        if body.request_id:
+            db.add(GuideCreationRequest(user_id=user.id, request_id=str(body.request_id), payload_hash=digest, guide_id=g.id))
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        saved = previous() if body.request_id else None
+        if not saved: raise
+        return replay(saved)
+    return {'id': g.id, 'is_draft': g.is_draft, 'version': g.version, 'revision':g.revision}
+
+
+@router.post('/create', status_code=201)
+def create_guide_once(body: GuideCreateOnce, response: Response, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    return create_guide(body, response, db, user)
 
 
 def _ensure_owner(guide: Guide, user: User):
@@ -259,16 +331,29 @@ def _ensure_owner(guide: Guide, user: User):
         raise HTTPException(403, "只能操作自己的攻略")
 
 
+def _claim_version(db, guide, version, revision):
+    if version is None or revision is None:
+        raise HTTPException(428, '请重新加载攻略并使用支持版本检查的客户端。')
+    claimed = db.execute(update(Guide).where(Guide.id == guide.id, Guide.version == version, Guide.revision == str(revision))
+                         .values(version=Guide.version + 1).execution_options(synchronize_session=False))
+    if claimed.rowcount != 1:
+        db.rollback()
+        raise HTTPException(409, '攻略已更新或删除，本次未覆盖任何内容。请保留输入并核对最新攻略。')
+    db.expire(guide)
+
+
 @router.patch("/{guide_id}")
 def update_guide(
     guide_id: int,
-    body: GuideIn,
+    body: GuideWrite,
+    response: Response,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
     """编辑攻略（作者本人或管理员）。"""
     g = _load_guide(db, guide_id)
     _ensure_owner(g, user)
+    _claim_version(db, g, body.version, body.revision)
     g.title = body.title
     g.content = body.content
     g.city = body.city.strip()[:30]
@@ -276,17 +361,32 @@ def update_guide(
     _save_images(db, g, body.images)
     _save_spots(db, g, body.spot_ids)
     db.commit()
-    return {"id": g.id, "is_draft": g.is_draft}
+    response.headers['Cache-Control'] = 'no-store'
+    return {'id': g.id, 'is_draft': g.is_draft, 'version': g.version, 'revision':g.revision}
+
+
+@router.patch('/{guide_id}/content')
+def update_guide_checked(guide_id: int, body: GuideWriteChecked, response: Response, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    return update_guide(guide_id, body, response, db, user)
 
 
 @router.delete("/{guide_id}", status_code=204)
 def delete_guide(
     guide_id: int,
+    version: int | None = Query(default=None, ge=1),
+    revision: UUID | None = None,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
     """删除攻略（作者本人或管理员）；图片与关联记录随级联清理。"""
     g = _load_guide(db, guide_id)
     _ensure_owner(g, user)
+    _claim_version(db, g, version, revision)
     db.delete(g)
     db.commit()
+    return Response(status_code=204, headers={'Cache-Control': 'no-store'})
+
+
+@router.delete('/{guide_id}/content', status_code=204)
+def delete_guide_checked(guide_id: int, revision: UUID, version: int = Query(ge=1), db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    return delete_guide(guide_id, version, revision, db, user)

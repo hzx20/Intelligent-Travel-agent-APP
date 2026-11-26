@@ -30,14 +30,15 @@ def test_favorite_toggle_and_count(client):
     # 未登录 → 401
     assert c.post(f"/api/spots/{s1.id}/favorite").status_code == 401
     # carol 收藏 → favorited=True, count=1
-    r1 = c.post(f"/api/spots/{s1.id}/favorite", headers=_auth(u1)).json()
-    assert r1 == {"favorited": True, "favorite_count": 1}
+    assert c.post(f"/api/spots/{s1.id}/favorite", headers=_auth(u1)).status_code == 428
+    r1 = c.put(f"/api/spots/{s1.id}/favorite-state", headers=_auth(u1),json={'favorited':True,'version':0}).json()
+    assert r1 == {"favorited": True, "favorite_count": 1, 'favorite_version':1}
     # dave 也收藏 → count=2
-    r2 = c.post(f"/api/spots/{s1.id}/favorite", headers=_auth(u2)).json()
+    r2 = c.put(f"/api/spots/{s1.id}/favorite-state", headers=_auth(u2),json={'favorited':True,'version':0}).json()
     assert r2["favorite_count"] == 2
     # carol 再点 → 取消收藏，count 回落 1
-    r3 = c.post(f"/api/spots/{s1.id}/favorite", headers=_auth(u1)).json()
-    assert r3 == {"favorited": False, "favorite_count": 1}
+    r3 = c.put(f"/api/spots/{s1.id}/favorite-state", headers=_auth(u1),json={'favorited':False,'version':1}).json()
+    assert r3 == {"favorited": False, "favorite_count": 1, 'favorite_version':2}
     # 不存在的景点 → 404
     assert c.post("/api/spots/99999/favorite", headers=_auth(u1)).status_code == 404
 
@@ -76,6 +77,6 @@ def test_detail_favorited_flag(client):
     # 游客：favorited=False
     assert c.get(f"/api/spots/{s1.id}").json()["favorited"] is False
     # 收藏后带 token：favorited=True
-    c.post(f"/api/spots/{s1.id}/favorite", headers=_auth(u1))
+    c.put(f"/api/spots/{s1.id}/favorite-state", headers=_auth(u1),json={'favorited':True,'version':0})
     r = c.get(f"/api/spots/{s1.id}", headers=_auth(u1)).json()
     assert r["favorited"] is True and r["favorite_count"] == 1

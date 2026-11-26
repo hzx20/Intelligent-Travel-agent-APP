@@ -8,11 +8,15 @@
 """
 import asyncio
 import json
+import math
+import time
+from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy.orm import Session
+from sqlalchemy import update
 
 from app.db.database import get_db
 from app.db.models import AiPlan, User
@@ -24,17 +28,40 @@ router = APIRouter(prefix="/api/plan", tags=["plan"])
 
 
 class StreamIn(BaseModel):
-    history: list[dict] = Field(default_factory=list)
+    history: list[dict] = Field(default_factory=list,max_length=200)
     user_input: str = Field(min_length=1, max_length=500)
     prev_collected: dict = Field(default_factory=dict)
     session_id: str = Field(default="", max_length=50)
-    messages: list[dict] = Field(default_factory=list)  # v1.1 对话快照 [{role,text,logs}]
+    messages: list[dict] = Field(default_factory=list,max_length=200)  # 对话快照
+
+    @model_validator(mode='after')
+    def bound_payload(self):
+        if len(self.model_dump_json().encode('utf-8')) > 256*1024:
+            raise ValueError('规划输入过大，请缩短对话后再试。')
+        return self
 
 
 class SnapshotIn(BaseModel):
     """v1.1 历史快照更新：聊天内容与地图视角（中心/缩放）。"""
     messages: list[dict] | None = None
     map_state: dict | None = None
+    version: int | None = Field(default=None,ge=1)
+    revision: UUID | None = None
+
+
+class VersionedPlanIn(BaseModel):
+    version: int = Field(ge=1)
+    revision: UUID
+
+
+class ProtectedSnapshotIn(SnapshotIn):
+    version: int = Field(ge=1)
+    revision: UUID
+
+
+class ReliablePlanIn(StreamIn):
+    request_id: UUID
+    guest_key: UUID | None = None
 
 
 # 快照防膨胀上限在 services/plan_jobs.py 里统一定义（那边落库也要用同一套规则）
@@ -46,10 +73,12 @@ def _sse(event: str, data: dict) -> str:
 
 @router.get("/history")
 def plan_history(
+    response: Response,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user_optional),
 ):
     """我的历史规划列表（登录用户）。"""
+    response.headers['Cache-Control']='no-store'
     if user is None:
         return {"items": [], "note": "游客不保存历史，登录后自动记录"}
     rows = (
@@ -67,6 +96,7 @@ def plan_history(
         traffic = result.get("traffic") or {}
         items.append({
             "id": p.id,
+            'version':p.version,'revision':p.revision,'status':p.status,
             "session_id": p.session_id,
             "city": intent.get("destination") or intent.get("city") or "未知城市",
             "days": len(result.get("days") or []),
@@ -91,6 +121,7 @@ def plan_history(
 @router.post("/jobs")
 async def create_plan_job(
     body: StreamIn,
+    response: Response,
     user: User | None = Depends(get_current_user_optional),
 ):
     """下单式生成：立刻返回 job_id，真正的生成在后台跑。
@@ -98,6 +129,7 @@ async def create_plan_job(
     和 /stream 的区别就一句话：这里的任务不属于任何 HTTP 连接。
     前端切页面、刷新、关标签页，任务都继续跑到底。
     """
+    response.headers['Cache-Control'] = 'no-store'
     job = plan_jobs.create_job(
         user_id=(user.id if user else 0),
         payload=body.model_dump(),
@@ -105,13 +137,35 @@ async def create_plan_job(
     return {"job_id": job.id, "status": job.status}
 
 
+@router.get('/jobs/capabilities')
+def job_capabilities(response:Response):
+    response.headers['Cache-Control']='no-store'
+    return {'reliable_creation':True,'scoped_guests':True,'durable':True}
+
+
+@router.post('/jobs/create')
+async def create_plan_once(body:ReliablePlanIn,response:Response,user:User|None=Depends(get_current_user_optional)):
+    reply,created=plan_jobs.create_once(user_id=user.id if user else 0,
+        payload=body.model_dump(exclude={'request_id','guest_key'}),request_id=body.request_id,guest_key=body.guest_key)
+    response.headers['Cache-Control']='no-store';response.status_code=201 if created else 200
+    return reply
+
+
+@router.post('/jobs/create/cancel')
+def cancel_plan_creation(body:ReliablePlanIn,response:Response,user:User|None=Depends(get_current_user_optional)):
+    response.headers['Cache-Control']='no-store'
+    return plan_jobs.cancel_creation(user_id=user.id if user else 0,
+        payload=body.model_dump(exclude={'request_id','guest_key'}),request_id=body.request_id,guest_key=body.guest_key)
+
+
 @router.get("/jobs/active")
-def active_plan_job(user: User | None = Depends(get_current_user_optional)):
+def active_plan_job(response: Response, user: User | None = Depends(get_current_user_optional)):
     """找回"我最近一条还在跑的任务"。
 
     用于用户关掉标签页再打开：新标签的 sessionStorage 是空的，
     但后端任务还在跑，登录用户可以靠这条把它接回来。
     """
+    response.headers['Cache-Control'] = 'no-store'
     job = plan_jobs.find_active(user.id if user else 0)
     if job is None:
         return {"job": None}
@@ -121,6 +175,7 @@ def active_plan_job(user: User | None = Depends(get_current_user_optional)):
 @router.get("/jobs/{job_id}")
 def poll_plan_job(
     job_id: str,
+    response: Response,
     since: int = 0,
     user: User | None = Depends(get_current_user_optional),
 ):
@@ -131,6 +186,7 @@ def poll_plan_job(
     """
     from fastapi import HTTPException
 
+    response.headers['Cache-Control'] = 'no-store'
     job = plan_jobs.get_job(job_id, user.id if user else 0)
     if job is None:
         raise HTTPException(404, "任务不存在或已过期")
@@ -154,6 +210,7 @@ def cancel_plan_job(
 @router.get("/{plan_id}")
 def plan_detail(
     plan_id: int,
+    response: Response,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user_optional),
 ):
@@ -161,10 +218,12 @@ def plan_detail(
     if user is None:
         from fastapi import HTTPException
         raise HTTPException(401, "登录后可查看历史规划")
+    response.headers['Cache-Control']='no-store'
     p = _ensure_alive_plan(plan_id, db, user)
     return {
         "id": p.id,
         "status": p.status,
+        'version':p.version,'revision':p.revision,
         "intent": json.loads(p.intent_json or "{}"),
         "verify_logs": json.loads(p.process_json or "[]"),
         "itinerary": json.loads(p.result_json or "{}"),
@@ -207,73 +266,114 @@ def _ensure_alive_plan(plan_id: int, db: Session, user) -> AiPlan:
     return p
 
 
-@router.delete("/{plan_id}")
-def delete_plan(
-    plan_id: int,
-    db: Session = Depends(get_db),
-    user=Depends(get_current_user_optional),
-):
-    """v1.1 删除历史方案（仅本人）。
-
-    软删除：标记 status='deleted'，立刻从列表与详情中消失（列表只查 completed）。
-    为什么不是物理删除？——用户可能手抖，软删才能支持"撤销"；
-    恢复窗口由前端控制（8 秒内可撤销），超时后这条记录不会再出现在任何接口里。
-    """
-    from fastapi import HTTPException
-
-    if user is None:
-        raise HTTPException(401, "登录后可删除历史方案")
-    p = _ensure_own_plan(plan_id, db, user)
-    p.status = "deleted"
-    db.commit()
-    return {"ok": True, "id": plan_id}
+RESTORE_SECONDS=8
 
 
-@router.post("/{plan_id}/restore")
-def restore_plan(
-    plan_id: int,
-    db: Session = Depends(get_db),
-    user=Depends(get_current_user_optional),
-):
-    """撤销删除：把软删记录恢复回 completed（仅本人）。"""
-    from fastapi import HTTPException
-
-    if user is None:
-        raise HTTPException(401, "登录后可恢复历史方案")
-    p = _ensure_own_plan(plan_id, db, user)
-    p.status = "completed"
-    db.commit()
-    return {"ok": True, "id": plan_id}
+def _plan_state(p):
+    seconds=max(0,math.ceil((p.restore_until or 0)-time.time())) if p.status=='deleted' else 0
+    return {'ok':True,'id':p.id,'version':p.version,'revision':p.revision,'status':p.status,
+            'restore_until':p.restore_until,'restore_seconds_remaining':seconds,'can_restore':seconds>0}
 
 
-@router.patch("/{plan_id}/snapshot")
-def update_snapshot(
-    plan_id: int,
-    body: SnapshotIn,
-    db: Session = Depends(get_db),
-    user=Depends(get_current_user_optional),
-):
-    """v1.1：更新某条规划的对话/地图快照（仅本人）。
+def _version(p,version,revision):
+    if version is None or revision is None:raise HTTPException(428,'请更新客户端，携带原版本和记录标识。')
+    if str(revision)!=p.revision:raise HTTPException(409,'记录身份已变化，请重新读取。')
 
-    前端在生成完成与地图拖动/缩放停稳后调用，把"当时的样子"持续写回，
-    历史列表点击时即可原样还原。
-    """
-    from fastapi import HTTPException
 
-    if user is None:
-        raise HTTPException(401, "登录后可保存快照")
-    p = _ensure_alive_plan(plan_id, db, user)  # 已删除的不再接受写回
-    if body.messages is not None:
-        cleaned = clean_messages(body.messages)[-60:]  # 防膨胀，留最近60条
-        p.chat_json = json.dumps(cleaned, ensure_ascii=False)
+def _claim_plan(db,p,version,revision,**values):
+    changed=db.execute(update(AiPlan).where(AiPlan.id==p.id,AiPlan.user_id==p.user_id,
+        AiPlan.version==version,AiPlan.revision==str(revision),AiPlan.status==p.status)
+        .values(version=version+1,**values).execution_options(synchronize_session=False))
+    if changed.rowcount!=1:db.rollback();raise HTTPException(409,'历史方案已更新，本次未覆盖，请先核对。')
+    db.commit();db.expire_all()
+    return _plan_state(db.get(AiPlan,p.id))
+
+
+@router.get('/{plan_id}/state')
+def plan_state(plan_id:int,response:Response,db:Session=Depends(get_db),user=Depends(get_current_user_optional)):
+    if user is None:raise HTTPException(401,'登录后可核对历史方案')
+    response.headers['Cache-Control']='no-store'
+    return _plan_state(_ensure_own_plan(plan_id,db,user))
+
+
+def _delete(plan_id,version,revision,db,user):
+    if user is None:raise HTTPException(401,'登录后可删除历史方案')
+    p=_ensure_own_plan(plan_id,db,user);_version(p,version,revision)
+    if p.status=='deleted' and p.version==version+1:return _plan_state(p)
+    if p.status!='completed' or p.version!=version:raise HTTPException(409,'历史方案已更新，请先核对再决定。')
+    return _claim_plan(db,p,version,revision,status='deleted',restore_until=time.time()+RESTORE_SECONDS)
+
+
+@router.delete('/{plan_id}/content')
+def delete_plan_content(plan_id:int,response:Response,version:int=Query(ge=1),revision:UUID=Query(),
+    db:Session=Depends(get_db),user=Depends(get_current_user_optional)):
+    response.headers['Cache-Control']='no-store'
+    return _delete(plan_id,version,revision,db,user)
+
+
+@router.delete('/{plan_id}')
+def delete_plan(plan_id:int,response:Response,version:int|None=Query(default=None,ge=1),revision:UUID|None=None,
+    db:Session=Depends(get_db),user=Depends(get_current_user_optional)):
+    response.headers['Cache-Control']='no-store'
+    return _delete(plan_id,version,revision,db,user)
+
+
+def _restore(plan_id,version,revision,db,user):
+    if user is None:raise HTTPException(401,'登录后可恢复历史方案')
+    p=_ensure_own_plan(plan_id,db,user);_version(p,version,revision)
+    if p.status=='completed' and p.version==version+1:return _plan_state(p)
+    if p.status!='deleted' or p.version!=version:raise HTTPException(409,'历史方案已更新，请先核对。')
+    if not p.restore_until or p.restore_until<=time.time():raise HTTPException(410,'撤销期限已结束，本次未恢复。')
+    changed=db.execute(update(AiPlan).where(AiPlan.id==p.id,AiPlan.user_id==user.id,
+        AiPlan.revision==str(revision),AiPlan.version==version,AiPlan.status=='deleted',AiPlan.restore_until>time.time())
+        .values(version=version+1,status='completed',restore_until=None).execution_options(synchronize_session=False))
+    if changed.rowcount!=1:db.rollback();raise HTTPException(409,'恢复状态已变化，请先核对。')
+    db.commit();db.expire_all()
+    return _plan_state(db.get(AiPlan,plan_id))
+
+
+@router.post('/{plan_id}/content/restore')
+def restore_plan_content(plan_id:int,body:VersionedPlanIn,response:Response,db:Session=Depends(get_db),user=Depends(get_current_user_optional)):
+    response.headers['Cache-Control']='no-store'
+    return _restore(plan_id,body.version,body.revision,db,user)
+
+
+@router.post('/{plan_id}/restore')
+def restore_plan(plan_id:int,response:Response,body:VersionedPlanIn|None=None,
+    db:Session=Depends(get_db),user=Depends(get_current_user_optional)):
+    response.headers['Cache-Control']='no-store'
+    return _restore(plan_id,body.version if body else None,body.revision if body else None,db,user)
+
+
+def _snapshot(plan_id,body,db,user):
+    if user is None:raise HTTPException(401,'登录后可保存快照')
+    p=_ensure_alive_plan(plan_id,db,user);_version(p,body.version,body.revision)
+    if p.version!=body.version or p.status!='completed':raise HTTPException(409,'快照已更新，请先核对，本次未覆盖。')
+    values={}
+    if body.messages is not None:values['chat_json']=json.dumps(clean_messages(body.messages)[-60:],ensure_ascii=False)
     if body.map_state is not None:
-        state = {
-            "center": body.map_state.get("center") or [],
-            "zoom": body.map_state.get("zoom"),
-        }
-        p.map_json = json.dumps(state, ensure_ascii=False)
-    db.commit()
-    return {"ok": True}
+        center=body.map_state.get('center') or [];zoom=body.map_state.get('zoom')
+        if center or zoom is not None:
+            if not (isinstance(center,list) and len(center)==2 and all(isinstance(x,(int,float)) and not isinstance(x,bool) and math.isfinite(x) for x in center)
+                and -180<=center[0]<=180 and -90<=center[1]<=90 and isinstance(zoom,(int,float)) and not isinstance(zoom,bool) and math.isfinite(zoom) and 1<=zoom<=20):
+                raise HTTPException(422,'地图视角无效')
+        values['map_json']=json.dumps({'center':center,'zoom':zoom},ensure_ascii=False)
+    if not values:return _plan_state(p)
+    return _claim_plan(db,p,body.version,body.revision,**values)
+
+
+@router.patch('/{plan_id}/snapshot/edit')
+def protected_snapshot(plan_id:int,body:ProtectedSnapshotIn,response:Response,
+    db:Session=Depends(get_db),user=Depends(get_current_user_optional)):
+    response.headers['Cache-Control']='no-store'
+    return _snapshot(plan_id,body,db,user)
+
+
+@router.patch('/{plan_id}/snapshot')
+def update_snapshot(plan_id:int,body:SnapshotIn,response:Response,
+    db:Session=Depends(get_db),user=Depends(get_current_user_optional)):
+    response.headers['Cache-Control']='no-store'
+    return _snapshot(plan_id,body,db,user)
 
 
 @router.post("/stream")
@@ -293,14 +393,14 @@ async def plan_stream(
     )
 
     async def event_stream():
-        idx = 0
+        since = 0
         while True:
-            # 任务还在跑就等一会儿再看缓冲，避免空转
-            while idx < len(job.events):
-                ev = job.events[idx]
-                idx += 1
+            current = plan_jobs.get_job(job.id,user.id if user else 0)
+            if current is None: break
+            for ev in current.snapshot(since)['events']:
+                since = ev['seq']
                 yield _sse(ev["type"], ev["data"])
-            if job.status != "running":
+            if current.status != "running":
                 break
             await asyncio.sleep(0.05)
         yield _sse("done", {})

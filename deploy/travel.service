@@ -16,7 +16,14 @@ Group=ubuntu
 WorkingDirectory=/opt/travel/app/backend
 Environment=TZ=Asia/Shanghai
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/opt/travel/venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1
+# 所有worker须同时启用并共享同一TRAVEL_DATA_DIR，详见部署说明。
+# Environment=TRAVEL_SHARED_LIMITS=1
+# Environment=TRAVEL_SHARED_CACHE=1
+# Environment=TRAVEL_PROVIDER_BUDGET=1
+UMask=0077
+# 部署时通过 systemd drop-in 增加实际 nginx 容器 IP；不要信任整个网段或 *。
+Environment=FORWARDED_ALLOW_IPS=127.0.0.1
+ExecStart=/opt/travel/venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1 --proxy-headers
 Restart=always
 RestartSec=3
 MemoryMax=1200M

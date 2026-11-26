@@ -1,33 +1,35 @@
 # 智能旅行规划 Agent
 
+2026 年 11 月 26 日版本已上线，支持中文维基导游链接导入、游客行程复制到账号、足迹照片上传结果核对和共享查询缓存。
+
 一个能"说话就能出路线"的旅游规划网站：输入一句"成都 3 天，带 5 岁孩子，轻松一点"，
-AI 追问→生成行程→逐条去高德核实地点真实性→附天气预报，全程流式打字机输出，
-最后给你一张按顺序连线的路线图。
+AI 追问→生成行程→尝试通过本地 POI 和高德核实地点→附天气预报，
+最后展示一张按顺序连线的路线示意图。生成在后台任务中执行，前端轮询进度。
 
-首批覆盖 **成都 / 杭州 / 西安 / 北京 / 三亚** 五座城市，景点数据全部来自高德开放平台真实 POI。
+采集脚本首批覆盖 **成都 / 杭州 / 西安 / 北京 / 三亚** 五座城市，景点数据来自高德开放平台 POI；新安装时数据库为空。
 
-> **线上地址：http://134.175.137.18/travel/** （2 核 4G 轻量服务器，与另一个项目共用 80 端口，挂在 `/travel/` 子路径）
->
-> 站点开放注册，可自行注册体验。部署方式、排障命令与资源限制见 [`deploy/README.md`](./deploy/README.md)。
+> 站点开放注册。[打开旅行站](https://134.175.137.18/travel/)
 
 ---
 
 ## 一、怎么启动（最省事的方式）
 
-**双击项目根目录的 `启动网站.bat`** —— 会自动开两个黑窗口（后端 8000 + 前端 5173），
-然后自动打开浏览器访问 http://localhost:5173
+已有原作者 WorkBuddy 环境时可双击 `启动网站.bat`。其他环境请按下面的步骤启动。
 
 > 用的时候两个黑窗口要**一直开着**，关掉就等于关网站。
 
 ### 手动启动（想自己控制时用）
 
-```bash
-# 1) 后端（在 backend 目录）
-C:/Users/i/.workbuddy/binaries/python/envs/default/Scripts/python.exe -m uvicorn app.main:app --port 8000
+```powershell
+# 在项目根目录（需要 Python 和 Node.js）
+python -m venv .venv
+.\.venv\Scripts\python -m pip install -r backend\requirements.txt
+cd backend
+..\.venv\Scripts\python -m uvicorn app.main:app --port 8000
 
-# 2) 前端（在 frontend 目录，另开一个终端）
-C:/Users/i/.workbuddy/binaries/node/versions/22.22.2-2/node.exe \
-  C:/Users/i/.workbuddy/binaries/node/versions/22.22.2-2/node_modules/npm/bin/npm-cli.js run dev
+# 另开终端，在 frontend 目录
+npm ci
+npm run dev
 ```
 
 后端启动后可访问：
@@ -39,7 +41,7 @@ C:/Users/i/.workbuddy/binaries/node/versions/22.22.2-2/node.exe \
 **管理员账号需要手动提权**：先在前台注册一个账号，然后在 `backend` 目录执行：
 
 ```bash
-C:/Users/i/.workbuddy/binaries/python/envs/default/Scripts/python.exe tools/make_admin.py 你的用户名
+..\.venv\Scripts\python tools/make_admin.py 你的用户名
 ```
 
 提示"已提升为管理员"后，**重新登录**该账号，导航栏就会出现「管理后台」。
@@ -48,6 +50,14 @@ C:/Users/i/.workbuddy/binaries/python/envs/default/Scripts/python.exe tools/make
 ---
 
 ## 二、能做什么
+
+### 我的旅行（新行程编辑器）
+
+- 登录后可创建多日旅行，编辑每天的地点与活动、调整顺序、跨天移动，并从景点库收集待安排地点。
+- 已保存的 AI 规划历史可显式转为可编辑旅行，原始历史保留。
+- 在行程详情按需查询相邻地点的步行或驾车路线。高德返回的路线和耗时为参考；无坐标或查询失败会明确提示，地图虚线是顺序示意。
+- 行程内 AI 助手先展示新增、修改、移动或删除建议，确认后才写入；建议基于生成时的版本，过期后须重新生成。AI 新增地点需要用户核实，可在编辑安排时搜索景点库关联。
+- AI 建议依赖已配置的模型服务；当前生成请求尚不支持断线恢复。路线查询依赖高德 Web 服务 key 和对应权限。
 
 ### 游客（不登录）
 - **首页一句话发起路线规划**（填目的地/天数/偏好 → 自动跳到规划页开跑）
@@ -65,6 +75,7 @@ C:/Users/i/.workbuddy/binaries/python/envs/default/Scripts/python.exe tools/make
 ### 管理员（额外）
 - 六组模块：用户管理（停用/启用、授收管理员）、景点管理（修正采集数据）、
   收藏记录、评论审核（软删）、攻略管理、AI 规划记录
+- 模拟酒店渠道库存同步：管理员通过 API 推送按日房态、查询库存和同步记录，支持幂等重试。数据由调用方提供，不连接真实渠道，也不支持预订。操作示例见 [酒店渠道库存同步演示](./docs/hotel-channel-demo.md)。
 
 ---
 
@@ -117,12 +128,12 @@ C:/Users/i/.workbuddy/binaries/python/envs/default/Scripts/python.exe tools/make
 
 ## 五、测试与走查
 
-```bash
-# 单元测试（在 backend 目录）
-C:/Users/i/.workbuddy/binaries/python/envs/default/Scripts/python.exe -m pytest tests/ -q
+```powershell
+# 离线回归（在 backend 目录，不调用模型）
+..\.venv\Scripts\python -m pytest tests -q --ignore=tests/test_m1.py --ignore=tests/test_m2.py -k "not test_plan_stream_saves_history_when_logged_in and not test_graph"
 
 # 全链路走查（连真实数据库，不起服务、不走代理，自动清理）
-C:/Users/i/.workbuddy/binaries/python/envs/default/Scripts/python.exe tools/walkthrough_v10.py
+..\.venv\Scripts\python tools/walkthrough_v10.py
 # 加 --with-ai 会额外真实调一次智谱出 3 天行程（约 40 秒）
 ```
 
@@ -130,8 +141,7 @@ C:/Users/i/.workbuddy/binaries/python/envs/default/Scripts/python.exe tools/walk
 - `tools/walkthrough_v10.py`：游客浏览→注册→收藏→评论→写攻略→静态地图→后台六模块→清理，一条龙 51 项
 - 前端构建：`frontend` 目录执行 `vite build`
 
-> 注意：`tests/test_m2.py`（真实调 LLM）和 `tests/test_v07_graph.py` 各需 40～100 秒，
-> 全量跑建议后台执行或分文件跑。
+> 全量 `pytest tests -q` 包含真实模型调用，会消耗 API 额度并依赖网络；离线回归不验证真实模型输出。
 
 ---
 
@@ -142,7 +152,18 @@ C:/Users/i/.workbuddy/binaries/python/envs/default/Scripts/python.exe tools/walk
 ```
 ZHIPU_API_KEY=你的智谱 key
 AMAP_API_KEY=你的高德 Web 服务 key
+AMAP_JS_KEY=你的高德 JS API key
+AMAP_JS_SECURITY_CODE=你的高德 JS 安全密钥
+JWT_SECRET=独立的随机长密钥
 ```
+
+缺少智谱密钥时仍可启动并浏览，AI 规划不可用。高德密钥用于地图及地点数据；新建数据库为空，需配置 Web 服务 key 后在 `backend` 目录运行 `python scripts/fetch_pois.py --all` 采集数据。未配置 `JWT_SECRET` 时会在 `backend/data/.jwt_secret` 生成本机密钥；生产环境应显式配置并妥善保管，修改密钥会使已有登录失效。
+
+规划任务保存在 SQLite，服务重启后可在执行租约过期后恢复一次。已完成任务可找回 30 分钟，登录用户的已保存方案继续保留在历史。恢复可能再次调用模型。游客凭当前标签页保留的不公开任务编号找回。
+
+规划提交有独立的尝试标识。刷新后可在当前标签页继续同一次提交，找回原任务。规划历史保存使用版本校验，删除后提供 8 秒撤销窗口。
+
+首页按来源独立加载旅行。历史方案转换或游客旅行复制遇到网络中断时，可以核对结果或继续同一次操作。转换和复制均保留原件。
 
 ---
 
@@ -152,8 +173,7 @@ AMAP_API_KEY=你的高德 Web 服务 key
 A：注册后必须跑一次 `tools/make_admin.py 用户名` 提权，然后**重新登录**。
 
 **Q：地图不能拖动缩放？**
-A：现在是静态地图（后端代拿图片，key 不外泄）。要可拖动需去高德控制台为 key
-开通「Web端(JS API)」平台权限——那和现有的 Web 服务 key 不是同一张，需另行申请。
+A：动态地图需要配置高德「Web端(JS API)」key 和安全密钥；它们与 Web 服务 key 不同，需另行申请。
 
 **Q：数据库在哪、怎么重置？**
 A：`backend/data/app.db`。删掉这个文件，下次启动会自动重建空库（景点数据需重新跑
@@ -162,3 +182,17 @@ A：`backend/data/app.db`。删掉这个文件，下次启动会自动重建空�
 **Q：换城市/加城市？**
 A：改 `scripts/fetch_pois.py` 里的城市列表重跑采集即可；前端城市下拉在
 `views/SpotsView.vue` 和 `views/GuidesView.vue` 的 `CITIES` 常量里。
+
+最新进展（2026-11-16）：攻略图片导入已补换图/重识别保护、文件解码与版本校验、未知导入只读核对。前端179项、后端既定离线221项、相关页面52项和构建通过。整体继续active，未部署；最新恢复入口`docs/交接归档-攻略图片导入恢复.md`，真实OCR仍未验收。
+
+2026-11-16 最新：备份增加外键校验、仅验证命令和验证超时清理；已完成独立后端启动恢复副本演练，11项专项通过，未操作生产。整体active，恢复入口`docs/交接归档-备份关联校验与恢复演练.md`。
+
+2026-11-16 最新：可选共享游客请求额度已补齐5个公开入口，真实双进程/重启与可信代理专项通过；后端完整既定离线232项通过。开关默认关闭，未部署/扩容，整体active；最新恢复入口`docs/交接归档-共享游客额度.md`。
+
+2026-11-16 最新：可选路线/周边酒店共享缓存与同查询跨进程协调已完成，后端既定离线240项通过。生产开关默认关闭，尚未扩容/部署；整体active，恢复入口`docs/交接归档-路线与酒店共享缓存.md`。
+
+2026-11-16 最新：可选供应商调用预算已接入高德全部现有网络出口及chat/OCR，跨进程间隔/容量、异常/取消/续租保护有证据，后端既定离线248项通过。生产未启用/扩容，整体active；恢复入口`docs/交接归档-供应商共享调用预算.md`。
+
+2026-11-16 最新：只读发布预检检查数据库结构/关联、前端子路径与懒加载资源、运行开关；8项专项和构建通过，已保存明确标注非生产的JSON报告。整体active、未上线；恢复入口`docs/交接归档-发布前只读预检.md`。
+
+2026-11-16 最新：三开关组合与真实Windows nginx/生产静态包运行验收完成，7项含桌面/手机2视口烟测通过。已修缺失资源误回首页和map桶大小配置，未部署生产；整体active，恢复入口`docs/交接归档-三开关与生产包运行验收.md`。
