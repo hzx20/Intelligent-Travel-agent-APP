@@ -84,7 +84,8 @@ npm run dev
 | 层 | 选型 | 说明 |
 |---|---|---|
 | 后端 | FastAPI + SQLAlchemy 2.0 | 换 MySQL 只改连接串，模型零改动 |
-| AI 编排 | LangChain + **LangGraph** | 四节点状态图：澄清 → 生成 → 地图核实 → 天气 |
+| AI 编排 | LangChain + **LangGraph** | 五节点状态图：澄清 → **资料检索** → 生成 → 地图核实 → 天气 |
+| 检索增强（RAG） | 智谱 `embedding-3` + SQLite BLOB + numpy | 1708 个知识片段，城市硬过滤 + 向量/关键词混合排序，不引入独立向量库 |
 | 大模型 | 智谱 GLM-4-Flash | OpenAI 兼容端点，改 `base_url` 即可换 DeepSeek |
 | 数据库 | SQLite（`backend/data/app.db`，已 gitignore） | 单机够用，预留 MySQL |
 | 前端 | Vue 3 + vue-router + Vite | 全站 640px 移动端自适应 |
@@ -107,9 +108,9 @@ npm run dev
 │  │  ├─ main.py            应用入口、路由挂载
 │  │  ├─ db/                数据库连接 + 8 张表模型 + 老库补列迁移
 │  │  ├─ routers/           auth / spots / guides / map / me / admin / planner
-│  │  ├─ services/          clarify / itinerary / graph(LangGraph) / map_verify / weather
+│  │  ├─ services/          clarify / itinerary / graph(LangGraph) / knowledge(RAG) / map_verify / weather
 │  │  └─ security.py        PBKDF2 密码哈希 + JWT
-│  ├─ scripts/fetch_pois.py 高德 POI 采集脚本（首批 530 条）
+│  ├─ scripts/              fetch_pois.py 采集 / ingest_*.py 灌知识库 / eval_retrieval.py 检索评测
 │  ├─ tools/                make_admin.py 提权、smoke_v08.py / walkthrough_v10.py 冒烟走查
 │  └─ tests/                pytest（含 v1.0 边界用例）
 ├─ frontend/src/
@@ -129,19 +130,45 @@ npm run dev
 ## 五、测试与走查
 
 ```powershell
-# 离线回归（在 backend 目录，不调用模型）
-..\.venv\Scripts\python -m pytest tests -q --ignore=tests/test_m1.py --ignore=tests/test_m2.py -k "not test_plan_stream_saves_history_when_logged_in and not test_graph"
+# 离线回归（在 backend 目录，不调用模型；用项目自己的 Python 环境）
+python -m pytest tests -q --ignore=tests/test_m1.py --ignore=tests/test_m2.py -k "not test_plan_stream_saves_history_when_logged_in and not test_graph"
 
 # 全链路走查（连真实数据库，不起服务、不走代理，自动清理）
-..\.venv\Scripts\python tools/walkthrough_v10.py
+python tools/walkthrough_v10.py
 # 加 --with-ai 会额外真实调一次智谱出 3 天行程（约 40 秒）
 ```
 
 - `tests/` 覆盖：数据底座、收藏评论、个人中心/后台权限、LangGraph 编排、攻略、静态地图、v1.0 边界
 - `tools/walkthrough_v10.py`：游客浏览→注册→收藏→评论→写攻略→静态地图→后台六模块→清理，一条龙 51 项
-- 前端构建：`frontend` 目录执行 `vite build`
+- 前端构建：`frontend` 目录执行 `npm run build:travel`（部署在 `/travel/` 子路径时必须用这个；默认 `npm run build` 会把 base 改成 `/`，发布校验会失败）
 
 > 全量 `pytest tests -q` 包含真实模型调用，会消耗 API 额度并依赖网络；离线回归不验证真实模型输出。
+
+### RAG 检索指标（2026-11-26 实测）
+
+| 项目 | 数值 |
+|---|---|
+| 语料规模 | 1708 个片段（维基导游 1208 + 景点 500），覆盖 20 个目的地 |
+| 向量 | 智谱 `embedding-3`，1024 维 float32（4KB/条，存 SQLite BLOB） |
+| 切块 | 400 字/块，重叠 80 字，按行/句边界切分 |
+| 评测集 | `tests/eval_queries.json`，20 条（亲子/老人 5、同义词 5、具体需求 10） |
+| **Recall@3** | **0.95**（19/20；唯一未命中：丽江住宿——该条目没有住宿章节） |
+| 平均检索耗时 | 约 250 ms（多次实测 247-256 ms，含 embedding API；最慢约 510 ms） |
+| 生产参数 | `min_score=0.35`，`Top-K=5` |
+
+阈值 0.30 / 0.35 / 0.40 × K 3 / 5 / 8 九组组合的 Recall@3 全部为 0.95，说明当前语料下结果对参数不敏感。排序分 = 0.8 向量 + 0.2 关键词覆盖率 + 意图修正（未问交通时交通章节 -0.05；室内意图 ±0.04）：关键词分负责捞专有名词（洪崖洞、漓江），意图修正负责纠正「少走路却返回公交时刻表」这类向量盲区。
+
+复现命令（在 `backend/` 下）：
+
+```bash
+python scripts/ingest_spots.py     # 景点灌库（约 30 秒）
+python scripts/ingest_guides.py    # 维基导游灌库（约 90 秒，需外网）
+python scripts/export_knowledge.py --output ../knowledge.jsonl   # 导出给无法访问维基的服务器
+python scripts/eval_retrieval.py   # Recall@3 + 耗时
+python scripts/eval_retrieval.py --sweep   # 阈值 × K 九组对比
+```
+
+攻略正文来自中文维基导游，CC BY-SA 4.0；每个片段都存了固定版本链接（`oldid`），前端展示出处时一并标注授权。
 
 ---
 

@@ -1,8 +1,10 @@
-"""LangGraph 智能体编排（v0.7 核心）：澄清 → 生成 → 核实 → 天气 四节点状态图。
+"""LangGraph 智能体编排：澄清 → 资料检索 → 生成 → 核实 → 天气 五节点状态图。
 
 - 多节点状态图：每个节点独立、可观测（过程日志随图流式产出）
 - 流式：graph.stream(state) 天然逐节点产出，配合 SSE 推送打字机效果
 - 检索节点（地图核实）做成可替换组件——未来接 Neo4j 只换这里
+- 站内资料检索（RAG）插在澄清之后、生成之前：它只往提示词里加料，
+  失败就退回普通生成，不改变「天气失败也不阻断」的既有原则
 """
 import asyncio
 from typing import Any, TypedDict
@@ -21,6 +23,7 @@ class PlanState(TypedDict, total=False):
     collected: dict          # 澄清后的需求
     question: str            # 未收集完整时的追问
     done: bool               # 需求是否收集完整
+    references: list[dict]   # 检索到的站内资料（RAG）
     itinerary: dict          # 生成的行程
     verify_logs: list[dict]  # 地点核实日志
     weather: dict            # 天气信息
@@ -47,9 +50,61 @@ async def clarify_node(state: PlanState) -> dict:
     return updates
 
 
+async def retrieve_node(state: PlanState) -> dict:
+    """节点 1.5：站内资料检索（RAG）。失败不阻断主流程。
+
+    检索 query 只看偏好/人数/节奏，不看城市——城市走硬过滤，
+    混进向量里反而会让「成都」这类高频词主导相似度。
+    """
+    from app.services import knowledge
+
+    collected = state.get("collected") or {}
+    city = collected.get("destination") or collected.get("city", "")
+    parts = [
+        collected.get("preferences", ""),
+        collected.get("party", ""),
+        collected.get("pace", ""),
+    ]
+    query = " ".join(str(p) for p in parts if p) or "景点 推荐"
+    try:
+        # search 是同步函数（SQLite + 同步 embedding 调用），必须丢进线程，
+        # 否则会卡住整个 SSE 事件流
+        refs = await asyncio.to_thread(knowledge.search, query, city, 5)
+    except Exception:  # search 内部已兜底，这里再兜一层，防止未来改动漏抛
+        refs = []
+    msg = (
+        f"资料检索：匹配 {len(refs)} 条站内资料"
+        if refs
+        else "资料检索：本次未匹配到站内资料，按常规生成"
+    )
+    return {"references": refs, "logs": _log(state, msg)}
+
+
 async def generate_node(state: PlanState) -> dict:
     """节点2：行程生成（复用 M2 提示词与生成逻辑）。"""
-    itinerary = await generate_itinerary(state.get("collected") or {})
+    refs = state.get("references") or []
+    itinerary = await generate_itinerary(state.get("collected") or {}, references=refs)
+    if refs and isinstance(itinerary, dict):
+        # 只带 id/标题/出处，不把正文塞进响应体：前端要的是"点得开的出处"，
+        # source_type 用来决定是否标注 CC BY-SA（景点片段不是维基内容）。
+        # 同一小节的多个片段只展示一次，否则底部会出现两三个同名链接。
+        display, seen = [], set()
+        for ref in refs[:5]:
+            if not isinstance(ref, dict):
+                continue
+            key = (ref.get("source_id"), ref.get("title") or "")
+            if key in seen:
+                continue
+            seen.add(key)
+            display.append(
+                {
+                    "source_id": ref.get("source_id"),
+                    "source_type": ref.get("source_type", ""),
+                    "title": ref.get("title") or "",
+                    "source_url": ref.get("source_url") or "",
+                }
+            )
+        itinerary["references"] = display
     days = len((itinerary.get("days") or []))
     # 澄清收集的字段名是 destination（前端快捷模块也写它），city 只是兼容旧数据的备选
     city = state["collected"].get("destination") or state["collected"].get("city", "")
@@ -112,11 +167,15 @@ def need_generate(state: PlanState) -> str:
 def build_plan_graph():
     g = StateGraph(PlanState)
     g.add_node("clarify", clarify_node)
+    g.add_node("retrieve", retrieve_node)
     g.add_node("generate", generate_node)
     g.add_node("verify", verify_node)
     g.add_node("weather", weather_node)
     g.set_entry_point("clarify")
-    g.add_conditional_edges("clarify", need_generate, {"generate": "generate", END: END})
+    # need_generate 的函数体一字不动，只改映射表的 value：需求不全仍然 END
+    # （否则用户只说"我想去成都"就会被直接排行程，跳过追问）
+    g.add_conditional_edges("clarify", need_generate, {"generate": "retrieve", END: END})
+    g.add_edge("retrieve", "generate")
     g.add_edge("generate", "verify")
     g.add_edge("verify", "weather")
     g.add_edge("weather", END)

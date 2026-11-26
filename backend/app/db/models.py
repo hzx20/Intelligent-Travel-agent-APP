@@ -19,6 +19,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    LargeBinary,
     String,
     Table,
     Text,
@@ -270,4 +271,31 @@ class ChannelSyncRun(Base):
     item_count: Mapped[int] = mapped_column(Integer, default=0)
     attempts: Mapped[int] = mapped_column(Integer, default=1)
     created_at: Mapped[datetime] = mapped_column(default=now_local)
+    updated_at: Mapped[datetime] = mapped_column(default=now_local, onupdate=now_local)
+
+
+class KnowledgeChunk(Base):
+    """知识库片段：攻略与景点统一切成片段后供语义检索（RAG 检索层）。
+
+    为什么不把向量存进 spots / guides：业务表被检索层反复改写会让后续迁移和
+    后台编辑都变复杂。单独一张表可以整表重建（灌库脚本先清后插），业务数据零影响。
+    embedding 存 float32 原始字节（1024 维 = 4KB/条），不存 JSON：
+    同样内容 JSON 要 20KB 上下，几千条就会把 SQLite 撑大几倍。
+    """
+
+    __tablename__ = "knowledge_chunks"
+    __table_args__ = (
+        UniqueConstraint("source_type", "source_id", "chunk_index", name="uq_knowledge_chunk"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_type: Mapped[str] = mapped_column(String(20), index=True)   # guide / spot
+    source_id: Mapped[int] = mapped_column(Integer, index=True)
+    chunk_index: Mapped[int] = mapped_column(Integer, default=0)       # 同一来源内的第几块
+    city: Mapped[str] = mapped_column(String(30), default="", index=True)
+    title: Mapped[str] = mapped_column(String(200), default="")        # 小节标题或景点名
+    content: Mapped[str] = mapped_column(Text)                         # 片段正文
+    tags: Mapped[str] = mapped_column(String(200), default="")         # 逗号分隔
+    embedding: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+    source_url: Mapped[str] = mapped_column(String(500), default="")   # 出处链接
     updated_at: Mapped[datetime] = mapped_column(default=now_local, onupdate=now_local)

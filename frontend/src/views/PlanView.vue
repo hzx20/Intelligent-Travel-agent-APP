@@ -17,6 +17,7 @@ import RegionPicker from '../components/regionpicker.vue'
 import DateRangePicker from '../components/daterangepicker.vue'
 import WeatherAttribution from '../components/WeatherAttribution.vue'
 import PlanBudgetSummary from '../components/PlanBudgetSummary.vue'
+import PlanReferences from '../components/PlanReferences.vue'
 import { estimatedMoney } from '../utils/planBudget'
 
 const route = useRoute()
@@ -725,6 +726,7 @@ onBeforeUnmount(() => {
                 💡 最终建议：{{ result.itinerary.stay_pick.why }}
               </div>
             </div>
+            <PlanReferences :references="result.itinerary.references || []" />
             <details class="vlog">
               <summary>地图核实报告（{{ (result.verify_logs || []).length }} 条）</summary>
               <div v-for="(l, i) in result.verify_logs" :key="i" class="v-line">

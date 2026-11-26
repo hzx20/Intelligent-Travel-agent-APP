@@ -589,9 +589,41 @@ item 用输入中从1开始的原安排编号。每天的相邻安排不得重�
 不要返回完整行程、预算、地图或解释。列出的调整会合并到原稿并重新验证。"""
 
 
-async def generate_itinerary(collected):
-    """生成行程。时段问题局部纠正一次，其余校验失败重新生成一次。"""
+_REFERENCE_PROMPT = """【可参考的站内资料】
+{lines}
+
+请在有把握时优先采用上述资料中的地点与路线；资料未覆盖的部分按常识安排，不要编造具体价格与营业时间。
+资料只是参考，不要因为资料条数少就压缩每天的安排——每天仍要有 4-6 项，地点不足时按常识补充。"""
+
+
+def _reference_block(references) -> str:
+    """把检索片段拼成提示词片段。没有可用片段时返回空串（提示词与旧版一字不差）。
+
+    结尾那句「不要编造」是必须的：注入资料后模型反而更容易把资料里没写的
+    细节（门票、营业时间）脑补成事实，必须显式划边界。
+    """
+    usable = [
+        r for r in (references or [])
+        if isinstance(r, dict) and str(r.get('content') or '').strip()
+    ][:5]
+    if not usable:
+        return ""
+    lines = []
+    for index, ref in enumerate(usable, 1):
+        title = ' '.join(str(ref.get('title') or '站内资料').split()) or '站内资料'
+        content = ' '.join(str(ref.get('content')).split())
+        lines.append(f"[{index}] 《{title}》{content[:400]}")
+    return "\n" + _REFERENCE_PROMPT.format(lines="\n".join(lines))
+
+
+async def generate_itinerary(collected, references=None):
+    """生成行程。时段问题局部纠正一次，其余校验失败重新生成一次。
+
+    references：站内知识库检索到的片段（RAG）。为空时行为与旧版完全一致，
+    保证 59 条历史回归测试和所有既有调用方不受影响。
+    """
     requirement = json.dumps(collected, ensure_ascii=False)
+    ref_block = _reference_block(references)
     try:
         days = int(collected.get('days') or 0)
     except (TypeError, ValueError, OverflowError):
@@ -601,9 +633,11 @@ async def generate_itinerary(collected):
     correction = ""
     repair = None
     for attempt in range(2):
+        # 只往首轮/重生成的主提示词里注入资料。日程纠偏走的是另一套精简提示词
+        # （只许改时间），塞资料进去会让模型顺手重写行程，纠偏就白做了。
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"【用户需求】{requirement}{schedule}\n请生成行程 JSON。{correction}"},
+            {"role": "user", "content": f"【用户需求】{requirement}{schedule}{ref_block}\n请生成行程 JSON。{correction}"},
         ]
         if repair:
             messages = [

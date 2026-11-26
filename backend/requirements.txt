@@ -12,3 +12,6 @@ pytest==9.1.1
 httpx==0.28.1
 sqlalchemy==2.0.52
 Pillow==13.0.0
+# RAG 检索层：只用来算余弦相似度（当前 1708 条 × 1024 维，numpy 约 2ms）
+# 版本与当前环境实测一致（2.5.3 是 Python 3.13 wheel，无编译依赖）
+numpy==2.5.3
