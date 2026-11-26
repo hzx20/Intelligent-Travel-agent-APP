@@ -1,0 +1,129 @@
+{
+  "date": "2026-11-18",
+  "goal_status": "active",
+  "scope": "original planner explicit schedule requirements and rest entries",
+  "source_sha256": {
+    "backend/app/services/clarify.py": "b7dccf8d343d803a822fd665f6de6424c84de3050502c24d3d0a8fddffa26e84",
+    "backend/app/services/itinerary.py": "fe98d53a5716c815086dc5f8e2e442849b89f2438e7843a3bd53732dca2756dd",
+    "backend/app/services/plan_schedule.py": "94af95ca73af87c0b2a1ca3af2e85f547b248f25d151bf32c3900b7a7d3a9def",
+    "backend/app/services/map_verify.py": "76c2521852cbf196437dbe2d5e6a2b8ddc47e2e587586151863d29d8eb3177da",
+    "backend/app/routers/trips.py": "4e3a5a327c31256690ce767126f1fb5c2794153653bc03e603b9ffe7d184908d",
+    "backend/tests/test_plan_schedule.py": "45225d6400b63c9e9e4a8353df8bef9f61f40a6b3c88e891d0969257d8083e18",
+    "frontend/src/utils/planLocation.js": "39cf7d719aaff70ad67cdc6e58f401211be525a8abc15d8795b3af5a327afaea",
+    "frontend/src/views/PlanView.vue": "b35a5424e102d1ab471382a621fc604231d43f0b41014573e21e55b855b567e4"
+  },
+  "backend": {
+    "passed": 88,
+    "deselected": 3,
+    "seconds": 3.61,
+    "real_provider_used": false
+  },
+  "frontend": {
+    "node_passed": 204,
+    "build_modules": 130,
+    "build_passed": true
+  },
+  "browser": {
+    "frontend_id": "226d2191af3e0cb5b579d2a8e8f3654de4ef319f19f7c79ee4df3e64286e20a5",
+    "files_verified": 48,
+    "passed": true,
+    "browser": "msedge",
+    "external_requests_forwarded": 0,
+    "viewports": [
+      {
+        "label": "desktop",
+        "width": 1280,
+        "height": 900,
+        "screenshot": "desktop.png",
+        "screenshot_sha256": "c1a778ab2f4e3a315b1888d55626aaed5c2c2076b670e2c4f6e902f85fb9523f",
+        "subtotal": 470,
+        "unknown_expenses": 2,
+        "rest_rows": 3,
+        "rest_excluded_from_map": true,
+        "indoor_candidate_label": true,
+        "unlisted_category_shown": true,
+        "supplements_expanded": true,
+        "place_markers": 8,
+        "verified_links": 8,
+        "correct_hotel_anchor": true,
+        "horizontal_overflow": false
+      },
+      {
+        "label": "mobile",
+        "width": 390,
+        "height": 844,
+        "screenshot": "mobile.png",
+        "screenshot_sha256": "9494a837fade1f7645a38f44891f13e6565a3b5b9d5aef5ba6889ec866bdb032",
+        "subtotal": 470,
+        "unknown_expenses": 2,
+        "rest_rows": 3,
+        "rest_excluded_from_map": true,
+        "indoor_candidate_label": true,
+        "unlisted_category_shown": true,
+        "supplements_expanded": true,
+        "place_markers": 8,
+        "verified_links": 8,
+        "correct_hotel_anchor": true,
+        "horizontal_overflow": false
+      }
+    ],
+    "browser_version": "157.0.4341.60",
+    "isolated_browser_closed": true,
+    "static_server_closed": true,
+    "seconds": 1.226,
+    "screenshots_viewed": 2,
+    "data_and_sdk": "synthetic"
+  },
+  "previous_real_reply": {
+    "rejected": true,
+    "missing_schedule": "第1天缺少独立的休息时段；第2天缺少独立的休息时段；第2天须以室内场馆为主：请给出具体场馆名，且室内场馆超过当天游玩安排的一半；第3天缺少独立的休息时段"
+  },
+  "live_generation": {
+    "passed": false,
+    "generated": false,
+    "frozen_base": "b46aabf3e26aec1b69856d1be8b1cda6e7121488e22609bc9f7abe5c720480bd",
+    "public_synthetic_requirements_only": true,
+    "production_changed": false,
+    "frozen_base_with_itinerary_and_schedule_overlay": true,
+    "schedule_sha256": "ec2ca91aaf88ba6c4fd06786019c2457ca06241d827b06734e16753f34cb5c3a",
+    "model": "glm-4-flash",
+    "source_sha256": "fe98d53a5716c815086dc5f8e2e442849b89f2438e7843a3bd53732dca2756dd",
+    "sends": [
+      {
+        "request": 1,
+        "http_status": 200
+      },
+      {
+        "request": 2,
+        "http_status": 200
+      }
+    ],
+    "error_type": "RuntimeError",
+    "provider_status_code": null,
+    "temporary_budget_removed": true,
+    "local_env_unchanged": true,
+    "seconds": 213.59
+  },
+  "final_source_replays": [
+    {
+      "file": "reply-1.txt",
+      "accepted": false,
+      "reason": "第1天缺少独立的休息时段；第2天缺少独立的休息时段；第2天将明显包含户外游览的地点整体标为室内，请改为具体室内场馆；第3天缺少独立的休息时段"
+    },
+    {
+      "file": "reply-2.txt",
+      "accepted": false,
+      "reason": "第1天第5项费用类别只能为交通、住宿、餐饮、门票或其他"
+    }
+  ],
+  "full_complex_scenario_passed": false,
+  "production_changed": false,
+  "remaining": [
+    "Walking and climb constraints, concrete venues and prices",
+    "Hotel transaction access",
+    "Real OCR and authorized guides",
+    "Real-account and device collaboration",
+    "New combined Linux candidate and release acceptance"
+  ],
+  "handoff": "docs/交接归档-明确日程要求与休息时段.md"
+}

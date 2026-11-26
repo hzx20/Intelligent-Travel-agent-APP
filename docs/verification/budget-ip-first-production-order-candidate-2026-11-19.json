@@ -1,0 +1,28 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "local review of the first production certificate order and regression suite using synthetic certificates and a simulated Certbot",
+  "entry": "https://134.175.137.18/travel/",
+  "local_checks_passed": 59,
+  "first_order_checks": 7,
+  "certificate_profile": "shortlived",
+  "minimum_certbot_version": "5.10.0",
+  "runtime_source_sha256": {
+    "backend/tools/travel_tls_issue.py": "435ed35a2743743741056f733adee38fb5b46d44a2b492f9a340ad6ee0779e8a",
+    "backend/tools/travel_tls_check.py": "0bde8ab80c94be3c1b68282625c5efeb0571d404150ac2c6a54dce95710937f3",
+    "backend/tools/travel_tls_edge.py": "dc57940cd85e7d44af1037f1210ab3b954693801d8975e9243f61386b4f8a806",
+    "backend/tools/travel_tls_rotate.py": "870becb7c41bb34805e76916c4e6913b2d61897197207319f4996bfebe261a15",
+    "backend/tools/acme_probe_remote.py": "fb7c503949f39f90d64d2b4faf2693c96b87f481ad09a7a678805b2d4335db02",
+    "backend/tools/acme_staging_remote.py": "25942812ee1f340e5de26224a2fd3e7bb59fbf76636e397270e0d50766abb6c8"
+  },
+  "test_sha256": {
+    "backend/tests/test_travel_tls_issue.py": "e026d7f46605695c1dfdee24f623cb178fb931a1bb507e6094a542fd586ba6b1",
+    "backend/tests/test_travel_tls_check.py": "ee5d3657b07a854cb1282d19aa0bff34d2d0eb97e056a418d3882a0f8903adff"
+  },
+  "staging_reverification_evidence_sha256": "15fad80513485a416fe42e2ca5afcb821d2be61f01b0f4269d18067facdff67e",
+  "production_order_submitted": false,
+  "production_certificate_verified": false,
+  "public_tls_enabled": false,
+  "production_ready": false
+}

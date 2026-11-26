@@ -1,0 +1,29 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "workstation route and read-only HTTP preflight, separate from the rejected production retry",
+  "host": "134.175.137.18",
+  "workstation_default_route": "FlClash",
+  "selected_interface": "WLAN",
+  "selected_interface_index_at_check": 19,
+  "existing_travel_http_status": {"default_route": 200, "wlan_bound": 200},
+  "closed_port_443_observation": {
+    "default_route": {"stage": "tls", "error_type": "TimeoutError"},
+    "wlan_bound": {"stage": "tcp", "error_type": "TimeoutError"}
+  },
+  "local_checks_passed": 38,
+  "unchanged_remote_bundle_sha256": "15bf8aa028a941b1cb64296c4f3773c4c0a63160612db65edbb409f52f168a7c",
+  "source_sha256": {
+    "backend/tools/publish_travel_maintenance.py": "da18cb03e18956bc3e6f400318533ca70cb1e55fd594068fd2697e008775e2eb",
+    "backend/tools/recheck_travel_maintenance.py": "13a15f11e932bbe8caf7c7aa754508b237fcebb553763c1c71b6718627979d98",
+    "backend/tests/test_publish_travel_maintenance.py": "ca4d197800c37dd0b8c5cfb5cb63888ea6d78fc902b9e330c228fc519322ea64"
+  },
+  "first_controller_archive": ".release-candidates/budget-https-load-2026-11-19/https-ip-entry-candidate/public-maintenance-first-controller.py",
+  "first_controller_archive_sha256": "cb1d6f669817f3d3e46f84da7ac45b63c70a8ead2ef43ac20a0314ea9b1ee972",
+  "automatic_review_rejected": true,
+  "automatic_review_reason": "a second production 443 publication was outside the prior attempt's completed approval",
+  "retry_executed": false,
+  "cloud_firewall_checked": false,
+  "production_changed": false
+}

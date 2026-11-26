@@ -1,0 +1,111 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "planned_host": "134.175.137.18",
+  "region_observed_from_attachment": "Guangzhou",
+  "production_endpoint_selected": false,
+  "scope": "read-only host metadata plus local test of active HTTP fallback, no remote writes",
+  "webroot": {
+    "on_host": "/opt/continew/web",
+    "in_container": "/usr/share/nginx/html",
+    "read_only_in_container": true,
+    "challenge_dir_exists": false,
+    "config_host_and_container_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73"
+  },
+  "host_tools": {
+    "certbot_found_on_path": false,
+    "snap_command_available": true,
+    "openssl_reported": "3.0.13"
+  },
+  "local_tests": {
+    "regressions_passed": 6,
+    "current_http_fallback_test_passed": 1,
+    "existing_file_served_exactly": true,
+    "missing_path_may_return_200": true
+  },
+  "review_directory": ".release-candidates/budget-https-load-2026-11-19/https-ip-acme-existing-webroot",
+  "review": {
+    "source_sha256": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+    "host": "134.175.137.18",
+    "mode": "ip",
+    "challenge_source_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "files": {
+      "nginx-edge.conf": "148b9be054d1e23ee6ca9632a28dec1a598103f7ceba210b9201f84ab4e66910",
+      "nginx-edge-maintenance.conf": "63723bb8b149a576260c446e87664698a006be15fec81185ed51fdcba2a43dda",
+      "nginx-challenge-only.conf": "cb82b11fea70321424bd734b5ca8671533ec96006260ce2e662fe55f3a420bb7",
+      "nginx-http-after-tls.conf": "8e489e8d949d0d8df92d8ae832a1f8b10a547e20d6ed5174b2c36941ff0648fc"
+    },
+    "production_ready": false,
+    "acme_container_root": "/usr/share/nginx/html"
+  },
+  "public_challenge_verified": false,
+  "staging_certificate_issued": false,
+  "production_changed": false,
+  "production_ready": false,
+  "local_probe_controller": {
+    "tool": "backend/tools/run_acme_probe.py",
+    "payload_bytes": 4949,
+    "payload_sha256": "fb7c503949f39f90d64d2b4faf2693c96b87f481ad09a7a678805b2d4335db02",
+    "local_tests_passed": 9,
+    "remote_contacted": false,
+    "public_file_written": false,
+    "certbot_installed": false
+  },
+  "staging_controller": {
+    "tool": "backend/tools/run_acme_staging.py",
+    "action_sha256": "41ab3687db6a11fb1cfdf1693de464a0a8142e842ee0c203e5391d79f7349e21",
+    "local_tests_passed": 10,
+    "paired_probe_and_staging_tests_passed": 19,
+    "verified_probe_available": false,
+    "remote_contacted": false,
+    "certbot_installed": false,
+    "staging_certificate_issued": false
+  },
+  "outbound_preflight": {
+    "account_or_order_created": false,
+    "existing_certbot_state_paths": {
+      "/etc/letsencrypt": false,
+      "/snap/bin/certbot": false,
+      "/var/lib/letsencrypt": false,
+      "/var/log/letsencrypt": false
+    },
+    "latest_stable_amd64": [
+      {
+        "revision": 5940,
+        "version": "5.10.0"
+      }
+    ],
+    "newer_than_ip_webroot_minimum": true,
+    "packages_downloaded_or_installed": false,
+    "production_changed": false,
+    "staging_directory_get_ok": true,
+    "staging_error": null,
+    "store_error": null,
+    "store_info_get_ok": true,
+    "tools": {
+      "certbot": false,
+      "snap": true
+    },
+    "observed_on_existing_host": true,
+    "observed_date": "2026-11-19",
+    "operation": "two read-only HTTPS GET requests and local file metadata"
+  },
+  "local_openssl_verifier": {
+    "acme_request_made": false,
+    "cases": {
+      "dns_instead_of_ip": false,
+      "exact_ip": true,
+      "extra_dns_name": false,
+      "no_san": false,
+      "nonstaging_issuer": false,
+      "wrong_ip": false
+    },
+    "openssl_version": "OpenSSL 3.5.7 9 Jun 2026 (Library: OpenSSL 3.5.7 9 Jun 2026)",
+    "remote_contacted": false,
+    "synthetic_cert_and_key_removed": true,
+    "validity_window_positive_and_negative": true,
+    "replay": ".release-candidates/budget-https-load-2026-11-19/https-ip-acme-existing-webroot/verify_staging_certificate_check.py"
+  },
+  "authorized_execution": "docs/verification/budget-ip-acme-staging-2026-11-19.json"
+}

@@ -1,0 +1,9 @@
+WorkingDirectory=/opt/travel/releases/929624036b944be1ce913f871070edcd5993a68beb638b5f41dad237689b3c34/backend
+ActiveState=active
+SubState=running
+DropInPaths=/etc/systemd/system/travel.service.d/55-weather-cache-release.conf
+NeedDaemonReload=no
+700 root:root /var/lib/travel-cutover/travel-recovery-release-20261126
+600 root:root /var/lib/travel-cutover/travel-recovery-release-20261126/previous.sqlite3
+06f782e4a37b0920adb6962458d05c9edf031e17f32b7af21ca566e1dc101ba2  /var/lib/travel-cutover/travel-recovery-release-20261126/previous.sqlite3
+{"application_id": "929624036b944be1ce913f871070edcd5993a68beb638b5f41dad237689b3c34", "format": 1, "rollback_backup_sha256": "06f782e4a37b0920adb6962458d05c9edf031e17f32b7af21ca566e1dc101ba2", "state": "new_writes_may_have_been_accepted"}

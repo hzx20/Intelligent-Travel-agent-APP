@@ -1,0 +1,40 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "authorized production backup and restoration of the original service",
+  "attempt": "6c1e7189c93110b43dab2deb",
+  "window_plan_sha256": "079ce5cf8d4660dfa964b072e4db3bc5655b13c2cec5f9ddf40be2816ac4770c",
+  "inventory_sha256": "53d1aaf81eaff026edd85c7ecf76c9bdcd55011bea732cbedf1a5a7576692f68",
+  "ciphertext": {
+    "filename": "travel-backup-6c1e7189c93110b43dab2deb.gpg",
+    "bytes": 32178540,
+    "members": 122,
+    "sha256": "16aa17c15fac81e6655a6d829db6828ff6cde2f3abafa2616334e5cf158846e4",
+    "recipient_fingerprint": "5634128F2A876BB72A3F740084968E4AC4006682",
+    "origin_sqlite_snapshot_integrity_and_foreign_keys_verified": true,
+    "origin_sources_stable": true,
+    "origin_scratch_protected_and_removed": true,
+    "local_vault_copy_sha256_and_owner_acl_verified": true,
+    "independent_decryption_and_restore_executed": false
+  },
+  "service": {
+    "origin_health_before": true,
+    "temporary_rescue_armed": true,
+    "write_stop_and_no_open_sqlite_handles_verified": true,
+    "original_service_running_with_new_pid": true,
+    "stop_request_to_verified_origin_health_seconds": 7.82,
+    "temporary_rescue_timer_cancelled": true,
+    "public_travel_page_http_status": 200,
+    "public_travel_health_http_status": 200,
+    "new_version_deployed": false
+  },
+  "private_candidate_directory": ".release-candidates/supplier-city-2026-11-20",
+  "private_evidence_sha256": {
+    "check_backup_window_rescue.py": "550a28530759f29c20da55eacac8a889730d53483fc392a97f0ceaafcc07532a",
+    "backup-window-rescue-probe-6d73aaf512237eb876365352.json": "f98df511de79841aa8b8d5828f9297044779b3f2977b84ab3e9e278bed1e5693",
+    "execute_backup_window.py": "92d5ddc6ff39b4c5968991dd845f6a5d65ae6ba78ea64ddddaecbada47715a37",
+    "formal-backup-6c1e7189c93110b43dab2deb.json": "1a4559bae03172d3201c883287a76c9081487b095131a466b7231b631d6356b3",
+    "formal-backup-6c1e7189c93110b43dab2deb-window.json": "7d7da5ee427d6e20397c2262301ede24f7aa4ccfba732b3690230ac896397760"
+  }
+}

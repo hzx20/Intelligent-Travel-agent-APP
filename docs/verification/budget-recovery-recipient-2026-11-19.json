@@ -1,0 +1,29 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "verify the exported public recipient and test streaming verification of a synthetic encrypted backup",
+  "public_key": {
+    "file": "C:/Users/i/Desktop/travel/travel-recovery-vault/travel-recovery-public.asc",
+    "bytes": 652,
+    "sha256": "5ad5461a9dc7ae77dff926e9ba5fb3352046fd658db55cfb78f98f09a003cacc",
+    "fingerprint": "5634128F2A876BB72A3F740084968E4AC4006682",
+    "encryption_subkey_fingerprint": "A78A088153507D8EC336A46432947A287EECA7A0",
+    "primary_algorithm": "EdDSA",
+    "encryption_algorithm": "ECDH",
+    "expires": null,
+    "single_public_key_with_encryption_subkey": true,
+    "public_key_encrypted_synthetic_sample": true,
+    "production_private_key_used": false,
+    "vault_acl_current_account_only": true
+  },
+  "streaming_verification": {
+    "test_keyring": "synthetic",
+    "passed": 13,
+    "seconds": 5.27,
+    "verified_copied_ciphertext_and_manifest": true,
+    "refused_tampered_ciphertext_with_original_digest": true,
+    "refused_tampered_ciphertext_with_recomputed_digest": true
+  },
+  "production_snapshot_created": false
+}

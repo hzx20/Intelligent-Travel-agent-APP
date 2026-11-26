@@ -1,0 +1,19 @@
+# Review candidate. Supply the selected recipient and enable the alert triggers together.
+[Unit]
+Description=Send the travel certificate alert for %i
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+NoNewPrivileges=yes
+StateDirectory=travel-tls-alert
+StateDirectoryMode=0700
+LoadCredential=smtp.json:/etc/travel-tls/mail.json
+TimeoutStartSec=1min
+ExecStart=/usr/bin/python3 -I -B /usr/local/libexec/travel_tls_mail.py %i

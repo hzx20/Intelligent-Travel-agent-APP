@@ -1,0 +1,28 @@
+{
+  "format": 1,
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope": "Recipient confirmation and read-only origin preparation for certificate alert activation",
+  "test_email_received_confirmed_by_user": true,
+  "smtp_secret_file_metadata_verified": true,
+  "smtp_secret_read": false,
+  "new_email_sent": false,
+  "installed_files_match_reviewed_sha256": {
+    "/usr/local/libexec/travel_tls_mail.py": "5de8930c5ca6cf799b2c8862ccd30c0cf7ce1c8b8e95f584b5bc41921d978d69",
+    "/etc/systemd/system/travel-ip-alert@.service": "8c8ccc17995a68a6fed4ce814afad931a750c41ba97d1f8b1eb91a357af326e7",
+    "/etc/systemd/system/travel-ip-saved-watch.service": "5c213a72851a2620de842f67c8ddbed10617eef61dbed8ea5a541ff5471ac7c3",
+    "/etc/systemd/system/travel-ip-saved-watch.timer": "c75b5f626dfe97139aa533568986c4cf341980916e7ac1c22b2f3db240e5473d"
+  },
+  "saved_watch_timer": "disabled_and_inactive",
+  "public_watch_timer_and_service_installed": false,
+  "renewal_alert_on_failure_loaded": false,
+  "renewal_edge_load_drop_in_loaded": true,
+  "origin_could_verify_public_ip_and_saved_leaf_match": true,
+  "reviewed_additions_sha256": {
+    "/etc/systemd/system/travel-ip-watch.service": "5f66780fb73a93e30d8b61b632e9a8b2566fc9fb1dd607df5496748e6aad8bd3",
+    "/etc/systemd/system/travel-ip-watch.timer": "03ededd36dbcd2cddf49283c28e9ee59c6348975f534f666a0191da865b156cb",
+    "/etc/systemd/system/travel-ip-renew.service.d/95-mail-alert.conf": "69c8018160c697886134c5eab8e447c9e102f061cdb92d16e327d9dde2335719",
+    "/etc/systemd/system/travel-ip-watch.service.d/95-mail-alert.conf": "b318702e02012ba9a24cb69da9fe7ba754d4cac6bf46363df08e03debfa96d1b"
+  },
+  "origin_configuration_changed": false
+}

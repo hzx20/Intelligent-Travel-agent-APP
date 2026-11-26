@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "scope": "Current AI strict-integer and map-ready candidate bound on actual Linux; module boundary handoff",
+  "goal_status": "active",
+  "whole_project_complete": false,
+  "production_ready": false,
+  "user_scope": {
+    "hotel": "Real inventory, quotes and booking required; no hotel transaction channel yet",
+    "transport": "AMap route query only this phase"
+  },
+  "local_cleanup_postcheck": {
+    "command_exit": 0,
+    "tabbit_instance": "C5DA767CB170AFB8",
+    "tabbit_live_tasks": [],
+    "specified_listening_ports_found": [],
+    "ports_checked": [
+      63291,
+      63292,
+      50366,
+      62156,
+      62157,
+      5264,
+      18963
+    ],
+    "matching_test_processes_found": [],
+    "scope": "Only explicitly listed QA ports and command-line patterns; not all machine processes"
+  },
+  "automatic_review": {
+    "previous_failure": "Usage-limit review failure; prior action not executed",
+    "retry_now": "Normal require_escalated review succeeded; no bypass",
+    "remaining_review_blocker": false
+  },
+  "windows_source_application_id": "2394c848e779ae8c67caaf7a417e8bd4286ecd7f60c1a01b28f3e44bd189f76b",
+  "windows_preview_plan_id": "f0d9a76c49d9287f638e226e1cb26cc4ffbce90f3f683ae750ae6ade622c3b87",
+  "linux_application_id": "b46aabf3e26aec1b69856d1be8b1cda6e7121488e22609bc9f7abe5c720480bd",
+  "linux_plan_id": "033971e548ecbd22038b8d225ac50c51a214f2d0d9a507b8cdcc2b5393d20970",
+  "frontend_id": "3697428c5a01d4b596abdfbb74cea44997bd4416a088bda9f259ab55f1246a77",
+  "actual_linux_python": "3.12.3",
+  "application_files": 104,
+  "plan_files": 184,
+  "transport": {
+    "members": 118,
+    "bytes": 359762,
+    "sha256": "d2577b814fba677d30ff5daed328bdbe7ddb70bc9085fb7cd77a6ed06aa902da",
+    "uploaded": true,
+    "all_hashes_match": true
+  },
+  "source_files_unchanged_on_linux": true,
+  "installed_closure_count": 63,
+  "installed_closure_matches_wheels": true,
+  "standalone_plan_verify_exit": 0,
+  "formal_unit_check": {
+    "exit_code": 1,
+    "formal_code_path_exists": false,
+    "formal_venv_path_exists": false,
+    "reason": "New formal runtime interpreter path does not exist"
+  },
+  "grammar_fixture_check": {
+    "exit_code": 0,
+    "only_code_and_interpreter_paths_replaced": true,
+    "installed_or_started": false
+  },
+  "production_state_unchanged": true,
+  "production_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+  "application_imported": false,
+  "service_started": false,
+  "database_created": false,
+  "runtime_installed": false,
+  "new_combined_runtime_tested": false,
+  "hotel_channel_connected": false,
+  "production_deployed": false,
+  "current_backend_schema_sha256": "bcbff2bd5fe30591689b3b9ca5d748100c9733b4b1a0e22da337ad3ae2a29b5c",
+  "prior_ai_tests": "28 passed, 11 deselected, 0.13s; see prior report; not rerun in packaging module",
+  "prior_map_tests": "196 Node tests, build, timeout and real SDK checks retain original scope; not rerun or added to AI count",
+  "next_steps": [
+    "Choose/open authorized hotel transaction test channel and obtain docs without exposing secrets",
+    "Validate current combined candidate runtime in isolation before formal release",
+    "Complete real AI/OCR, authorized external guides, account/device and release acceptance gaps in phase matrix"
+  ],
+  "handoff": "docs/交接归档-当前候选收口与恢复.md",
+  "source_receipt_sha256": {
+    "review.json": "4f0ab40a925132662d0a81d73514137e21e6185322c3982d61e45857905a8932",
+    "transport-review.json": "16a916afd1e1fb4a9a3d895d18ee6abcb95c80b063325982340fd62f20e0a0c8",
+    "upload.json": "fd673f5e5ec8295527de18c714faa8f3ee4351af1ff7cf5677b4d95b47e8c7e0",
+    "result.json": "509b0080cb3ae799ba75d31d96a7b9e54402cde1d7760cb76544eafda6e515d8"
+  },
+  "workspace_matches_frozen_candidate": false,
+  "workspace_divergence": [
+    {
+      "path": "backend/app/core/config.py",
+      "workspace_sha256": "8cb1e16cc6918fcd44025db8d11ca1ba1561e852854b598cb1dae24d66d2fd04",
+      "candidate_sha256": "84dfa218e0889961d81fa892a055bac25954b6dea622fbc6f06e90332b4a7eee",
+      "workspace_mtime_ns": 1794919048653768300
+    },
+    {
+      "path": "backend/app/core/provider_budget.py",
+      "workspace_sha256": "b3fa8410d63dcd7379dfd588dacf683506096b2d501a241dae33576402bb0875",
+      "candidate_sha256": "d7139b3a3c33eed99bb256f712bdb72e2cbeffafaa5260d79e1e0d784a6547aa",
+      "workspace_mtime_ns": 1794919049382782500
+    },
+    {
+      "path": "backend/app/main.py",
+      "workspace_sha256": "64312439f70f5bb252c734d8737ec23678cd1b499a07eb32a1005ada8bbbeb4d",
+      "candidate_sha256": "987b1f0c50bc1555f6ff01fc776be427d88c24f9755d012a5f8c84a2641a70e5",
+      "workspace_mtime_ns": 1794919122560878500
+    },
+    {
+      "path": "backend/app/services/weather.py",
+      "workspace_sha256": "32ab2a945e35b7ba3e2163651f5ef7c0c2a34fcb24e47ac829c76cfc05ba5eae",
+      "candidate_sha256": "a44e4ecca4dec7c7a55ee94227eae7afbaded7e49ad66cfdbfbb6e681efddb2b",
+      "workspace_mtime_ns": 1794919049203066200
+    }
+  ],
+  "workspace_divergence_handling": "Preserved without integration or attribution; candidate validation covers frozen bytes only. Review these changes before any new preparation or release."
+}

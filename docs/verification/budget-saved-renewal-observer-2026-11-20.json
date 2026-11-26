@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "read-only observation of the enabled dedicated certificate timer",
+  "observed_at_utc": "2026-11-20T09:54:33.278694+00:00",
+  "state": "waiting_for_first_check",
+  "timer_enabled_and_waiting": true,
+  "scheduled_first_check_utc": "2026-11-20T10:18:31+00:00",
+  "scheduled_first_check_local": "2026-11-20T18:18:31+08:00",
+  "timer_trigger_or_service_start_observed": false,
+  "saved_certificate_trust_check_passed": true,
+  "saved_certificate_matches_first_issuance": true,
+  "production_install_bytes_verified": true,
+  "classifier_synthetic_cases_passed": 8,
+  "renewal_started_by_observer": false,
+  "private_key_read_by_observer": false,
+  "private_candidate_directory": ".release-candidates/supplier-city-2026-11-20",
+  "private_evidence_sha256": {
+    "observe_saved_renewal.py": "a305658b4bf31d98627ec7b6ebcc82519d058ddeae4f24559e859e87e9dd2e97",
+    "saved-renewal-observation-20261120T095433Z.json": "b7e5e87b478a88f14404ddec93ebe4d8ba4407f8c6efed19c32ca5063a0d6a6f"
+  }
+}

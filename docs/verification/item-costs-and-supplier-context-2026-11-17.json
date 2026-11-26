@@ -1,0 +1,350 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "goal_status": "active",
+  "whole_complex_scenario_passed": false,
+  "production_ready": false,
+  "change": "Reject category or total estimates below explicitly listed item costs; keep missing/null amounts unknown; allow an explicit other category; attach server-generated AI-estimate provenance and completeness; show budget and per-item estimated costs.",
+  "source_sha256": {
+    "backend/app/services/itinerary.py": "11791eafcfcca5bb680ed27d0ca12e182bf916addd6975c6a9c7f634b3d002f9",
+    "backend/tests/test_itinerary_item_costs.py": "72ccebab26f16a2595c602edc04cb428e58c23e352dcf0e90c63e5eda146df15",
+    "frontend/src/utils/planBudget.js": "5993bc838781eb02e04dbfed5b3d5b287438badcb3da8ba32125c89b64da084b",
+    "frontend/src/components/PlanBudgetSummary.vue": "63c3ba03a9c22f90c9b2ab4f43743502f4ae613e7c61d5cc2f212de26751af9c",
+    "frontend/src/views/PlanView.vue": "4f7e0be9f12e9574b6358edab68dcce62fa576747e093f3e0575841166ab8150",
+    "frontend/test/planBudget.test.js": "272a213e1645955cd841a88b9502eb860c811194cdc688724a6687e30630e879"
+  },
+  "backend_tests": {
+    "passed": 50,
+    "deselected": 3,
+    "seconds": 1.34,
+    "exit_code": 0,
+    "new_cases": 11,
+    "existing_selected": 39,
+    "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -B -m pytest tests/test_itinerary_item_costs.py tests/test_itinerary_budget_and_days.py tests/test_itinerary_budget_jobs.py tests/test_llm_output_recovery.py tests/test_v07_graph.py tests/test_v11_traffic.py tests/test_v11_stay.py -k 'not graph_compiled_and_flows and not plan_stream' -q",
+    "initial_test_failure": "A test compared whole normalized items although existing normalization adds access; corrected assertion to cost fields. 1 failed/49 passed before final run."
+  },
+  "frontend": {
+    "node_passed": 202,
+    "node_seconds": 0.7356225,
+    "new_tests": 3,
+    "final_build_modules": 130,
+    "final_build_seconds": 1.03,
+    "candidate_id": "102000bdcc2bf3a5eec4d188d92bfb25b12dbf014363ce355e4cde279c83d03e",
+    "files": 48,
+    "path": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\frontend-2026-11-17-item-costs2",
+    "first_candidate": "103fab4d7c5da8ae332f57ae568cce42ec35afd7d1bf5188021e13f766827d18",
+    "layout_fix": "Separate address/time, cost estimate and unverified-place notes onto separate lines after screenshot review"
+  },
+  "real_model": {
+    "passed": false,
+    "generated_valid_result": false,
+    "model": "glm-4-flash",
+    "sends": 2,
+    "http_statuses": [
+      200,
+      200
+    ],
+    "seconds": 250.077,
+    "failure_details": [
+      {
+        "reply": 1,
+        "reason": "预算分项合计为2200元，与总计3000元不一致",
+        "budget_summary": {
+          "交通": 200,
+          "住宿": 1000,
+          "餐饮": 600,
+          "门票": 300,
+          "其他": 100,
+          "总计": 3000
+        },
+        "items": [
+          {
+            "day": 1,
+            "name": "杭州",
+            "category": "交通",
+            "type": "交通",
+            "cost": null
+          },
+          {
+            "day": 1,
+            "name": "西湖",
+            "category": "门票",
+            "type": "景点",
+            "cost": null
+          },
+          {
+            "day": 1,
+            "name": "西湖周边餐厅",
+            "category": "餐饮",
+            "type": "餐饮",
+            "cost": 100
+          },
+          {
+            "day": 1,
+            "name": "中国茶叶博物馆",
+            "category": "门票",
+            "type": "景点",
+            "cost": 40
+          },
+          {
+            "day": 2,
+            "name": "浙江省博物馆",
+            "category": "门票",
+            "type": "景点",
+            "cost": 30
+          },
+          {
+            "day": 2,
+            "name": "浙江省博物馆附近餐厅",
+            "category": "餐饮",
+            "type": "餐饮",
+            "cost": 80
+          },
+          {
+            "day": 2,
+            "name": "杭州动物园",
+            "category": "门票",
+            "type": "景点",
+            "cost": 50
+          },
+          {
+            "day": 2,
+            "name": "杭州动物园附近餐厅",
+            "category": "餐饮",
+            "type": "餐饮",
+            "cost": 100
+          },
+          {
+            "day": 3,
+            "name": "杭州宋城",
+            "category": "门票",
+            "type": "景点",
+            "cost": 100
+          },
+          {
+            "day": 3,
+            "name": "宋城附近餐厅",
+            "category": "餐饮",
+            "type": "餐饮",
+            "cost": 80
+          },
+          {
+            "day": 3,
+            "name": "杭州大厦",
+            "category": "餐饮",
+            "type": "餐饮",
+            "cost": null
+          },
+          {
+            "day": 3,
+            "name": "杭州",
+            "category": "交通",
+            "type": "交通",
+            "cost": null
+          }
+        ]
+      },
+      {
+        "reply": 2,
+        "reason": "预算分项合计为1020元，与总计1200元不一致；门票已列明细合计为160元，超过该类汇总150元，请核对所有天的费用并同步汇总",
+        "budget_summary": {
+          "交通": 120,
+          "住宿": 300,
+          "餐饮": 300,
+          "门票": 150,
+          "其他": 150,
+          "总计": 1200
+        },
+        "items": [
+          {
+            "day": 1,
+            "name": "西湖",
+            "category": "门票",
+            "type": "景点",
+            "cost": null
+          },
+          {
+            "day": 1,
+            "name": "中国茶叶博物馆",
+            "category": "门票",
+            "type": "室内场馆",
+            "cost": 50
+          },
+          {
+            "day": 1,
+            "name": "附近餐馆",
+            "category": "餐饮",
+            "type": "餐饮",
+            "cost": null
+          },
+          {
+            "day": 1,
+            "name": "断桥残雪",
+            "category": "门票",
+            "type": "景点",
+            "cost": null
+          },
+          {
+            "day": 2,
+            "name": "浙江省博物馆",
+            "category": "门票",
+            "type": "室内场馆",
+            "cost": 30
+          },
+          {
+            "day": 2,
+            "name": "附近餐馆",
+            "category": "餐饮",
+            "type": "餐饮",
+            "cost": null
+          },
+          {
+            "day": 2,
+            "name": "中国丝绸博物馆",
+            "category": "门票",
+            "type": "室内场馆",
+            "cost": 50
+          },
+          {
+            "day": 2,
+            "name": "杭州科技馆",
+            "category": "门票",
+            "type": "室内场馆",
+            "cost": 30
+          },
+          {
+            "day": 3,
+            "name": "杭州宋城",
+            "category": "门票",
+            "type": "景点",
+            "cost": null
+          },
+          {
+            "day": 3,
+            "name": "附近餐馆",
+            "category": "餐饮",
+            "type": "餐饮",
+            "cost": null
+          },
+          {
+            "day": 3,
+            "name": "杭州丝绸城",
+            "category": "餐饮",
+            "type": "购物",
+            "cost": null
+          },
+          {
+            "day": 3,
+            "name": "酒店",
+            "category": "住宿",
+            "type": "住宿",
+            "cost": null
+          }
+        ]
+      }
+    ],
+    "local_env_unchanged": true,
+    "temporary_budget_removed": true,
+    "binding": "b46a frozen base plus exact current itinerary snapshot, local Python3.13.14",
+    "terminal_session": 60700
+  },
+  "recorded_previous_reply_regression": {
+    "previous_numeric_probe_passed_but_item_detail_now_rejected": true,
+    "reason": "门票已列明细合计为150元，超过该类汇总50元，请核对所有天的费用并同步汇总",
+    "current_source_sha256": "11791eafcfcca5bb680ed27d0ca12e182bf916addd6975c6a9c7f634b3d002f9"
+  },
+  "browser": {
+    "passed": true,
+    "elapsed_ms": 11288,
+    "viewports": [
+      {
+        "label": "desktop",
+        "size": {
+          "height": 900,
+          "width": 1280
+        },
+        "budget_source_is_estimate": true,
+        "unknown_item_cost_shown": true,
+        "budget_total": "1170",
+        "no_horizontal_overflow": true
+      },
+      {
+        "label": "mobile",
+        "size": {
+          "height": 844,
+          "width": 390
+        },
+        "budget_source_is_estimate": true,
+        "unknown_item_cost_shown": true,
+        "budget_total": "1170",
+        "no_horizontal_overflow": true
+      }
+    ],
+    "fixture": "Synthetic estimate1170 and one null item, no real quote or corrected provider itinerary",
+    "api_and_sdk": "Synthetic responses, no real supplier calls",
+    "own_token_removed": true,
+    "own_page_closed": true,
+    "final_screenshots_exported_and_viewed": 2,
+    "initial_layout_screenshots_viewed": 2,
+    "finish_result": "Unknown task; not counted as confirmed finish",
+    "global_task_postcheck": []
+  },
+  "cleanup": {
+    "both_static_servers_exit": 0,
+    "no_backend_or_business_database_started_for_browser": true,
+    "independent_postcheck": {
+      "specified_listeners": [],
+      "known_pid_matches": [],
+      "ports_checked": [
+        54854,
+        55087
+      ]
+    }
+  },
+  "user_supplied_context": {
+    "document": "docs/travel-data-suppliers.md",
+    "document_sha256": "fc55ef7042d89d018f80079a267a38de0dfba10567bbae7dfd953e9738d0a160",
+    "verification_sha256": "18fa2359dd64e04559aff77c05265c9ba910b70f61c83655ee8e323161f63d3e",
+    "known_source_of_prior_supplier_changes": true,
+    "this_turn_current_supplier_mock_tests": {
+      "passed": 38,
+      "seconds": 0.38,
+      "exit_code": 0
+    },
+    "prior_documented_browser_tests": {
+      "passed": 6,
+      "viewports": [
+        "1280x900",
+        "390x844"
+      ],
+      "supplier_responses": "synthetic",
+      "external_requests_blocked": true
+    },
+    "prior_documented_live_weather": {
+      "passed": true,
+      "forecast_days": 7,
+      "attribution_present": true
+    },
+    "prior_documented_variflight": {
+      "passed": true,
+      "method": "tools/list",
+      "three_tool_schemas_verified": true,
+      "paid_data_queried": false
+    },
+    "new_supplier_queries_this_context_read": 0,
+    "paid_flight_queries_not_authorized_by_path_reference": true,
+    "hotel_transactions_still_not_connected": true,
+    "source_files_preserved": true
+  },
+  "validation_limits": [
+    "Unknown prices stay unknown; no real prices or bookability are proven",
+    "Legacy category inference is marked incomplete; declared categories and price estimates are still model statements",
+    "Complex indoor/rest/venue suitability remains unverified",
+    "This is not the complete current worktree/Linux deployment candidate"
+  ],
+  "next_required_work": "Replace model-arithmetic dependency with a contribution-based expense contract and program-computed totals, preserving unknown amounts and refusing over-cap known costs. Keep full complex-scenario gate open; do not silently rewrite submitted contradictions or repeat prompts just to obtain green.",
+  "production_deployed": false,
+  "paid_flight_data_requested": false,
+  "new_map_queries": 0,
+  "handoff": "docs/交接归档-费用明细校验与供应商记录关联.md"
+}

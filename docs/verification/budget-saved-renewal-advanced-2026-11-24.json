@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope": "read-only verification of the renewed saved certificate and scheduled service journal",
+  "previous_fingerprint_sha256": "54d2dc41cedefd7d49889295d2accbad1b3b7759251febbf685b58749fdab88d",
+  "current_fingerprint_sha256": "19c0f0f01f07f295794d5cf58764a689d32fe8a2acec69e1d91aef606f27c44c",
+  "previous_certificate_last_observed_in_window_utc": "2026-11-22T16:16:50.742798+00:00",
+  "new_leaf_archive_modified_utc": "2026-11-22T22:20:13.207456+00:00",
+  "new_generation_first_confirmed_local": "2026-11-23T06:20:13.466244+08:00",
+  "not_before_local": "2026-11-23T05:21:40+08:00",
+  "not_after_local": "2026-11-29T21:21:39+08:00",
+  "new_leaf_and_key_match_verified_by_scheduled_checks": true,
+  "certificate_public_trust_valid": true,
+  "latest_check_result": "success",
+  "private_key_read_by_probe": false,
+  "legacy_service_healthy": true,
+  "origin_443_listening": false,
+  "public_tls_verified": false,
+  "maintenance_uses_latest_saved_generation_tests_passed": 4,
+  "private_timer_observation_path": ".release-candidates/supplier-city-2026-11-20/saved-renewal-observation-20261124T142728Z.json",
+  "private_timer_observation_sha256": "1cd3f314345084234e4b161be5fac427a94d6b740821312adc5971f3a2b621c2"
+}

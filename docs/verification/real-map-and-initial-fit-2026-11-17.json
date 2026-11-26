@@ -1,0 +1,269 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "phase": "real_map_validated_initial_fit_fixed_local_candidate_prepared_linux_binding_pending",
+  "goal_status": "active",
+  "production_ready": false,
+  "provider_rest_calls": [
+    {
+      "path": "/v5/place/text",
+      "request_number": 1,
+      "http_status": 200,
+      "provider_status": "1",
+      "infocode": "10000",
+      "poi_count": 20,
+      "route_path_count": null
+    },
+    {
+      "path": "/v5/place/text",
+      "request_number": 1,
+      "http_status": 200,
+      "provider_status": "1",
+      "infocode": "10000",
+      "poi_count": 20,
+      "route_path_count": null
+    },
+    {
+      "path": "/v5/direction/walking",
+      "request_number": 2,
+      "http_status": 200,
+      "provider_status": "1",
+      "infocode": "10000",
+      "poi_count": null,
+      "route_path_count": 1
+    },
+    {
+      "path": "/v5/direction/driving",
+      "request_number": 3,
+      "http_status": 200,
+      "provider_status": "1",
+      "infocode": "10000",
+      "poi_count": null,
+      "route_path_count": 1
+    }
+  ],
+  "provider_rest_total": 4,
+  "public_pois": [
+    "杭州西湖风景名胜区-断桥残雪",
+    "杭州西湖博物馆总馆"
+  ],
+  "walking_reference": {
+    "minutes_rounded_up": 41,
+    "km_display": 3.0
+  },
+  "driving_reference": {
+    "minutes_rounded_up": 12,
+    "km_display": 3.0
+  },
+  "real_route_frontend_id": "4abda08e3d1fec2a1bbce7392c8b49e1267471470736a4b90f808de0ef34c4ab",
+  "initial_fit_real_sdk": {
+    "bidirectional_selection_without_manual_fit": true,
+    "desktop_capture": {
+      "bytes": 268742,
+      "captureId": "shot-ab1e6a45-4292-4729-a4f8-87675ddd20b5",
+      "capturedFullPage": false,
+      "height": 900,
+      "issuesDelta": [],
+      "mimeType": "image/png",
+      "nextAction": {
+        "mimeType": "image/png",
+        "path": "C:\\Users\\i\\AppData\\Local\\Tabbit Browser\\User Data\\LocalAgent\\Runtime\\artifacts\\task-aa640f48-202a-44a7-9f71-4e9f396dade9\\screenshot-shot-ab1e6a45-4292-4729-a4f8-87675ddd20b5.png",
+        "type": "load_image"
+      },
+      "path": "C:\\Users\\i\\AppData\\Local\\Tabbit Browser\\User Data\\LocalAgent\\Runtime\\artifacts\\task-aa640f48-202a-44a7-9f71-4e9f396dade9\\screenshot-shot-ab1e6a45-4292-4729-a4f8-87675ddd20b5.png",
+      "recommendedLimitExceeded": false,
+      "requestedFullPage": false,
+      "requiresImageLoad": true,
+      "screenshotCount": 1,
+      "sha256": "e108c4a87c954ed23114e3a8f2d5b5758d3b3c96407cdd8201e8707e7179a5a8",
+      "type": "browser_screenshot",
+      "warnings": [],
+      "width": 1280
+    },
+    "desktop_initial": {
+      "map": {
+        "height": 712,
+        "width": 529.28125,
+        "x": 671.46875,
+        "y": 449.72918701171875
+      },
+      "markers": [
+        {
+          "height": 28,
+          "label": "1",
+          "width": 28,
+          "x": 896.9166870117188,
+          "y": 615.7083740234375
+        },
+        {
+          "height": 28,
+          "label": "2",
+          "width": 28,
+          "x": 947.0104370117188,
+          "y": 967.7396240234375
+        }
+      ],
+      "viewport": {
+        "dpr": 1.0000000298023224,
+        "height": 900,
+        "width": 1280
+      }
+    },
+    "mobile_capture": {
+      "bytes": 100409,
+      "captureId": "shot-21e1e450-8562-4206-8443-0065104a4c7b",
+      "capturedFullPage": false,
+      "height": 844,
+      "issuesDelta": [],
+      "mimeType": "image/png",
+      "nextAction": {
+        "mimeType": "image/png",
+        "path": "C:\\Users\\i\\AppData\\Local\\Tabbit Browser\\User Data\\LocalAgent\\Runtime\\artifacts\\task-aa640f48-202a-44a7-9f71-4e9f396dade9\\screenshot-shot-21e1e450-8562-4206-8443-0065104a4c7b.png",
+        "type": "load_image"
+      },
+      "path": "C:\\Users\\i\\AppData\\Local\\Tabbit Browser\\User Data\\LocalAgent\\Runtime\\artifacts\\task-aa640f48-202a-44a7-9f71-4e9f396dade9\\screenshot-shot-21e1e450-8562-4206-8443-0065104a4c7b.png",
+      "recommendedLimitExceeded": false,
+      "requestedFullPage": false,
+      "requiresImageLoad": true,
+      "screenshotCount": 2,
+      "sha256": "7c931405b35615618fd77a3881a44fdc1ff1673b46ec850b45f4d0c43b7a0384",
+      "type": "browser_screenshot",
+      "warnings": [],
+      "width": 390
+    },
+    "mobile_initial": {
+      "map": {
+        "height": 506.3958435058594,
+        "width": 343.35418701171875,
+        "x": 15.65625,
+        "y": 607.125
+      },
+      "markers": [
+        {
+          "height": 28,
+          "label": "1",
+          "width": 28,
+          "x": 148.1041717529297,
+          "y": 670.1041870117188
+        },
+        {
+          "height": 28,
+          "label": "2",
+          "width": 28,
+          "x": 198.1979217529297,
+          "y": 1022.1354370117188
+        }
+      ],
+      "viewport": {
+        "dpr": 1.0000000298023224,
+        "height": 844,
+        "width": 390
+      }
+    },
+    "mobile_overflow": false,
+    "no_manual_fit_button": true,
+    "own_fixture_removed": true,
+    "own_page_closed": true,
+    "passed": true,
+    "public_fixture": true,
+    "rest_queries": 0
+  },
+  "node_full": {
+    "passed": 196,
+    "duration_ms": 673.7479,
+    "exit_code": 0
+  },
+  "browser_regression": {
+    "config_and_script_scenarios": 4,
+    "seconds": 47.2,
+    "base_map_hung_scenarios": 2,
+    "base_map_seconds": 35.8,
+    "all_passed": true
+  },
+  "build": {
+    "exit_code": 0,
+    "modules": 122,
+    "seconds": 1.13
+  },
+  "source_sha256": {
+    "frontend/src/utils/amap.js": "d2e734bfa5d84cbf7689f7c8b901f308789b56679ec702e879ba9c40d0bd573e",
+    "frontend/src/utils/mapReady.js": "e3db2ed39613dd655081b4492b98af10f2cd76eb49d9acd19de769fdaa0512d5",
+    "frontend/src/components/TripMap.vue": "64c7f90713b4ac11c42956ee1f4e11dd126eb4ef246a5f05c50334952b9b63b2",
+    "frontend/src/views/PlanView.vue": "4c609ff3f696e0c7feae796dd42357defa2b31807bf027e724d9deb19d4bbee6",
+    "frontend/test/mapReady.test.js": "9403faf57ad868236268682285a16642616e9faf200ac3db0015d9759cd6df9e",
+    "frontend/test/tripMapComponent.test.js": "0228124446a94d54abcde40ccd421accba3bc0f5d87bab074033cacca4c31964",
+    "frontend/e2e/map-loading.spec.js": "ba02870101c26a345ef32d29a0b8b7ae1076c50fc04ad6f487c3c498d87f967d",
+    "frontend/e2e/production-map-smoke.mjs": "b19d4941f1a3a08e14f73f3f223b232f46b607a8fb8e01a8a5170bbf862ad35d"
+  },
+  "screenshots": [
+    {
+      "path": ".release-candidates/real-map-review-2026-11-17-attempt2/desktop-real-map.png",
+      "sha256": "eafef3a603264b13cc6768788410456a9c9dc9eb0dd63deecc552986adee774d"
+    },
+    {
+      "path": ".release-candidates/real-map-review-2026-11-17-attempt2/mobile-real-map.png",
+      "sha256": "0a01263d034f426dafe19a57b325ed4ffbd9fb2a0422d0d5769766b6f4f6949c"
+    },
+    {
+      "path": ".release-candidates/real-map-ready-review-2026-11-17/desktop-initial-fit.png",
+      "sha256": "e108c4a87c954ed23114e3a8f2d5b5758d3b3c96407cdd8201e8707e7179a5a8"
+    },
+    {
+      "path": ".release-candidates/real-map-ready-review-2026-11-17/mobile-initial-fit.png",
+      "sha256": "7c931405b35615618fd77a3881a44fdc1ff1673b46ec850b45f4d0c43b7a0384"
+    }
+  ],
+  "local_preview": {
+    "frontend_id": "3697428c5a01d4b596abdfbb74cea44997bd4416a088bda9f259ab55f1246a77",
+    "source_application_id": "cf7978b42324625c775c5ac1f8de788a2b067d66da9f6227604674c1926cd9a8",
+    "prepared_python": "3.13.14",
+    "windows_plan_id": "ea942bc0ed9afdb793d9f4daa2cda8503b7d0ccb36d95a635dc40778f2b8499f",
+    "files": 184,
+    "bundle_bytes": 359625,
+    "bundle_sha256": "1e74ae38d04159c4e2f720a883a3c29853bb5396f2b09311f22191d9d679290d",
+    "uploaded": false,
+    "linux_candidate_generated": false
+  },
+  "last_verified_linux_plan_id": "936af8023268dd220baa84aa9393b089a245eba11ce6f586d7c515864a4eed53",
+  "last_linux_plan_includes_map_complete_fix": false,
+  "cleanup": {
+    "first_failure_recovery": {
+      "owned_processes": 0,
+      "listeners": 0,
+      "synthetic_work_removed": true
+    },
+    "real_routes": {
+      "ready_reached": true,
+      "owned_processes_stopped": true,
+      "synthetic_work_removed": true,
+      "elapsed_seconds": 601.97
+    },
+    "initial_fit": {
+      "ready_reached": true,
+      "owned_processes_stopped": true,
+      "synthetic_work_removed": true,
+      "elapsed_seconds": 428.99
+    },
+    "own_browser_pages_closed": true,
+    "own_guest_fixture_records_removed": true,
+    "final_independent_port_and_process_check": "not_executed_automatic_review_usage_limit",
+    "final_browser_finish": "own_page_closed; task-scoped finish/diagnose returned Unknown task; global diagnosis not executed"
+  },
+  "review_failure": {
+    "kind": "automatic_approval_review_usage_limit",
+    "action": "read-only Tabbit live-task diagnosis and final local port/process postcheck",
+    "executed": false,
+    "unsafe_determination": false,
+    "linux_upload_attempted": false,
+    "do_not_bypass": true
+  },
+  "limits": [
+    "Public Hangzhou sample only; not full regional coverage or entitlement proof",
+    "Viewport checks are not physical-device acceptance",
+    "Real SDK tile cancellations observed during moves/navigation",
+    "No real AI/OCR or production accounts used",
+    "No production env/business DB read, dependency install, service switch or image upload",
+    "Latest complete-event fix not yet Linux-bound"
+  ],
+  "archive": "docs/交接归档-真实地图与首次取景.md"
+}

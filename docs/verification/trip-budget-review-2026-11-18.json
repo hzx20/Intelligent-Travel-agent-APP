@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "scope": "copy validated historical planning reference and record separately sourced manual budget checks",
+  "backend_passed": 33,
+  "backend_privacy_focus_passed": 2,
+  "frontend_passed": 215,
+  "travel_build": true,
+  "frontend_id": "83a024dca6cea7bc09c0005c5ad5f6083ca1c3e0a7f49a8583132ad6ba4944fc",
+  "frontend_files": 49,
+  "migration_sha256": "cae9d9ad91fcd0ded91e44c1b70a34121608c3202571776c5f4811cc7c8ab8db",
+  "budget_service_sha256": "7d21b36cd3c5822bfcdd473c455b711041c56b0bca0a082f367dbf437616b285",
+  "browser": {
+    "script": ".release-candidates/trip-budget-review-ui-2026-11-18/check.mjs",
+    "result": ".release-candidates/trip-budget-review-ui-2026-11-18/result.json",
+    "viewports": [[1280, 900], [390, 844]],
+    "local_api": true,
+    "synthetic_quote_amounts": true,
+    "original_limit_cny": 3000,
+    "original_unknown_items": 14,
+    "temporary_database_and_processes_closed": true
+  },
+  "real_prices_verified_end_to_end": false,
+  "real_hotel_room_offer_verified": false,
+  "published": false
+}

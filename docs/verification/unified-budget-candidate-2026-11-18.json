@@ -1,0 +1,59 @@
+{
+  "date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "scope": "Windows saved candidate plus static review for the Linux target, no remote actions",
+  "frontend": {
+    "id": "83a024dca6cea7bc09c0005c5ad5f6083ca1c3e0a7f49a8583132ad6ba4944fc",
+    "files": 49,
+    "path": ".release-candidates/frontend-2026-11-18-unified-budget",
+    "node_tests_passed": 215,
+    "travel_build": true
+  },
+  "application": {
+    "id": "9349719f177f76155a3b13e02fe9e7609f7b673b3401a749050f2da548d56b04",
+    "files": 117,
+    "path": ".release-candidates/unified-application-2026-11-18-budget",
+    "prepared_python": "3.13.14",
+    "current_source_hashes_matched": true
+  },
+  "transport": {
+    "report": ".release-candidates/unified-budget-review-2026-11-18/code-archive.json",
+    "path": ".release-candidates/unified-budget-review-2026-11-18/application-source.tar.gz",
+    "sha256": "ef1633d7426258f9baaf3deba3c1f184c4dc0b6ece03d6071a2894d89cc305ed",
+    "bytes": 352456,
+    "members": 118,
+    "uploaded": false
+  },
+  "local_linux_preview": {
+    "id": "52b34439c2424fdc14ade7c427496a4e7d3daa315ef0c383e4db262a20be15c4",
+    "files": 197,
+    "path": ".release-candidates/unified-plan-local-preview-2026-11-18-budget-reviewed",
+    "offline_linux_wheels_verified": 63,
+    "static_files_and_bindings_verified": true,
+    "current_linux_runtime_verified": false,
+    "production_nginx_baseline_freshness_verified": false
+  },
+  "regression": {
+    "backend_passed": 591,
+    "backend_deselected": [
+      "tests/test_v07_graph.py::test_graph_compiled_and_flows",
+      "tests/test_v07_graph.py::test_plan_stream_saves_history_when_logged_in"
+    ],
+    "ignored_provider_test_files": ["tests/test_m1.py", "tests/test_m2.py"],
+    "log": ".release-candidates/unified-budget-review-2026-11-18/backend-regression.log",
+    "packaged_legacy_database_restart_passed": true,
+    "budget_review_preserved_after_restart": true
+  },
+  "saved_runtime": {
+    "report": ".release-candidates/unified-budget-review-2026-11-18/saved-bundle-runtime.json",
+    "script": ".release-candidates/unified-budget-review-2026-11-18/verify_saved_bundle.py",
+    "windows_nginx_uvicorn": true,
+    "edge_scenarios": 6,
+    "elapsed_seconds": 56.92,
+    "candidate_unchanged": true,
+    "loopback_services_returned": true,
+    "synthetic_work_removed": true
+  },
+  "published": false,
+  "production_ready": false
+}

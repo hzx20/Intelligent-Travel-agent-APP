@@ -1,0 +1,25 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "Windows isolated ASGI legacy read-back preflight with synthetic data",
+  "attempt": "6c1e7189c93110b43dab2deb",
+  "private_input_files_sha256": {
+    "../output/Verify-TravelRecoveryBackup.ps1": "33abae7e09fdf58f78eb91ca4aa8a0040d7d3841bc57b33014f789ed7cf5a334",
+    ".release-candidates/supplier-city-2026-11-20/verify_received_formal_backup.py": "833575d03196e96215415370d4c64135c4c247ddb442947770a0e6db21425f57",
+    ".release-candidates/supplier-city-2026-11-20/read_back_legacy_backup.py": "240cfa8f650fc3690720f05692458f0fee80d1fd7b404d6cd3f897cd7107c92e"
+  },
+  "legacy_version": "0.15.0",
+  "archived_python_source_hashes_verified": 27,
+  "actual_ciphertext_envelope_review_passed": true,
+  "authenticated_synthetic_wal_snapshot_passed": true,
+  "synthetic_account_profile_guides_favorites_read_back": true,
+  "wrong_synthetic_passphrase_rejected_before_application_start": true,
+  "invalid_synthetic_snapshot_rejected": true,
+  "synthetic_ciphertext_preserved": true,
+  "synthetic_files_and_keyring_cleaned": true,
+  "production_backup_receipt_present_at_preflight": false,
+  "formal_private_key_used_in_preflight": false,
+  "formal_snapshot_decrypted_in_preflight": false,
+  "native_linux_startup_tested_in_preflight": false
+}

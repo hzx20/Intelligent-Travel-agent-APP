@@ -1,0 +1,39 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "protected synthetic collection and synthetic SSH delivery to the Windows recovery vault",
+  "payload_bytes": 86378,
+  "payload_sha256": "0bafa444a3503b6981b7c854b6123d20e24afe0c753fdea61170ca10b0b6799a",
+  "production_plan_sha256": "60c1b3d4f4ff95dfb824f6fdf5c4d8b27ba33ab00c899136ca89a285180bfdbe",
+  "execution_guard_sha256": "ce526474f8239a09168a50f6205d80577aefeeaf4e74f7edc05e9dbd9d69e45b",
+  "private_candidate_directory": ".release-candidates/supplier-city-2026-11-20",
+  "private_evidence_sha256": {
+    "run_formal_backup.py": "f865453372674df455cf736f130517236a97d95da1465a577ce9593948aac876",
+    "receive_formal_backup.py": "9f6a1ddec50958d57e5cc67bdc1cae85e68f2db873b486b95cc6a17a0e476a6d",
+    "backup-protection-probe.json": "8e25839ed6a26e3971324a82ed9cfded5d9d2b8e5c3160c0e28fb8df4b880b8e",
+    "backup-delivery-origin-fixture.json": "d47babe63bc41beaa66de0d6543c3a6be9f169c28d305b45935708738254217b"
+  },
+  "protected_collection_probe": {
+    "sqlite_snapshot_verified": true,
+    "encrypted_fixture_files": 5,
+    "encrypted_fixture_bytes": 752,
+    "memory_mount_bytes": 134217728,
+    "memory_mount_noswap": true,
+    "collector_memory_locked": true,
+    "collector_core_dumps_disabled": true,
+    "protected_scratch_removed": true
+  },
+  "transport_probe": {
+    "synthetic_payload_bytes": 165000,
+    "origin_receipt_retrieved": true,
+    "invalid_length_digest_and_symlink_rejected": true,
+    "windows_owner_only_acl_verified": true,
+    "windows_atomic_delivery_cases_passed": 5,
+    "origin_and_client_fixtures_removed": true
+  },
+  "production_service_stopped": false,
+  "production_ciphertext_generated": false,
+  "production_ciphertext_received": false,
+  "production_restore_executed": false
+}

@@ -1,0 +1,43 @@
+{
+  "format": 1,
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope": "Install certificate loading for the existing dedicated travel HTTPS maintenance proxy",
+  "state": "installed_and_independently_verified",
+  "first_attempt_post_install_readback_failed": true,
+  "first_attempt_rollback_verified": true,
+  "failed_attempt_receipt_sha256": "715243a8af94f7f3452c419516fecc3d17993d4e17b1c6e24870049f95fa3f36",
+  "successful_attempt_receipt_sha256": "85ad5242c133a7df59b8f1e351c37fd146c6c0e81573598872e1118a392a0788",
+  "linux_systemd_candidate_verified": true,
+  "remote_installed_sha256": {
+    "/usr/local/libexec/travel_tls_rotate.py": "870becb7c41bb34805e76916c4e6913b2d61897197207319f4996bfebe261a15",
+    "/usr/local/libexec/travel_tls_edge.py": "dc57940cd85e7d44af1037f1210ab3b954693801d8975e9243f61386b4f8a806",
+    "/etc/systemd/system/travel-ip-renew.service.d/90-edge-load.conf": "099f0a17387d696266beae8aacb8e6270ea4d5e29f6876ad93491e471bee3328"
+  },
+  "live_exec_start_post_ordered_argv": [
+    ["/usr/bin/python3", "-I", "-B", "/usr/local/libexec/travel_tls_check.py", "saved", "--pair"],
+    ["/usr/bin/python3", "-I", "-B", "/usr/local/libexec/travel_tls_edge.py", "reconcile", "--apply"]
+  ],
+  "automatic_timer_enabled_and_waiting": true,
+  "next_timer_observed_at": "2026-11-25T00:18:55+08:00",
+  "edge_container_matches_retained_publication": true,
+  "legacy_backend_same_pid_and_healthy": true,
+  "public_trust_and_ip_san_verified": true,
+  "saved_current_and_public_leaf_sha256": "19c0f0f01f07f295794d5cf58764a689d32fe8a2acec69e1d91aef606f27c44c",
+  "current_certificate_expiry": "2026-11-29T21:21:39+08:00",
+  "public_http_statuses": {
+    "https_default_travel": 503,
+    "https_wlan_travel": 503,
+    "https_wlan_travel_api_health": 503,
+    "https_wlan_root": 404,
+    "http_wlan_root": 200,
+    "http_wlan_travel": 200
+  },
+  "maintenance_retry_after_seconds": 60,
+  "maintenance_cache_control": "no-store",
+  "manual_certbot_run": false,
+  "nginx_reload_during_install": false,
+  "scheduled_hook_execution_observed": false,
+  "actual_public_rotation_observed_after_install": false,
+  "production_release_cutover_performed": false
+}

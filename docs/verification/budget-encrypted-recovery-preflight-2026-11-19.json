@@ -1,0 +1,37 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "release manifest and storage metadata preflight plus encrypted recovery of a synthetic SQLite database",
+  "release_plan_id": "81ee1674adc6b9267e4b526ffdbf5313cae0b8094c5039ca220c528ef500f5b5",
+  "linux_application_id": "553a85ca32f4a4d339baaa618b8c9fc97e756b96d713dbcbbcd45ffe974ae363",
+  "release_plan_verified_files": 197,
+  "host_storage": {
+    "app_db_bytes": 335872,
+    "app_db_mode": "0644",
+    "data_directory_mode": "0755",
+    "env_file_mode": "0600",
+    "no_sqlite_sidecar_at_observation": true,
+    "free_mib": 42767,
+    "server_backup_parent_shares_application_filesystem": true,
+    "gpg_available": true
+  },
+  "crypto_and_database_tests_passed": 12,
+  "synthetic_database_recovered_from_copied_encrypted_archive": true,
+  "encryption_keyring_public_only": true,
+  "synthetic_tampered_ciphertext_refused": true,
+  "source_sha256": {
+    "backend/tools/seal_travel_backup.py": "1b99e9cc48ec0bef147071e4cf5399614913fd03121a792d6f2ce8fa1ba39138",
+    "backend/tests/test_seal_travel_backup.py": "6a0894d6e80ab382397e00201979da450f9c511bad8c26bf6cb94ba01d262628"
+  },
+  "operator_selected_destination": "local_workstation",
+  "workstation_vault": "C:/Users/i/Desktop/travel/travel-recovery-vault",
+  "workstation_vault_acl_current_account_only": true,
+  "workstation_vault_empty_at_preflight": true,
+  "interactive_key_preparation": "C:/Users/i/Desktop/travel/output/Prepare-TravelRecoveryKey.ps1",
+  "interactive_key_preparation_sha256": "c58624f12bdb80862fc99f814c043f113a056c4c71ddd528a1d104383ecf49d6",
+  "interactive_key_preparation_review_passed": true,
+  "production_recovery_key_created": false,
+  "production_database_read_by_this_rehearsal": false,
+  "production_backup_retained": false
+}

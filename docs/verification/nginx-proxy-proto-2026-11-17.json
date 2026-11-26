@@ -1,0 +1,104 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "status": "module_complete_pause_requested",
+  "production_ready": false,
+  "production_deployed": false,
+  "private_review_directory": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\nginx-review-2026-11-17-proto",
+  "merge": {
+    "unrelated_directives_unchanged": true,
+    "standard_mime_include_only": true,
+    "unrelated_directives_sha256": "c362c6fb8c56f1ed4422e145183d337dbb2d6a771c7b934c8b4eb81cfb6dcdd0",
+    "replaced_locations": [
+      [
+        "location",
+        "^~",
+        "/travel/api/plan/stream"
+      ],
+      [
+        "location",
+        "^~",
+        "/travel/api/"
+      ],
+      [
+        "location",
+        "^~",
+        "/travel/"
+      ],
+      [
+        "location",
+        "=",
+        "/travel"
+      ]
+    ],
+    "new_location_count": 8,
+    "zone_names": [
+      "travel_ai",
+      "travel_guest_route",
+      "travel_place",
+      "travel_plan",
+      "travel_plan_control"
+    ],
+    "map_bucket_before": null,
+    "map_bucket_after": 128,
+    "source_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "template_sha256": "a9b4fed10226ca093c7eddf2df8651b66837edbce2078588cf95fbb983d26c56",
+    "candidate_sha256": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+    "idempotent": true,
+    "syntax_tested": false,
+    "production_deployed": false
+  },
+  "linux_syntax": {
+    "candidate_sha256": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+    "before": {
+      "host_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "container_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "backend_pid": "1465894",
+      "nginx_pid": "1"
+    },
+    "after": {
+      "host_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "container_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "backend_pid": "1465894",
+      "nginx_pid": "1"
+    },
+    "production_state_unchanged": true,
+    "syntax_exit": 0,
+    "syntax_output": "nginx: the configuration file /dev/shm/travel-nginx-check.mrO3eWYd/nginx.conf syntax is ok\nnginx: configuration file /dev/shm/travel-nginx-check.mrO3eWYd/nginx.conf test is successful\n",
+    "ram_check_copy_removed": true,
+    "production_deployed": false,
+    "reload_performed": false
+  },
+  "local_validation": {
+    "result": "40 passed",
+    "elapsed_seconds": 21.46,
+    "exit_code": 0,
+    "skipped": 0,
+    "files": [
+      "tests/test_nginx_merge.py",
+      "tests/test_nginx_merge_runtime.py",
+      "tests/test_proxy_rate_limit.py",
+      "tests/test_proxy_chain_fixture.py",
+      "tests/test_proxy_chain_fixture_runtime.py"
+    ],
+    "session_id": 14019,
+    "full_backend_rerun": false,
+    "full_browser_rerun": false
+  },
+  "linux_chain_runner": {
+    "uploaded": false,
+    "executed": false,
+    "validation": "Python AST only; renderer separately tested locally",
+    "additional_process_authorization_obtained": false
+  },
+  "file_sha256": {
+    "deploy/nginx-travel.conf": "a9b4fed10226ca093c7eddf2df8651b66837edbce2078588cf95fbb983d26c56",
+    "backend/tools/nginx_merge.py": "827033b420948aa91a9d6f441fb95be8d66936b0d815c40cdd84b73f3444b51a",
+    "backend/tools/proxy_chain_fixture.py": "7b0f82cce84c869b91137d388bc53ecb3c029bb8dba084d5969e818bab0397b5",
+    "backend/tools/qa_linux_proxy_chain.py": "16ac73df50677c661cabd38a7b2d3bea1dd5babea638f2134bb14e78a52ccdb4",
+    "backend/tests/test_nginx_merge_runtime.py": "17a41416d09174e6af3a72f8085a4cf14b79b56ca9c5828117648b371d4a55de",
+    "backend/tests/test_proxy_chain_fixture.py": "211f4729f49fe34f95dee2c491e97514a1351fd9f8ba8e602feda5a6d84fb707",
+    "backend/tests/test_proxy_chain_fixture_runtime.py": "546a484c0ccd71daa4098f28879952c27444be93a0e1e247d9256e41055c7c45"
+  },
+  "handoff": "docs/交接归档-代理协议头与模块暂停.md"
+}

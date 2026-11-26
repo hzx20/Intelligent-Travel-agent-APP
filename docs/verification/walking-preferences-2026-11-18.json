@@ -1,0 +1,108 @@
+{
+  "scope": "trip walking preferences and walking alternative evaluation",
+  "date": "2026-11-18",
+  "goal_status": "active",
+  "source_sha256": {
+    "backend/app/services/walking_preferences.py": "bcf9f129e044dd0f5250960c26291c3a2ee34f543bf1d0bbc79cef31c7ceed39",
+    "backend/app/db/database.py": "ce514bd252dbe94784b633390689abde53a02f0c3eeca6faa38f1f678d54bb13",
+    "backend/app/db/trip_models.py": "f81e828764d7f2543a1cec08e6bdb1de0014cbb5e351121f18e729b5f040a3eb",
+    "backend/app/routers/trips.py": "03a8b934db3042efc1678be2faf6704ed2f56051b8534747ca395b8ee0d302dd",
+    "backend/app/routers/trip_guest_import.py": "3e08b5db9fcb3b82f339762fcdc5e0bf7151bdac0ca264dcf908b41940f06fd3",
+    "backend/tests/test_walking_preferences.py": "d2d3bd963c2deb7854731335f7016838c31e4141045b21686cdca07483d37e86",
+    "backend/tests/test_trip_guest_import.py": "02931bade026856eeb0616611e089b9779036feaa2a69031e24bc7db3f67f727",
+    "backend/tests/test_database_migration.py": "54779e9be7bb70f6be816475f09d39b1774a4ebbabdd3ddf8f235e7bc77fa2f3",
+    "frontend/src/store/guestTrips.js": "5a8b45b087fd0c4aca9fa08c9568c7bf3ea7e12abb15cc3a5b824b06502a1c0a",
+    "frontend/src/store/tripHome.js": "1c913a0ee4211d1258e60e13932c3e4a9f101c2d903006dd617e7fccc249a6a7",
+    "frontend/src/views/TripDetailView.vue": "1fa4a45e06ff7b0c07ceb94383ff9fd3ca24e25b71ee17a4651070359419790d",
+    "frontend/src/components/TripRoutes.vue": "33924f3458bc47b55b323a88fa1cec7342a9344d5e30100b609bc64014713afd",
+    "frontend/src/utils/tripRouteSummary.js": "411cdb114cfeeacb41ec34ad1a5eceb1fa8c305bd154d4cea17328da947804dc",
+    "frontend/test/tripMapComponent.test.js": "6f4e538f670f6e19395ecfd0e427dc31960120a3fa9610bbb295ce36006b380b",
+    "frontend/test/tripRouteSummary.test.js": "4775c07615041b2cf16bd2fba0dd8d514576bd07d357c045fdf1d0d3830184dd",
+    "frontend/test/guestTrips.test.js": "dae7feb6e245a80f21a07906f33726fa6d7da9c45d39750ebdcab9478846a0d5"
+  },
+  "backend": {
+    "passed": 55,
+    "seconds": 7.41,
+    "old_db_migration_rehearsed": true
+  },
+  "frontend": {
+    "passed": 209,
+    "build_passed": true,
+    "files": 48,
+    "map_component_loader_updated": true
+  },
+  "browser": {
+    "passed": true,
+    "frontend_id": "97689393d8719e935e246a531f6fe6371c74e5935fc512881bdbd85ef42fd1f3",
+    "assets_verified": 48,
+    "viewports": [
+      {
+        "label": "desktop",
+        "width": 1280,
+        "height": 900,
+        "screenshot": "desktop.png",
+        "screenshot_sha256": "6f83f3c4f7655dadfa7ebf5fcddd648092a182a9efadeea4c949176c592e5ec9",
+        "walking_segments": 2,
+        "driving_segments": 2,
+        "remaining_segment_pending": true,
+        "walking_stairs": 2,
+        "polylines": 2,
+        "partial_status_before_limit_change": true,
+        "exceeded_after_limit_change": true,
+        "captured_original_qualitative_preferences": true
+      },
+      {
+        "label": "mobile",
+        "width": 390,
+        "height": 844,
+        "screenshot": "mobile.png",
+        "screenshot_sha256": "e68dcb5dcff7bd7f03480f47d6673434d35c6721b55e7dfe7b320d5238dbed8b",
+        "walking_segments": 2,
+        "driving_segments": 2,
+        "remaining_segment_pending": true,
+        "walking_stairs": 2,
+        "polylines": 2,
+        "partial_status_before_limit_change": true,
+        "exceeded_after_limit_change": true,
+        "captured_original_qualitative_preferences": true
+      }
+    ],
+    "browser_version": "157.0.4341.60",
+    "backend_exit": 0,
+    "static_server_closed": true,
+    "browser_closed": true,
+    "backend": {
+      "map_queries": [],
+      "route_calls": [
+        {
+          "origin": "B023B014F0",
+          "destination": "B023B13PFT",
+          "mode": "walking"
+        },
+        {
+          "origin": "B023B13PFT",
+          "destination": "B0I15SU50Z",
+          "mode": "walking"
+        },
+        {
+          "origin": "B023B014F0",
+          "destination": "B023B13PFT",
+          "mode": "driving"
+        },
+        {
+          "origin": "B023B13PFT",
+          "destination": "B0I15SU50Z",
+          "mode": "driving"
+        }
+      ],
+      "temporary_database_removed": true
+    },
+    "screenshots_viewed": 2,
+    "backend_kind": "local FastAPI and temporary SQLite",
+    "supplier_transport": "recorded responses"
+  },
+  "new_external_requests": 0,
+  "full_complex_scenario_passed": false,
+  "production_changed": false,
+  "handoff": "docs/交接归档-步行偏好与路线超限核对.md"
+}

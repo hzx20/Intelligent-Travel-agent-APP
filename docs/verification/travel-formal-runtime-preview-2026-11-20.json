@@ -1,0 +1,29 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "origin path metadata and deployment payload preview",
+  "application_id": "28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+  "release_plan_id": "3546a422a4ce7b43bdde35b184c39f1d4ab886e33eb6df151dcf43c7346fdb80",
+  "formal_stage_plan_sha256": "f4b0b798f5a006749c106cef53e108a63652d24a7f84f348896170949fa67e4b",
+  "stage_payload_sha256": "3782b12157761ca0b78ed72cd6369161822145d16bdefd0ef48fe2fd904d722a",
+  "stage_payload_bytes": 408001,
+  "stage_payload_files": 133,
+  "verified_full_plan_members_on_origin": 197,
+  "pinned_origin_wheels_reused_in_preview": 63,
+  "original_parent_owner_uid_gid": [1000, 1001],
+  "original_parent_mode": "0755",
+  "formal_paths_previously_present": false,
+  "available_bytes_observed": 44729556992,
+  "original_service_remained_healthy": true,
+  "temporary_inputs_removed": true,
+  "production_parent_owner_updated_during_preview": false,
+  "formal_version_paths_created_during_preview": false,
+  "production_service_or_nginx_changed": false,
+  "private_candidate_directory": ".release-candidates/supplier-city-2026-11-20",
+  "private_evidence_sha256": {
+    "stage_formal_release.py": "6e328d5551256d0ea548925456ddf5a8fa458dc5f861cf9f4874250cfa2c26e8",
+    "formal-stage-location-origin.json": "fc3388fb720214f63dfd7f689d52cbc242256fa6bfa9315058bc52b6002e1b62",
+    "formal-runtime-preview-origin.json": "9caaf7d43ff0e4880dda26211e1dbad9622c74009119d5a60ee0b0044fb48ae1"
+  }
+}

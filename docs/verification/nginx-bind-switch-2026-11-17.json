@@ -1,0 +1,177 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "goal_status": "active",
+  "status": "isolated_bind_switch_and_recovery_verified_not_deployed",
+  "production_ready": false,
+  "authorization": "User explicitly allowed this isolated bind/switch/restore rehearsal on 2026-11-17, no production reload/restart",
+  "private_review_directory": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\bind-switch-review-2026-11-17-attempt2",
+  "remote_stage": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/bind-switch-20261117-review2",
+  "archive_bytes": 15333,
+  "archive_sha256": "601a40eb860742693278bee352d4e1222e7ef091fb81909516c0f99f3a3dfd80",
+  "remote_exit_code": 0,
+  "result": {
+    "success": true,
+    "production_deployed": false,
+    "production_reloaded": false,
+    "production_database_accessed": false,
+    "isolated_network": "none",
+    "published_ports": false,
+    "image_id": "sha256:98f8ec75657d21b924fe4f69b6b9bff2f6550ea48838af479d8894a852000e40",
+    "upstream_hostname_count": 1,
+    "normal_source_sha256": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+    "maintenance_source_sha256": "4f0b073fd6a90b3825981903b8cba0a6e481666c085f3fa0db6da7feaa57514f",
+    "fixture_normal_sha256": "54493cdbcd2303fd403a76774b2f8d09ed2536f1ed27e67a9f12e02899e689dd",
+    "fixture_maintenance_sha256": "9024045c19be0752c23b41e8fa588487425a680a41a35f2c3759621a0d824a86",
+    "exact_maintenance_syntax": {
+      "exit_code": 0,
+      "output": "nginx: the configuration file /dev/shm/travel-maintenance-check-2214b2d7cce44605be007a9c74e22832/nginx.conf syntax is ok\nnginx: configuration file /dev/shm/travel-maintenance-check-2214b2d7cce44605be007a9c74e22832/nginx.conf test is successful\n",
+      "ram_copy_removed": true
+    },
+    "atomic_replace_stale_bind_reproduced": true,
+    "visibility_gate_prevented_wrong_reload": true,
+    "maintenance_http_combinations": 42,
+    "malformed_candidate_blocked_and_same_inode_restored": true,
+    "unavailable_listener_blocked_by_configuration_test": {
+      "exit_code": 1,
+      "output": "nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nnginx: [emerg] bind() to 192.0.2.123:28080 failed (99: Cannot assign requested address)\nnginx: configuration file /etc/nginx/nginx.conf test failed\n"
+    },
+    "reload_exit_zero_but_http_gate_failure_detected": {
+      "signal_exit": 0,
+      "travel_entry_status": 404
+    },
+    "failed_runtime_restored_maintenance": true,
+    "normal_configuration_restored_after_maintenance": true,
+    "own_containers_removed": true,
+    "synthetic_work_removed": true,
+    "exact_syntax_ram_absent": true,
+    "production_state_unchanged": true,
+    "elapsed_seconds": 21.97
+  },
+  "independent_postcheck": {
+    "stored_result": {
+      "success": true,
+      "production_deployed": false,
+      "production_reloaded": false,
+      "production_database_accessed": false,
+      "isolated_network": "none",
+      "published_ports": false,
+      "image_id": "sha256:98f8ec75657d21b924fe4f69b6b9bff2f6550ea48838af479d8894a852000e40",
+      "upstream_hostname_count": 1,
+      "normal_source_sha256": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+      "maintenance_source_sha256": "4f0b073fd6a90b3825981903b8cba0a6e481666c085f3fa0db6da7feaa57514f",
+      "fixture_normal_sha256": "54493cdbcd2303fd403a76774b2f8d09ed2536f1ed27e67a9f12e02899e689dd",
+      "fixture_maintenance_sha256": "9024045c19be0752c23b41e8fa588487425a680a41a35f2c3759621a0d824a86",
+      "exact_maintenance_syntax": {
+        "exit_code": 0,
+        "output": "nginx: the configuration file /dev/shm/travel-maintenance-check-2214b2d7cce44605be007a9c74e22832/nginx.conf syntax is ok\nnginx: configuration file /dev/shm/travel-maintenance-check-2214b2d7cce44605be007a9c74e22832/nginx.conf test is successful\n",
+        "ram_copy_removed": true
+      },
+      "atomic_replace_stale_bind_reproduced": true,
+      "visibility_gate_prevented_wrong_reload": true,
+      "maintenance_http_combinations": 42,
+      "malformed_candidate_blocked_and_same_inode_restored": true,
+      "unavailable_listener_blocked_by_configuration_test": {
+        "exit_code": 1,
+        "output": "nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nnginx: [emerg] bind() to 192.0.2.123:28080 failed (99: Cannot assign requested address)\nnginx: configuration file /etc/nginx/nginx.conf test failed\n"
+      },
+      "reload_exit_zero_but_http_gate_failure_detected": {
+        "signal_exit": 0,
+        "travel_entry_status": 404
+      },
+      "failed_runtime_restored_maintenance": true,
+      "normal_configuration_restored_after_maintenance": true,
+      "own_containers_removed": true,
+      "synthetic_work_removed": true,
+      "exact_syntax_ram_absent": true,
+      "production_state_unchanged": true,
+      "elapsed_seconds": 21.97
+    },
+    "remaining_test_container_ids": [],
+    "exact_check_ram_absent": true,
+    "attempt2_work_absent": true,
+    "attempt1_work_absent": true,
+    "all_uploaded_files_unchanged": true,
+    "image_declared_volumes": null,
+    "host_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "container_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "production_backend_pid": "1465894",
+    "production_nginx_pid": "1"
+  },
+  "first_attempt": {
+    "remote_exit_code": 1,
+    "result": {
+      "success": false,
+      "production_deployed": false,
+      "production_reloaded": false,
+      "production_database_accessed": false,
+      "isolated_network": "none",
+      "published_ports": false,
+      "image_id": "sha256:98f8ec75657d21b924fe4f69b6b9bff2f6550ea48838af479d8894a852000e40",
+      "upstream_hostname_count": 1,
+      "normal_source_sha256": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+      "maintenance_source_sha256": "4f0b073fd6a90b3825981903b8cba0a6e481666c085f3fa0db6da7feaa57514f",
+      "fixture_normal_sha256": "145b6261357654945173ebfeec352395cca52afcedf652bc5b016ab53843a76d",
+      "fixture_maintenance_sha256": "5db65f5e6bbe9129022a6a6bdf9945b198b7f51cbb218384e12eb8d65e40a1ef",
+      "exact_maintenance_syntax": {
+        "exit_code": 0,
+        "output": "nginx: the configuration file /dev/shm/travel-maintenance-check-2dc95a8f63844042a9be352e733e9770/nginx.conf syntax is ok\nnginx: configuration file /dev/shm/travel-maintenance-check-2dc95a8f63844042a9be352e733e9770/nginx.conf test is successful\n",
+        "ram_copy_removed": true
+      },
+      "atomic_replace_stale_bind_reproduced": true,
+      "visibility_gate_prevented_wrong_reload": true,
+      "maintenance_http_combinations": 42,
+      "malformed_candidate_blocked_and_same_inode_restored": true,
+      "own_containers_removed": false,
+      "cleanup_error": "AssertionError",
+      "synthetic_work_removed": false,
+      "exact_syntax_ram_absent": true,
+      "production_state_unchanged": true,
+      "elapsed_seconds": 17.03
+    },
+    "cleanup_recovery": {
+      "exact_stage": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/bind-switch-20261117-review1",
+      "removed_owned_container_ids": [
+        "f1de4d25268d4ce5bc9714a8bbe40d4ba1a6f132c10be0885aae00beedb38d90"
+      ],
+      "other_labeled_containers_untouched": [],
+      "synthetic_work_removed": true,
+      "remaining_label_ids": [],
+      "diagnostics": [
+        {
+          "container_id": "f1de4d25268d4ce5bc9714a8bbe40d4ba1a6f132c10be0885aae00beedb38d90",
+          "syntax_exit": 1,
+          "syntax_output": "nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nnginx: [emerg] bind() to 192.0.2.123:28080 failed (99: Cannot assign requested address)\nnginx: configuration file /etc/nginx/nginx.conf test failed\n"
+        }
+      ]
+    },
+    "failure_explanation": "Configuration test rejected unavailable bind address; initial cleanup refused short IDs, later exact-ownership cleanup succeeded before retry"
+  },
+  "local_validation": {
+    "result": "42 passed",
+    "elapsed_seconds": 10.28,
+    "exit_code": 0,
+    "skipped": 0,
+    "merge_guards": 25,
+    "maintenance": 7,
+    "fixture": 8,
+    "cleanup": 2,
+    "full_backend_suite_rerun": false,
+    "full_browser_suite_rerun": false
+  },
+  "file_sha256": {
+    "backend/tools/bind_switch_fixture.py": "134f1cc4e3594c260edf1d6f85dcd90eb9771b030489df0118028ea992d168d7",
+    "backend/tools/qa_nginx_bind_switch.py": "57d04b435f85628a41d3aeaf5e42fb4cfe50589086ac82c35676d81445389013",
+    "backend/tests/test_bind_switch_fixture.py": "fbf6e9cbf675051929318d14da20461110ad44d54550a1b1236dbe13c992d2bd",
+    "backend/tests/test_bind_switch_cleanup.py": "fee5f616fdd5475de0c6e1725a41516ff79488ff15ed2593ef855a5b1c39a862",
+    "deploy/RELEASE_RUNBOOK.md": "ea2dbf99b771710bac076d9dbbc08f8915845a3d8ab45152b991135b7488f58f"
+  },
+  "limitations": [
+    "Exact production maintenance bytes syntax-tested only; HTTP/reload on transformed disposable fixture",
+    "Synthetic static/API only; no real backend/DB or other application API called",
+    "No production reload/restart, formal paths/unit, TLS or load test",
+    "No crash/power-loss, disk-error or uncooperative external-writer proof",
+    "Normal rules reload signal is conservatively treated as possible start of accepted writes"
+  ],
+  "handoff": "docs/交接归档-Linux维护与单文件挂载恢复.md"
+}

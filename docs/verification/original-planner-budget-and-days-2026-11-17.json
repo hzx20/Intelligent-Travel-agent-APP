@@ -1,0 +1,125 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "goal_status": "active",
+  "whole_project_complete": false,
+  "full_complex_planning_scenario_passed": false,
+  "production_ready": false,
+  "problem_reproduced": {
+    "real_budget_categories_sum": 3250,
+    "real_budget_reported_total": 3650,
+    "requested_cap": 3000,
+    "old_validator_accepted_bad_budget": true,
+    "old_validator_accepted_duplicate_days": [
+      1,
+      1
+    ]
+  },
+  "changes": [
+    "Check finite nonnegative budget amounts with decimal arithmetic, category sum against total when breakdown is present, and unambiguous numerical user cap",
+    "Report arithmetic and cap errors together to the existing two-attempt retry; never rewrite model costs to fake compliance",
+    "Require provided day numbers to be sequential JSON integers; fill omitted day labels from array order",
+    "Prompt reiterates budget cap, arithmetic and applying stated preferences to actual arrangements"
+  ],
+  "source_sha256": {
+    "backend/app/services/itinerary.py": "574ee4d990218d29a41f1586859da14ba892ba414bce180e332fe8075f8c8326",
+    "backend/tests/test_itinerary_budget_and_days.py": "2a6d4895ef14d4f9dcf3e24a47e650ba123b2f0a0b5490b7b42530952a3be0d2",
+    "backend/tests/test_itinerary_budget_jobs.py": "c612722e71400648a6e58f441a0508b61ff9a6e809e8542a0fc5c0bc9cf2709e"
+  },
+  "offline_regression": {
+    "passed": 39,
+    "deselected": 3,
+    "seconds": 1.33,
+    "exit_code": 0,
+    "new_cases": 18,
+    "prior_related_cases": 21,
+    "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -B -m pytest tests/test_itinerary_budget_and_days.py tests/test_itinerary_budget_jobs.py tests/test_llm_output_recovery.py tests/test_v07_graph.py tests/test_v11_traffic.py tests/test_v11_stay.py -k 'not graph_compiled_and_flows and not plan_stream' -q",
+    "excluded": "Three existing real-model graph/SSE tests",
+    "route_and_real_graph_evidence": "Two invalid budget model stubs reach terminal error before map/weather; no AiPlan history saved"
+  },
+  "real_model_runs": {
+    "model": "glm-4-flash",
+    "initial": {
+      "model_sends": 1,
+      "http_statuses": [
+        200
+      ],
+      "seconds": 114.849,
+      "numeric_probe_passed": false,
+      "temporary_data_removed": true,
+      "local_env_unchanged": true
+    },
+    "revised": {
+      "model_sends": 2,
+      "http_statuses": [
+        200,
+        200
+      ],
+      "seconds": 216.295,
+      "numeric_probe_passed": true,
+      "day_numbers": [
+        1,
+        2,
+        3
+      ],
+      "daily_item_counts": [
+        4,
+        4,
+        4
+      ],
+      "budget_summary": {
+        "交通": 120,
+        "住宿": 600,
+        "餐饮": 300,
+        "门票": 50,
+        "总计": 1070
+      },
+      "temporary_data_removed": true,
+      "local_env_unchanged": true
+    },
+    "total_real_sends": 3,
+    "binding": "Frozen b46a base plus exact current itinerary snapshot on local Python3.13.14; no whole-worktree or Linux runtime claim"
+  },
+  "semantic_review": {
+    "complete_scenario_passed": false,
+    "numeric_and_shape_checks_passed": true,
+    "unresolved": [
+      {
+        "kind": "non_specific_places",
+        "evidence": "附近餐馆 appears on each day; 酒店 is not an identified property",
+        "verified_poi_lookup_performed": false
+      },
+      {
+        "kind": "indoor_preference_not_proven",
+        "evidence": "Day2 labels 杭州动物园 as 室内场馆 without an authoritative basis; model type is not verification"
+      },
+      {
+        "kind": "daily_rest_not_explicit",
+        "evidence": "No explicit rest activity in any of the 12 items despite requirements"
+      },
+      {
+        "kind": "item_costs_not_reconciled_with_category_summary",
+        "evidence": "Three items each list cost_estimate=50 as indoor attractions, but 门票 summary=50; no verified classification or pricing contract"
+      },
+      {
+        "kind": "real_prices_unverified",
+        "evidence": "Model budget and hotel ranges are estimates, not live availability, quotes or reservation offers"
+      }
+    ],
+    "action": "Do not call this a fully accepted complex plan; next work addresses place specificity and semantic/budget-detail verification before claiming completion."
+  },
+  "important_validation_limits": [
+    "Arithmetic compliance does not prove real prices, availability, feasibility, indoor suitability, rests or exact venue matches",
+    "A total-only legacy-style summary lacks a category breakdown to reconcile; absent budget with absent numeric user cap is not fabricated",
+    "Only unambiguous finite nonnegative numeric user budgets are used as caps; descriptive budget text is not guessed"
+  ],
+  "map_provider_calls_this_module": 0,
+  "why_no_map_acceptance": "Non-specific place placeholders and unproven semantic constraints remain; do not report fully verified places or complete complex scenario",
+  "real_itineraries_applied_or_saved_as_user_history": false,
+  "images_uploaded": false,
+  "production_deployed": false,
+  "new_frozen_linux_candidate": false,
+  "previous_frozen_candidate_guard_remains": true,
+  "handoff": "docs/交接归档-原规划预算与日期校验.md",
+  "next_step": "Address placeholder POI handling and semantic/cost-detail checks, then re-evaluate full complex planning before closing the acceptance gap"
+}

@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "current origin certificate observation and saved-lineage-only timer installation preflight",
+  "observed_at_utc": "2026-11-20T04:31:45.762716+00:00",
+  "expiry_utc": "2026-11-26T05:20:25+00:00",
+  "seconds_left_at_observation": 521320,
+  "public_leaf_sha256": "54d2dc41cedefd7d49889295d2accbad1b3b7759251febbf685b58749fdab88d",
+  "certbot_version": "5.10.0",
+  "production_renewal_policy_verified": true,
+  "origin_health_verified": true,
+  "host_ipv4_or_ipv6_443_listener_observed": false,
+  "docker_host_443_published": false,
+  "generic_snap_renewal_timer_active": true,
+  "dedicated_renewal_timer_present_during_preflight": false,
+  "saved_certificate_watch_timer_enabled": false,
+  "reviewed_activation_plan_sha256": "0bdc267314d2d3fe8b359acd5eefa0af26cd0b124c08df29c9512e2f428ec5c3",
+  "reviewed_units_bundle_sha256": "29f30fb90bd733ccb0810b7287ed18929fe5900f22a25b677218741c5003db7b",
+  "reviewed_units_payload_bytes": 1362,
+  "actual_origin_systemd_verify_passed": true,
+  "origin_service_pid_and_state_unchanged": true,
+  "private_candidate_directory": ".release-candidates/supplier-city-2026-11-20",
+  "private_evidence_sha256": {
+    "activate_saved_certificate_renewal.py": "6b02427f431ff0a35be6d581161c6a1c2c229a973e4e35003d39be6b0d7efc9d",
+    "saved-certificate-current-origin-readonly.json": "822409b16fee1189812b80f4a1c50a7c738bf7b80dfcf4c27fea23519ff6dbed",
+    "saved-renewal-preflight-origin.json": "0f68b7cdcfcc9677e2f92a7458bd21c2ec0ea9bf5dc89a71a0ef2b8dd480a2ec"
+  },
+  "new_production_order_submitted_during_preflight": false,
+  "production_timer_enabled_during_preflight": false,
+  "edge_hook_installed_during_preflight": false
+}

@@ -1,0 +1,16 @@
+# Review file. Install only after the public lineage and safe edge loading are approved.
+[Unit]
+Description=Renew only the travel public IP certificate
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+TimeoutStartSec=4min
+ExecStartPre=/usr/bin/python3 -I -B /usr/local/libexec/travel_tls_check.py renewal
+# The webroot is read by existing nginx on port 80. Do not add an nginx installer or directory hook.
+# The timer spreads executions, so Certbot must not spend the service timeout sleeping again.
+ExecStart=/snap/bin/certbot renew --cert-name travel-ip-public --server https://acme-v02.api.letsencrypt.org/directory --required-profile shortlived --non-interactive --no-random-sleep-on-renew --no-directory-hooks --disable-renew-updates --config /etc/travel-tls/empty.ini --config-dir /etc/travel-tls/acme --work-dir /var/lib/travel-tls/work --logs-dir /var/log/travel-tls
+ExecStartPost=/usr/bin/python3 -I -B /usr/local/libexec/travel_tls_check.py saved --pair

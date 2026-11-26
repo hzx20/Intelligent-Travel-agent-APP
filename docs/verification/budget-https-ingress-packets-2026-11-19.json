@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "one authorized original-host anonymous network namespace rehearsal",
+  "authorized_once": true,
+  "bundle_sha256": "72212f7c7496477bebf2d4a70c2a0f93c282ed4779b2d927df69b90f6c97d7eb",
+  "candidate_sha256": "707816e51b6926eea6814c275d8420f131407d07337a54b66ad9ee274c5c3b89",
+  "preflight_receipt_sha256": "624de281b994cab5725206461c43e7b50776aceed2e7cda4797d79cfc14722b0",
+  "execution_receipt": ".release-candidates/budget-https-load-2026-11-19/https-ip-entry-candidate/ingress-packet-attempt.jsonl",
+  "execution_receipt_sha256": "2092946c237d2c8a23350adb661d568b42e3e106b78df25cafbfe8f02e95c0d9",
+  "checks": {
+    "authorized_source_permitted": true,
+    "same_bridge_other_source_dropped": true,
+    "wrong_ipv4_destination_dropped": true,
+    "ipv6_8000_dropped": true,
+    "other_port_permitted": true,
+    "same_source_wrong_interface_dropped": true,
+    "repeated_load_idempotent": true,
+    "test_client_processes_reaped": true
+  },
+  "host_ruleset_unchanged": true,
+  "ssh_exit": 0,
+  "live_backend_packet_filter_enabled": false,
+  "production_packet_filter_verified": false
+}

@@ -1,0 +1,21 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "durable deployment opening marker and conservative recovery classification",
+  "marker_written_and_synced_before_child_command": true,
+  "opening_failure_keeps_the_marker": true,
+  "partial_marker_refuses_repeated_opening": true,
+  "missing_marker_is_not_treated_as_proof_of_no_new_writes": true,
+  "fsync_failure_does_not_run_opening_command": true,
+  "local_guard_and_release_plan_tests_passed": 32,
+  "native_linux_durability_order_and_private_directory_fixture_passed": true,
+  "native_fixture_removed": true,
+  "production_write_entry_opened": false,
+  "production_database_modified": false,
+  "source_sha256": {
+    "backend/tools/guard_travel_write_opening.py": "09fd5ca87ca420d2cb6dccc9829015d035ae0410f58d8c9a8fb556ab2766be36",
+    "backend/tests/test_guard_travel_write_opening.py": "f2da8814b79a6ee5acc1d4e67f090c106e91789908f8edc060e23c7840632be2",
+    ".release-candidates/supplier-city-2026-11-20/write-opening-linux-fixture.json": "bf1a8aa967bb0c131d4b4e02d07e8d665d0edcd9af5749e8f3d5cb0f2e040107"
+  }
+}

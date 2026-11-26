@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "authorized activation of saved-lineage renewal only",
+  "plan_sha256": "0bdc267314d2d3fe8b359acd5eefa0af26cd0b124c08df29c9512e2f428ec5c3",
+  "reviewed_units_bundle_sha256": "29f30fb90bd733ccb0810b7287ed18929fe5900f22a25b677218741c5003db7b",
+  "timer": "travel-ip-renew.timer",
+  "service": "travel-ip-renew.service",
+  "timer_enabled": true,
+  "timer_active_waiting": true,
+  "first_scheduled_check_utc": "2026-11-20T10:18:31+00:00",
+  "first_scheduled_check_local": "2026-11-20T18:18:31+08:00",
+  "renewal_service_had_started_at_postcheck": false,
+  "new_certificate_observed_at_postcheck": false,
+  "current_certificate_expires_utc": "2026-11-26T05:20:25+00:00",
+  "current_certificate_sha256": "54d2dc41cedefd7d49889295d2accbad1b3b7759251febbf685b58749fdab88d",
+  "installed_unit_hashes_and_no_dropins_verified": true,
+  "original_service_pid_unchanged_during_install": true,
+  "original_service_health_verified_after_install": true,
+  "origin_certbot_generic_timer_still_enabled": true,
+  "public_443_listener_or_publish_observed": false,
+  "edge_reload_hook_installed": false,
+  "mail_alert_timer_enabled": false,
+  "private_candidate_directory": ".release-candidates/supplier-city-2026-11-20",
+  "private_evidence_sha256": {
+    "saved-renewal-activate-origin.json": "c9b56f2315c8a73dd5abd53a73442636e7a3e8e1c437099592de51c27b4f929b",
+    "saved-renewal-origin-postcheck.json": "96db75af97e1ba5167d1e44f8b4103fe2b0346ccf0823daa286bdee89ba34fcd"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "plan_id": "3546a422a4ce7b43bdde35b184c39f1d4ab886e33eb6df151dcf43c7346fdb80",
+  "reference": {
+    "limit_minor": 300000,
+    "subtotal_minor": 11200,
+    "unpriced_items": 17,
+    "unlisted_categories": []
+  },
+  "temporary_database_and_server_removed": true,
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "curated published-cost inputs through frozen itinerary validation, normal conversion and budget UI",
+  "application_id": "28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+  "frontend_id": "7c620cde98827c6704b818f28f14ab49ddc594f44d188cff28f87c0797304aff",
+  "plan_hashes_verified_before_and_after": true,
+  "desktop_and_mobile_budget_ui_passed": true,
+  "unquoted_lodging_amount_remains_null": true,
+  "the_free_finance_museum_display_does_not_make_all_admission_free": true,
+  "partial_estimate_remains_separate_from_manual_quotes": true,
+  "manual_checklist_remains_empty_after_save_and_reload": true,
+  "expense_ledger_remains_empty": true,
+  "literal_budget_state": "pending",
+  "browser_session": "local real login flow with synthetic credentials",
+  "live_ai_generation_tested": false,
+  "production_used": false,
+  "baseline_sha256": "b24615b001b7f02160cdacdabe462b6b89006e1482f0d473e70597b309c5dd05",
+  "harness_sha256": {
+    "verify_frozen_family_budget.py": "fe6d57f819cc360b3ca2eb90ff2aab3b7f541414d50d4d5f05f64b5e58483f9e",
+    "verify_frozen_family_budget.cjs": "61b9d638af0937b2e3d2d60b4e4ae99c7a5aca27e52ca512967017e149154c6a"
+  }
+}

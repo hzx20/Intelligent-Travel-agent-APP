@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-17",
+  "scope": "established_offline_backend_regression",
+  "passed": 327,
+  "deselected": 2,
+  "elapsed_seconds": 126.36,
+  "exit_code": 0,
+  "ignored_files": [
+    "tests/test_m1.py",
+    "tests/test_m2.py"
+  ],
+  "deselection_expression": "not test_plan_stream_saves_history_when_logged_in and not test_graph",
+  "log_path": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\backend-regression-2026-11-17-c5fc699d.log",
+  "log_sha256": "b533ccda3f6668af18d284a1a1f4310a820a6b1ac14815c15f0acf0e8a656d67",
+  "external_provider_validation": false,
+  "full_browser_suite_rerun": false,
+  "prior_interrupted_run_result_not_reused": true
+}

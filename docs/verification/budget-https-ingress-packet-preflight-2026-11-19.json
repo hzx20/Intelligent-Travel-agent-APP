@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "local bundle review for an isolated Linux kernel packet rehearsal",
+  "bundle_sha256": "72212f7c7496477bebf2d4a70c2a0f93c282ed4779b2d927df69b90f6c97d7eb",
+  "input_sha256": {
+    "backend/tools/rehearse_travel_ingress.py": "864bed3da2e1a10081c7b555f46d705e2bbaf1e31c5d6783fbd1e250a2538dae",
+    "backend/tools/rehearse_travel_ingress_remote.py": "cd5364463b8b7bcbd902f921128e192cf6e20244985ceb1468a99bbdd2fc4cb5",
+    "deploy/travel-tls/backend-ingress.nft.example": "707816e51b6926eea6814c275d8420f131407d07337a54b66ad9ee274c5c3b89"
+  },
+  "planned_checks": [
+    "IPv4 allowed proxy source, dedicated interface and exact gateway destination",
+    "same-bridge peer denied with a matched drop counter",
+    "wrong IPv4 destination denied with a matched drop counter",
+    "IPv6 TCP 8000 denied with a matched drop counter",
+    "same IPv4 source on another ingress interface denied with a matched drop counter",
+    "unrelated port unaffected and repeated rule load does not duplicate rules",
+    "root host stateless ruleset identical before and after"
+  ],
+  "local_source_compiles": true,
+  "wrong_bundle_digest_refused_before_ssh": true,
+  "remote_packet_rehearsal_executed": false,
+  "production_packet_filter_verified": false,
+  "production_changed": false
+}

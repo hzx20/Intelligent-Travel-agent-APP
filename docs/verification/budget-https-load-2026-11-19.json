@@ -1,0 +1,49 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "Windows loopback TLS, frozen source plus trip detail cache header, synthetic data only",
+  "public_probe": {
+    "endpoint": "134.175.137.18/travel/",
+    "single_get_per_scheme": true,
+    "http_status": 200,
+    "https_handshake_completed": false,
+    "https_curl_exit": 35,
+    "production_authenticated": false
+  },
+  "local": {
+    "application_id": "794de7fe05d9632371c4080d3f470e649802987a75eae71fef70684ffed7b18a",
+    "baseline_id": "9349719f177f76155a3b13e02fe9e7609f7b673b3401a749050f2da548d56b04",
+    "router_sha256": "b1384ad3dce113095cefa39b7b18aa2e18122d29ff96464db56c191a4c96a558",
+    "frontend_id": "83a024dca6cea7bc09c0005c5ad5f6083ca1c3e0a7f49a8583132ad6ba4944fc",
+    "scratch_removed": true,
+    "tls_protocol": "TLSv1.3",
+    "certificate_and_hostname_verified": true,
+    "invalid_trust_and_hostname_rejected": true,
+    "static_asset_hashes_verified": 47,
+    "read_requests": 160,
+    "client_concurrency": 8,
+    "read_failures": 0,
+    "read_p95_ms": 34.18,
+    "read_max_ms": 45.79,
+    "read_and_write_seconds": 0.218,
+    "simultaneous_patch_statuses": [
+      200,
+      409
+    ],
+    "distinct_synthetic_accounts_isolated": true,
+    "additional_regressions_passed": 8
+  },
+  "candidate": {
+    "path": ".release-candidates/budget-https-load-2026-11-19/application",
+    "diff": [
+      "backend/app/routers/trips.py"
+    ],
+    "members": 117,
+    "linux_official_plan_rebound": false
+  },
+  "production_load_tested": false,
+  "physical_devices_tested": false,
+  "production_changed": false,
+  "production_ready": false
+}

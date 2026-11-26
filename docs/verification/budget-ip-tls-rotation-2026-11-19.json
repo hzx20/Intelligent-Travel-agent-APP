@@ -1,0 +1,45 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "synthetic certificate generation handoff and rollback against original nginx image in one isolated container",
+  "passed": true,
+  "execution_receipt": ".release-candidates/budget-https-load-2026-11-19/rotation-32a8e1d79b6ac354.jsonl",
+  "ssh_exit": 0,
+  "reviewed_command_sha256": "05851fa5065ecf4609f32c97454e74e0ec0c8c42d48a26b1f9caf58c161bee6e",
+  "tested_input_hashes": {
+    "rotate": "52417960f3848f31182beefae2e85aaa36e17a70161970f4547f592c96738fc2",
+    "fixture": "c03202a4d5eede2dadb80bb5e3888eafb1ece509b268bd32dc0872fe1a142f5d",
+    "config": "d40bd1a9408f72b0992cb1973de62b33bec20f598c8374351448f8fff1f28637"
+  },
+  "results": {
+    "actual_new_leaf_seen_before_forced_failure": true,
+    "event": "verified",
+    "fixture_container_removed": true,
+    "fixture_workspace_removed": true,
+    "new_certificate_served": true,
+    "nginx_test_failure_restored_without_reload": true,
+    "no_public_ports": true,
+    "post_reload_failure_restored_and_served_previous": true,
+    "production_changed": false,
+    "reloads": 3,
+    "repeated_same_leaf_no_reload": true,
+    "wrong_key_refused": true
+  },
+  "local_checks_passed": 4,
+  "previous_failed_attempts_cleaned": [
+    "ff5c49f89bad5d8d",
+    "82110eee32ac82a2"
+  ],
+  "edge_review_directory": ".release-candidates/budget-https-load-2026-11-19/https-ip-edge-rotation-review",
+  "edge_review_files": {
+    "nginx-edge.conf": "222493b507c7737477061e944ec019d3b99f8b5d0c404d6e7d681790d50f5601",
+    "nginx-edge-maintenance.conf": "e2ba23f487a2ede868983373fc3af0d60652c7b6ab4b1da4bc2d945240288e1e"
+  },
+  "production_rotation_hook_enabled": false,
+  "production_issued": false,
+  "production_changed": false,
+  "production_ready": false,
+  "execution_receipt_sha256": "2ae7432015177668f98fbd5f3d7a0d8ff5328d2980f7329e6a7b6269ccb654f9",
+  "rotation_source_after_local_timeout_test_sha256": "870becb7c41bb34805e76916c4e6913b2d61897197207319f4996bfebe261a15"
+}

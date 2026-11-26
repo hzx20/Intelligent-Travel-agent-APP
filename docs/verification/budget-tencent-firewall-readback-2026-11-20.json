@@ -1,0 +1,20 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "read-only observation of the authenticated instance firewall",
+  "instance_name": "Ubuntu-quVA",
+  "public_ipv4": "134.175.137.18",
+  "page_count": 1,
+  "total_rules": 3,
+  "rules_in_priority_order": [
+    {"source": "all IPv4", "protocol": "TCP", "ports": "22", "policy": "allow"},
+    {"source": "all IPv4", "protocol": "TCP", "ports": "80", "policy": "allow"},
+    {"source": "all IPv4", "protocol": "ICMP", "ports": "ALL", "policy": "allow"}
+  ],
+  "tcp_443_matches_allow_rule": false,
+  "tcp_8000_matches_allow_rule": false,
+  "default_deny_applies_to_unmatched_ingress": true,
+  "cloud_firewall_modified": false,
+  "public_443_listener_started": false
+}

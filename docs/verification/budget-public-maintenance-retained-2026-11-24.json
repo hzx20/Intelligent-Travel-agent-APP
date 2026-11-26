@@ -1,0 +1,50 @@
+{
+  "format": 1,
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope": "authorized publication and independent readback of the separate HTTPS maintenance edge",
+  "publication_receipt_last_write_local": "2026-11-24T22:36:38.607488+08:00",
+  "reviewed_bundle_sha256": "0728464a41fd595834274738f1094d53442a7419bf4d971cc740b2ff10412abe",
+  "verification_on_both_routes_completed": true,
+  "public_checks": {
+    "validated_expected_leaf": "19c0f0f01f07f295794d5cf58764a689d32fe8a2acec69e1d91aef606f27c44c",
+    "public_https_states": {
+      "travel": 503,
+      "api": 503,
+      "unrelated": 404
+    },
+    "maintenance_no_store_and_retry_after": true,
+    "legacy_http_states": [
+      200,
+      200
+    ],
+    "interface_index": 18
+  },
+  "origin_postcheck": {
+    "retained_identity_verified": true,
+    "container_running": true,
+    "ipv4_443_only_published": true,
+    "published_ports": {
+      "443/tcp": [
+        {
+          "HostIp": "0.0.0.0",
+          "HostPort": "443"
+        }
+      ]
+    },
+    "container_restart_policy": "unless-stopped",
+    "expected_dedicated_network": true,
+    "expected_container_role": true,
+    "legacy_service_healthy": true,
+    "shared_nginx_config_baseline_unchanged": true,
+    "host_ipv4_wildcard_port_observed": true
+  },
+  "host_loopback_https_status": 503,
+  "maintenance_retained": true,
+  "certificate_saved_generation_at_publish": "19c0f0f01f07f295794d5cf58764a689d32fe8a2acec69e1d91aef606f27c44c",
+  "health_of_legacy_application_verified": true,
+  "application_switch_performed": false,
+  "edge_certificate_auto_reload_enabled_in_this_step": false,
+  "private_publication_receipt": ".release-candidates/budget-https-load-2026-11-19/https-ip-entry-candidate/public-maintenance-current-certificate-route-recheck.jsonl",
+  "private_publication_receipt_sha256": "bc1e4a3fad5dd66dd1d96cdefe0c4da8583a3905832be62ca3376f3324db5335"
+}

@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope": "Write and locally exercise the readiness probe for the closed production entry",
+  "application_id": "28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+  "verifier_sha256": "ca03b0c3791e8ef51fa47c49262ec6cc9d56bdaaf41458ff79c176c2574dcac0",
+  "review_only_entry_verified": true,
+  "focused_tests_passed": 23,
+  "local_fixtures_cover_active_rule_identity": true,
+  "local_fixtures_cover_bypass_or_missing_drop_counter": true,
+  "local_fixtures_cover_backend_replacement_during_checks": true,
+  "origin_nftables_version": "1.0.9",
+  "origin_current_listener": "0.0.0.0:8000",
+  "origin_ingress_unit_installed": false,
+  "readiness_probe_uploaded_or_run_on_origin": false,
+  "origin_modified": false
+}

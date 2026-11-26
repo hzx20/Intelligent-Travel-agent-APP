@@ -1,0 +1,25 @@
+{
+  "format": 1,
+  "date": "2026-11-25",
+  "timezone": "Asia/Shanghai",
+  "scope": "End-to-end travel workflow on frozen front end and API, with synthetic owner and anonymous viewer on loopback",
+  "plan_id": "3546a422a4ce7b43bdde35b184c39f1d4ab886e33eb6df151dcf43c7346fdb80",
+  "application_id": "28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+  "desktop_viewport": {"width": 1280, "height": 900, "passed": true},
+  "mobile_viewport": {"width": 390, "height": 844, "passed": true},
+  "collection_scheduled_on_selected_day": true,
+  "quoted_budget_and_spending_ledger_remained_independent": true,
+  "reservation_ledger_budget_and_footprint_restored_after_reload": true,
+  "anonymous_share_served_only_public_itinerary_fields": true,
+  "anonymous_share_revocation_verified_after_reload": true,
+  "owner_records_remained_available_after_revocation": true,
+  "browser_requests_restricted_to_fixture_origin": true,
+  "frozen_frontend_and_backend_unchanged": true,
+  "temporary_server_and_data_removed": true,
+  "production_account_or_physical_device_tested": false,
+  "private_artifacts_sha256": {
+    "supplier-city-2026-11-20/verify_frozen_travel_journey.py": "3ed9d4461f29fc11138c547a2842acb0d3db7b8623fb83608697a650bac7058b",
+    "supplier-city-2026-11-20/verify_frozen_travel_journey.cjs": "191eb50e6fc0589b4d444da347283c14bc2de7e3cbbbf5659087cbf01f5c5a0c",
+    "local-regression-2026-11-24/frozen-journey-verified-2026-11-25.log": "ae68c09c638e637fe3ec99e42ee19432a79f744d1e3fe681e20bd910690a66de"
+  }
+}

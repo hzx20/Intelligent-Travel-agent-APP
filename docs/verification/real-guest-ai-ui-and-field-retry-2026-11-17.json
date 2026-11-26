@@ -1,0 +1,142 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "goal_status": "active",
+  "whole_goal_complete": false,
+  "production_ready": false,
+  "problem": "Real guest HTTP model replies copied source into new activity, violating the strict new-item schema; both initial replies rejected, preview HTTP502 and local trip unchanged.",
+  "fix": "Prompt explicitly enumerates allowed new-item fields. Extra-field ValidationError receives fixed schema feedback, without echoing untrusted fields or accepting/stripping them. Two-attempt maximum and explicit application retained.",
+  "current_source_sha256": {
+    "backend/app/services/trip_ai.py": "dc385a3c5c493cb349715e7ad244f6b2bdea986c78969e1ca40029ce86858517",
+    "backend/tests/test_trip_ai_extra_field_retry.py": "9d3b479c8b0dfa680864c6fabc4c43e7420913424d2f86af1f7377c6107edefb"
+  },
+  "offline_tests": {
+    "passed": 50,
+    "seconds": 9.99,
+    "exit_code": 0,
+    "new_tests": 4,
+    "existing_related": 46,
+    "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -B -m pytest tests/test_trip_ai_extra_field_retry.py tests/test_trip_ai_index_retry.py tests/test_trip_ai_schema_http.py tests/test_trip_ai_schema.py tests/test_trip_ai_schema_routes.py tests/test_trip_ai.py -q",
+    "cwd": "backend",
+    "terminal_session": 96758
+  },
+  "browser": {
+    "passed": true,
+    "elapsed_ms": 24862,
+    "guest_http_requests": 2,
+    "viewports": [
+      {
+        "label": "desktop",
+        "viewport": {
+          "height": 900,
+          "width": 1280
+        },
+        "preview_before_apply_unchanged": true,
+        "no_horizontal_overflow": true,
+        "reload_preserved_applied_trip": true,
+        "reload_did_not_generate_again": true,
+        "reservations_preserved": true,
+        "own_fixture_removed": true
+      },
+      {
+        "label": "mobile",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        },
+        "preview_before_apply_unchanged": true,
+        "no_horizontal_overflow": true,
+        "reload_preserved_applied_trip": true,
+        "reload_did_not_generate_again": true,
+        "reservations_preserved": true,
+        "own_fixture_removed": true
+      }
+    ],
+    "own_page_closed": true,
+    "reservations_not_transmitted": true,
+    "captures_exported_and_viewed": 4,
+    "finish_confirmed": true,
+    "forced_cleanup": false,
+    "screenshot_recommendation_warning": "Fourth capture exceeds recommendation of 3; four stage/viewport evidence images exported and viewed"
+  },
+  "real_model": {
+    "model": "glm-4-flash",
+    "successful_attempt_sends": 2,
+    "successful_attempt_http_statuses": [
+      200,
+      200
+    ],
+    "first_failed_attempt_model_sends": 2,
+    "first_failed_attempt_provider_http_statuses": [
+      200,
+      200
+    ],
+    "total_this_module_model_sends": 4,
+    "outbound_reservation_marker_absent_for_all_sends": true,
+    "successful_attempt_each_preview_used_one_model_reply": true
+  },
+  "runtime_binding": {
+    "base_application_id": "b46aabf3e26aec1b69856d1be8b1cda6e7121488e22609bc9f7abe5c720480bd",
+    "frontend_id": "3697428c5a01d4b596abdfbb74cea44997bd4416a088bda9f259ab55f1246a77",
+    "single_module_overlay": "Exact snapshot of current trip_ai loaded before app.main",
+    "python": "3.13.14",
+    "loopback_only": true,
+    "map_provider_disabled": true,
+    "not_full_current_worktree_or_linux_runtime": true
+  },
+  "cleanup": {
+    "ready_reached": true,
+    "owned_processes_stopped": true,
+    "synthetic_work_removed": true,
+    "local_env_unchanged": true,
+    "elapsed_seconds": 122.81
+  },
+  "server_row_counts_before_deletion": {
+    "trips": 0,
+    "trip_proposals": 0,
+    "trip_ai_jobs": 0
+  },
+  "independent_postcheck": {
+    "ports_checked": [
+      50292,
+      50293,
+      62737,
+      62738
+    ],
+    "work_paths_exist": [
+      false,
+      false
+    ],
+    "known_pid_matches": [],
+    "specified_listeners": []
+  },
+  "tabbit_diagnose_tasks_after_finish": [],
+  "first_failed_attempt": {
+    "ui_passed": false,
+    "ui_http_status": 502,
+    "preview_not_applied": true,
+    "original_local_storage_exactly_unchanged": true,
+    "retained_task_reacquired_after_idle_expiry": true,
+    "first_cleanup_inspection_failed_on_new_about_blank_before_mutation": true,
+    "own_blank_closed": true,
+    "finish_confirmed": true,
+    "supervisor_exit": 1,
+    "cleanup_error": "Row-count sqlite context manager did not close connection; own synthetic app.db temporarily locked. Fixed with explicit close in next supervisor.",
+    "recovery_process_port_checks_passed": true,
+    "synthetic_work_removed": true,
+    "failed_ui_screenshot_saved_and_viewed": true
+  },
+  "not_proven": [
+    "Physical mobile devices or production account flows",
+    "Whole current worktree and additional supplier modules",
+    "Current revised source in Linux frozen candidate or Linux runtime",
+    "Real model interruption/restart, OCR, authorized external guide sources or hotel transactions",
+    "Automatic semantic correctness for arbitrary model replies"
+  ],
+  "latest_frozen_linux_plan_includes_this_fix": false,
+  "previous_upload_client_remains_guarded": true,
+  "production_deployed": false,
+  "real_hotel_orders_created": false,
+  "images_uploaded": false,
+  "handoff": "docs/交接归档-真实游客AI页面与字段修正.md"
+}

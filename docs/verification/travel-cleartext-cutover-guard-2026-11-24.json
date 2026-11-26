@@ -1,0 +1,19 @@
+{
+  "format": 1,
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope": "Read-only shared nginx origin checks and local rehearsals of the cleartext cutover guard",
+  "baseline_config_sha256_in_host_and_container": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+  "shared_container_id": "c7a06b34d8e5f7e3a6d52f18f11ba9ac54ae6df453910e833b66ac43a892cbcc",
+  "shared_image_id": "sha256:98f8ec75657d21b924fe4f69b6b9bff2f6550ea48838af479d8894a852000e40",
+  "shared_config_mount_read_only": true,
+  "original_http_routes": {"/": 200, "/travel/": 200, "/travel/api/health": 200},
+  "dedicated_https_routes": {"/travel/": 503, "/travel/api/health": 503},
+  "candidate_sha256": "8e489e8d949d0d8df92d8ae832a1f8b10a547e20d6ed5174b2c36941ff0648fc",
+  "guard_sha256": "144fb1c08b15cd348448b4393a62cb57f7e85b8e3bd07ccba2600e44fb3e76b2",
+  "guard_review_only_verified": true,
+  "focused_tests_passed": 18,
+  "local_fault_cases_verified": ["syntax_failure", "route_failure", "partial_write", "unreviewed_concurrent_write"],
+  "guard_uploaded_to_origin": false,
+  "production_configuration_changed": false
+}

@@ -1,0 +1,15 @@
+{
+  "release": "929624036b944be1ce913f871070edcd5993a68beb638b5f41dad237689b3c34",
+  "inspection": "sqlite_schema_metadata",
+  "launch_read_only": true,
+  "business_rows_queried": false,
+  "counts_verified": {
+    "tables": 30,
+    "columns": 258,
+    "primary_keys": 30,
+    "unique_constraints": 18,
+    "indexes": 47,
+    "foreign_keys": 42
+  },
+  "missing": []
+}

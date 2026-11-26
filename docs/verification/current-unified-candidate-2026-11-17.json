@@ -1,0 +1,247 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "phase": "current_map_frontend_bound_and_saved_bundle_verified",
+  "goal_status": "active",
+  "production_ready": false,
+  "frontend_id": "4abda08e3d1fec2a1bbce7392c8b49e1267471470736a4b90f808de0ef34c4ab",
+  "frontend_files": 44,
+  "windows_source_application_id": "88069e509461e04a054c16a019a6673acd9cdf5e5887141b12149fe61b2ae7b1",
+  "linux_application_id": "b4c58849605ff8caa37fa9c731a169b5c3ff6036fa3f85d2c71fc20c6918bd37",
+  "linux_plan_id": "936af8023268dd220baa84aa9393b089a245eba11ce6f586d7c515864a4eed53",
+  "linux_application_files": 104,
+  "linux_plan_files": 184,
+  "actual_linux_python": "3.12.3",
+  "backend_bytes_unchanged_from_previous_linux_candidate": true,
+  "transport": {
+    "files": 118,
+    "archive_bytes": 359291,
+    "sha256": "d4d72a8a3592ef61ce16b64ba634b2f69aa38c0d07ed90d5316f132ecc2670b7",
+    "stage": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/unified-map-20261117-review1"
+  },
+  "linux_static_preparation": {
+    "success": true,
+    "production_ready": false,
+    "application_id": "b4c58849605ff8caa37fa9c731a169b5c3ff6036fa3f85d2c71fc20c6918bd37",
+    "application_files": 104,
+    "source_application_id": "88069e509461e04a054c16a019a6673acd9cdf5e5887141b12149fe61b2ae7b1",
+    "source_files_unchanged": true,
+    "actual_python": "3.12.3",
+    "plan_id": "936af8023268dd220baa84aa9393b089a245eba11ce6f586d7c515864a4eed53",
+    "plan_files": 184,
+    "frontend_id": "4abda08e3d1fec2a1bbce7392c8b49e1267471470736a4b90f808de0ef34c4ab",
+    "runtime": {
+      "release_id": "b4c58849605ff8caa37fa9c731a169b5c3ff6036fa3f85d2c71fc20c6918bd37",
+      "python": "3.12.3",
+      "packages": {
+        "fastapi": "0.141.1",
+        "uvicorn": "0.52.4",
+        "langchain": "1.4.0",
+        "langchain-openai": "1.6.0",
+        "langgraph": "1.2.11",
+        "pyjwt": "2.13.0",
+        "pydantic-settings": "2.15.0",
+        "cachetools": "7.1.8",
+        "pytest": "9.1.1",
+        "httpx": "0.28.1",
+        "sqlalchemy": "2.0.52",
+        "pillow": "13.0.0"
+      },
+      "pinned_runtime_matches": true,
+      "errors": [],
+      "not_checked": [
+        "transitive dependencies and optional extras",
+        "Linux native libraries and platform behavior",
+        "production settings, data migration and external providers",
+        "independent startup and release approval"
+      ]
+    },
+    "installed_closure_count": 63,
+    "installed_closure_matches_wheels": true,
+    "standalone_plan_verify_exit": 0,
+    "formal_unit_check": {
+      "exit_code": 1,
+      "output": "/etc/systemd/system/tat_agent.service:7: PIDFile= references a path below legacy directory /var/run/, updating /var/run/tat_agent.pid → /run/tat_agent.pid; please update the unit file accordingly.\ntravel.service: Command /opt/travel/runtime-envs/b4c58849605ff8caa37fa9c731a169b5c3ff6036fa3f85d2c71fc20c6918bd37/bin/python is not executable: No such file or directory\n",
+      "formal_code_path_exists": false,
+      "formal_venv_path_exists": false
+    },
+    "grammar_fixture_check": {
+      "exit_code": 0,
+      "output": "/etc/systemd/system/tat_agent.service:7: PIDFile= references a path below legacy directory /var/run/, updating /var/run/tat_agent.pid → /run/tat_agent.pid; please update the unit file accordingly.\n",
+      "scope": "Only formal code/interpreter paths replaced; no unit installed or started; not a PrivateTmp startup proof"
+    },
+    "production_state_before": {
+      "config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "backend_pid": "1465894",
+      "nginx_pid": "1"
+    },
+    "production_state_after": {
+      "config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "backend_pid": "1465894",
+      "nginx_pid": "1"
+    },
+    "production_state_unchanged": true,
+    "application_imported": false,
+    "service_started": false,
+    "database_created": false,
+    "runtime_installed": false,
+    "plan_path": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/unified-map-20261117-review1/plan-linux",
+    "local_linux_plan": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\unified-plan-linux-2026-11-17-map-final1",
+    "local_reconstructed_from_remote_manifest_and_exact_unchanged_bytes": true,
+    "local_plan_verified": true
+  },
+  "saved_windows_bundle_runtime": {
+    "success": true,
+    "application_id": "88069e509461e04a054c16a019a6673acd9cdf5e5887141b12149fe61b2ae7b1",
+    "frontend_id": "4abda08e3d1fec2a1bbce7392c8b49e1267471470736a4b90f808de0ef34c4ab",
+    "production_ready": false,
+    "runtime": {
+      "release_id": "88069e509461e04a054c16a019a6673acd9cdf5e5887141b12149fe61b2ae7b1",
+      "python": "3.13.14",
+      "packages": {
+        "fastapi": "0.141.1",
+        "uvicorn": "0.52.4",
+        "langchain": "1.4.0",
+        "langchain-openai": "1.6.0",
+        "langgraph": "1.2.11",
+        "pyjwt": "2.13.0",
+        "pydantic-settings": "2.15.0",
+        "cachetools": "7.1.8",
+        "pytest": "9.1.1",
+        "httpx": "0.28.1",
+        "sqlalchemy": "2.0.52",
+        "pillow": "13.0.0"
+      },
+      "pinned_runtime_matches": true,
+      "errors": [],
+      "not_checked": [
+        "transitive dependencies and optional extras",
+        "Linux native libraries and platform behavior",
+        "production settings, data migration and external providers",
+        "independent startup and release approval"
+      ]
+    },
+    "browser": {
+      "production-smoke.mjs": {
+        "production_bundle_smoke": [
+          {
+            "viewport": "desktop",
+            "created": true,
+            "collected": true,
+            "scheduled": true,
+            "deep_reload": true,
+            "uncaught_errors": 0
+          },
+          {
+            "viewport": "mobile",
+            "created": true,
+            "collected": true,
+            "scheduled": true,
+            "deep_reload": true,
+            "uncaught_errors": 0
+          }
+        ]
+      },
+      "production-map-smoke.mjs": {
+        "production_map_smoke": [
+          {
+            "viewport": "desktop",
+            "scenario": "config-timeout",
+            "passed": true,
+            "configs": 2,
+            "simulated_scripts": 0,
+            "page_errors": 0
+          },
+          {
+            "viewport": "desktop",
+            "scenario": "script-timeout",
+            "passed": true,
+            "configs": 2,
+            "simulated_scripts": 2,
+            "page_errors": 0
+          },
+          {
+            "viewport": "mobile",
+            "scenario": "config-timeout",
+            "passed": true,
+            "configs": 2,
+            "simulated_scripts": 0,
+            "page_errors": 0
+          },
+          {
+            "viewport": "mobile",
+            "scenario": "script-timeout",
+            "passed": true,
+            "configs": 2,
+            "simulated_scripts": 2,
+            "page_errors": 0
+          }
+        ],
+        "external_provider_called": false
+      }
+    },
+    "source": "saved candidate, not workspace frontend/backend",
+    "backend_port": 62593,
+    "packaged_application_import_proved": true,
+    "proxy_port": 62600,
+    "candidate_unchanged": true,
+    "assets_served_match_candidate": true,
+    "synthetic_env_data_and_nginx_work_removed": true,
+    "elapsed_seconds": 57.64
+  },
+  "local_postcheck": {
+    "listeners": 0,
+    "matching_test_processes": 0
+  },
+  "screenshots": [
+    {
+      "path": ".release-candidates/unified-map-review-2026-11-17/guest-smoke/desktop.png",
+      "sha256": "45000e69edb6470e291f882cc58b887cb02b189d7fa1798088b2265e4ff584d7"
+    },
+    {
+      "path": ".release-candidates/unified-map-review-2026-11-17/guest-smoke/mobile.png",
+      "sha256": "79ce0a7abf9e87dde89d593fab18134a1fe3443e8abeaaf9e8360d5e4eb9615d"
+    },
+    {
+      "path": ".release-candidates/unified-map-review-2026-11-17/map-smoke/desktop-config-timeout.png",
+      "sha256": "c722e80816ad483ac6baf2777433a5e54dddb52408d02b9625264f1adc826801"
+    },
+    {
+      "path": ".release-candidates/unified-map-review-2026-11-17/map-smoke/desktop-script-failed.png",
+      "sha256": "cb262bb289ba8a2c310b62bad4b2da4f91e0842d0446e6255e3f4342d59b73c9"
+    },
+    {
+      "path": ".release-candidates/unified-map-review-2026-11-17/map-smoke/desktop-script-timeout.png",
+      "sha256": "57579b4fc1bb6ee14f42ab1de94b877f4c57956700b5c271656cb2df6821cbcc"
+    },
+    {
+      "path": ".release-candidates/unified-map-review-2026-11-17/map-smoke/mobile-config-timeout.png",
+      "sha256": "af471e6736e4943cbfe559facc8d3c5fb9dc97eed4b943882e1e86fe5bf1a97c"
+    },
+    {
+      "path": ".release-candidates/unified-map-review-2026-11-17/map-smoke/mobile-script-failed.png",
+      "sha256": "0205504a436eb61f8261b07c830f099457e0130d922f4e89467a2b557cb30a64"
+    },
+    {
+      "path": ".release-candidates/unified-map-review-2026-11-17/map-smoke/mobile-script-timeout.png",
+      "sha256": "b8b707de3d64110bc4e6becd2313e053817f7ba793812b8b9c613d3ac6f90f8b"
+    }
+  ],
+  "qa_source_sha256": {
+    "frontend/e2e/production-map-smoke.mjs": "c879ef900f8c740373a6df8615bb4ed3188e40a1a3abe0997baca5777df02ac7"
+  },
+  "build": {
+    "exit_code": 0,
+    "modules": 121,
+    "seconds": 1.09
+  },
+  "limits": [
+    "Windows saved candidate runtime and Linux static preparation are different scopes",
+    "Real maps, AI/OCR rights and actual accounts/devices remain",
+    "Formal Linux code/venv paths absent; full-unit check exits 1 and grammar-only fixture exits 0",
+    "No new Linux service started, dependency installed, or production env/business DB read this module",
+    "Final production gates and authorization pending"
+  ],
+  "archive": "docs/交接归档-地图新版统一候选.md",
+  "current_collected_runtime_source_and_dist_match_saved_candidate": true
+}

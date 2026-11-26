@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-16",
+  "scope": "backend_frontend_code_candidate",
+  "candidate_path": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\app-2026-11-16-82782189",
+  "release_id": "9e98f19b25a1b5f79376a272d44653728c3f9ea679582f3f7910147f11939c5d",
+  "frontend_release_id": "b13f55b253f90ebef299a6c3cae142ece51c43dc4e9a2008e58b6183da5b67fc",
+  "file_count": 104,
+  "candidate_verified": true,
+  "production_deployed": false,
+  "runtime": {
+    "release_id": "9e98f19b25a1b5f79376a272d44653728c3f9ea679582f3f7910147f11939c5d",
+    "python": "3.13.14",
+    "packages": {
+      "fastapi": "0.141.1",
+      "uvicorn": "0.52.4",
+      "langchain": "1.4.0",
+      "langchain-openai": "1.6.0",
+      "langgraph": "1.2.11",
+      "pyjwt": "2.13.0",
+      "pydantic-settings": "2.15.0",
+      "cachetools": "7.1.8",
+      "pytest": "9.1.1",
+      "httpx": "0.28.1",
+      "sqlalchemy": "2.0.52",
+      "pillow": "13.0.0"
+    },
+    "pinned_runtime_matches": true,
+    "errors": [],
+    "not_checked": [
+      "transitive dependencies and optional extras",
+      "Linux native libraries and platform behavior",
+      "production settings, data migration and external providers",
+      "independent startup and release approval"
+    ]
+  },
+  "tool_sha256": "4283D275D7E66F0B5784CE4A4516B8122BEE812BB141228FF9A8F5577DC2B757",
+  "isolated_saved_candidate_runtime_verified": true,
+  "verification": {
+    "result": "49 passed",
+    "elapsed_seconds": 11.03,
+    "candidate_tool_tests": 16,
+    "saved_candidate_runtime_tests": 1,
+    "frontend_release_tests": 15,
+    "deployment_check_tests": 6,
+    "backup_migration_restore_tests": 11,
+    "full_backend_suite_rerun": false,
+    "production_verified": false
+  }
+}

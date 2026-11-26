@@ -1,0 +1,13 @@
+# Review candidate for the dedicated travel bridge.
+# Rebuild only this table in one nft transaction.
+add table inet travel_guard
+delete table inet travel_guard
+
+table inet travel_guard {
+    chain backend_input {
+        type filter hook input priority -5; policy accept;
+
+        iifname "br-travel-edge" ip saddr 172.31.240.2 ip daddr 172.31.240.1 tcp dport 8000 counter accept
+        tcp dport 8000 counter drop
+    }
+}

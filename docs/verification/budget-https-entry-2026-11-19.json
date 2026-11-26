@@ -1,0 +1,48 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "application_id": "553a85ca32f4a4d339baaa618b8c9fc97e756b96d713dbcbbcd45ffe974ae363",
+  "plan_id": "81ee1674adc6b9267e4b526ffdbf5313cae0b8094c5039ca220c528ef500f5b5",
+  "private_ip_review": ".release-candidates/budget-https-load-2026-11-19/https-ip-review",
+  "candidate": {
+    "source_sha256": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+    "host": "134.175.137.18",
+    "mode": "ip",
+    "challenge_source_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "files": {
+      "nginx-https.conf": "ca322072626625be5c15b8d97cfe0749227b94940e64a3b11b59fe3d90e0ecd0",
+      "nginx-https-maintenance.conf": "29a255f40ced0177c8c234e98cd86ee3eff6c1821c34837ee79227e2205914e4",
+      "nginx-challenge-only.conf": "76bb957ebbd94fe6b67b0b7ae1b83f29d98f9a787cbe12df86e5ce926a993675"
+    },
+    "production_ready": false
+  },
+  "host_metadata": {
+    "listeners": [
+      "0.0.0.0:80",
+      "[::]:80"
+    ],
+    "nginx_version": "1.27.0",
+    "existing_container_publishes_80": true,
+    "existing_container_publishes_443": false
+  },
+  "local_nginx": {
+    "tests_passed": 4,
+    "verified": [
+      "DNS SAN and IP SAN certificate checks",
+      "foreign Host refused",
+      "HTTPS deep link and query",
+      "shared HTTP root retained",
+      "plain travel API or writes blocked",
+      "ACME webroot",
+      "HTTPS maintenance",
+      "synthetic bounded load regression"
+    ]
+  },
+  "formal_address_selected": false,
+  "certificate_issued": false,
+  "production_https_verified": false,
+  "physical_devices_verified": false,
+  "production_changed": false,
+  "production_ready": false
+}

@@ -1,0 +1,248 @@
+{
+  "scope": "plan place identity and read-only candidate display",
+  "date": "2026-11-18",
+  "goal_status": "active",
+  "source_sha256": {
+    "backend/app/services/map_verify.py": "9614d349be281c00491f0a9be3503b35090c3b817f4f0fd0d9e18c53bc39c3f3",
+    "backend/app/services/graph.py": "be6105e13b83a4041b697f8f461da0eaea4fbc0ebdb9636ebc71ce0b159fc6e5",
+    "backend/tests/test_plan_place_verification.py": "27fee13a61b72ce1a349f45fbf5783d406fae6edf75ce01ffeb4010a1487b521",
+    "backend/tests/test_v07_graph.py": "6170f56185db127d2655100ea729eb2e3828965b19a2e9773eeda085892169e4",
+    "backend/tests/test_v16_dedupe.py": "97eca5a710bbbd3f3b492c1a5106b359827ef92b3a819d166263eb40fa7b4e5f",
+    "frontend/src/views/PlanView.vue": "c5f4b686f911aac7ca561d19425ea98f9ddac28d4c92fbfa69a9a7a3412601b6"
+  },
+  "backend": {
+    "passed": 105,
+    "deselected": 3,
+    "seconds": 3.79
+  },
+  "frontend": {
+    "passed": 205,
+    "build_passed": true
+  },
+  "browser": {
+    "frontend_id": "41052c733b4988f16c608ef77ed82466c403082fee489278dad335c7e2298e0c",
+    "files_verified": 48,
+    "passed": true,
+    "browser": "msedge",
+    "external_requests_forwarded": 0,
+    "viewports": [
+      {
+        "label": "desktop",
+        "width": 1280,
+        "height": 900,
+        "screenshot": "desktop.png",
+        "screenshot_sha256": "9b5c8aa472dcd9a8c55089f3aeb1ecc4c192dbf77bdf5c339925b35afd1a7047",
+        "subtotal": 470,
+        "unknown_expenses": 2,
+        "unlocated_meal_visible": true,
+        "unlocated_meal_excluded_from_map": true,
+        "rest_rows": 3,
+        "rest_excluded_from_map": true,
+        "indoor_candidate_label": true,
+        "unlisted_category_shown": true,
+        "supplements_expanded": true,
+        "place_markers": 7,
+        "verified_links": 7,
+        "ambiguous_venue_candidates_visible": true,
+        "stale_address_and_access_hidden": true,
+        "correct_hotel_anchor": true,
+        "horizontal_overflow": false
+      },
+      {
+        "label": "mobile",
+        "width": 390,
+        "height": 844,
+        "screenshot": "mobile.png",
+        "screenshot_sha256": "d96321bab72bba2f69b0de6f05917b7a5f6f5a1b7b892d0d2a77c5e9d935cf80",
+        "subtotal": 470,
+        "unknown_expenses": 2,
+        "unlocated_meal_visible": true,
+        "unlocated_meal_excluded_from_map": true,
+        "rest_rows": 3,
+        "rest_excluded_from_map": true,
+        "indoor_candidate_label": true,
+        "unlisted_category_shown": true,
+        "supplements_expanded": true,
+        "place_markers": 7,
+        "verified_links": 7,
+        "ambiguous_venue_candidates_visible": true,
+        "stale_address_and_access_hidden": true,
+        "correct_hotel_anchor": true,
+        "horizontal_overflow": false
+      }
+    ],
+    "browser_version": "157.0.4341.60",
+    "isolated_browser_closed": true,
+    "static_server_closed": true,
+    "seconds": 1.286,
+    "data_and_sdk": "synthetic",
+    "screenshots_viewed": 2
+  },
+  "live_map": {
+    "calls": [
+      {
+        "name": "西湖",
+        "http_status": 200,
+        "status": "1",
+        "infocode": "10000",
+        "count": 20
+      },
+      {
+        "name": "中国茶叶博物馆",
+        "http_status": 200,
+        "status": "1",
+        "infocode": "10000",
+        "count": 20
+      },
+      {
+        "name": "杭州市博物馆",
+        "http_status": 200,
+        "status": "1",
+        "infocode": "10000",
+        "count": 20
+      },
+      {
+        "name": "浙江省博物馆",
+        "http_status": 200,
+        "status": "1",
+        "infocode": "10000",
+        "count": 20
+      },
+      {
+        "name": "西湖银泰城",
+        "http_status": 200,
+        "status": "1",
+        "infocode": "10000",
+        "count": 20
+      },
+      {
+        "name": "浙江省博物馆（之江馆区）",
+        "http_status": 200,
+        "status": "1",
+        "infocode": "10000",
+        "count": 7
+      }
+    ],
+    "database": "in-memory",
+    "production_changed": false,
+    "map_source_sha256": "9614d349be281c00491f0a9be3503b35090c3b817f4f0fd0d9e18c53bc39c3f3",
+    "rows": [
+      {
+        "day": 1,
+        "requested": "西湖",
+        "resolved": "西湖",
+        "status": "verified",
+        "candidates": [],
+        "coordinates_exposed": true
+      },
+      {
+        "day": 1,
+        "requested": "中国茶叶博物馆",
+        "resolved": "中国茶叶博物馆",
+        "status": "unverified",
+        "candidates": [
+          {
+            "name": "中国茶叶博物馆(双峰馆区)",
+            "address": "龙井路88号",
+            "district": "西湖区"
+          },
+          {
+            "name": "中国茶叶博物馆(龙井馆区)",
+            "address": "满觉陇路翁家山268号",
+            "district": "西湖区"
+          }
+        ],
+        "coordinates_exposed": false
+      },
+      {
+        "day": 2,
+        "requested": "杭州市博物馆",
+        "resolved": "杭州市博物馆",
+        "status": "unverified",
+        "candidates": [
+          {
+            "name": "杭州博物馆",
+            "address": "粮道山18号",
+            "district": "上城区"
+          },
+          {
+            "name": "杭州博物馆南馆",
+            "address": "粮道山18号杭州博物馆",
+            "district": "上城区"
+          },
+          {
+            "name": "杭州博物馆北馆",
+            "address": "吴山景区(吴山广场地铁站D口步行190米)",
+            "district": "上城区"
+          }
+        ],
+        "coordinates_exposed": false
+      },
+      {
+        "day": 2,
+        "requested": "浙江省博物馆",
+        "resolved": "浙江省博物馆",
+        "status": "unverified",
+        "candidates": [
+          {
+            "name": "浙江省博物馆(孤山馆区)",
+            "address": "孤山路25号",
+            "district": "西湖区"
+          },
+          {
+            "name": "浙江省博物馆(之江馆区)",
+            "address": "之江文化中心",
+            "district": "西湖区"
+          },
+          {
+            "name": "浙江省博物馆-精品馆",
+            "address": "孤山路25号浙江省博物馆(孤山馆区)",
+            "district": "西湖区"
+          },
+          {
+            "name": "浙江省博物馆之江馆区人文探索体验馆",
+            "address": "浙江省博物馆之江馆区B1层",
+            "district": "西湖区"
+          }
+        ],
+        "coordinates_exposed": false
+      },
+      {
+        "day": 3,
+        "requested": "西湖银泰城",
+        "resolved": "西湖银泰城",
+        "status": "unverified",
+        "candidates": [],
+        "coordinates_exposed": false
+      },
+      {
+        "day": 4,
+        "requested": "浙江省博物馆（之江馆区）",
+        "resolved": "浙江省博物馆(之江馆区)",
+        "status": "verified",
+        "candidates": [],
+        "coordinates_exposed": true
+      },
+      {
+        "day": 4,
+        "requested": "附近餐馆",
+        "resolved": "附近餐馆",
+        "status": "unverified",
+        "candidates": [],
+        "coordinates_exposed": false
+      }
+    ],
+    "passed": true,
+    "matches": 2,
+    "unverified": 5,
+    "local_env_unchanged": true,
+    "temporary_data_removed": true,
+    "seconds": 4.609
+  },
+  "original_itinerary_places_matched": 1,
+  "original_itinerary_place_count": 5,
+  "candidate_confirmation_workflow": "read-only preview; selecting candidate in editable trip remains",
+  "full_complex_scenario_passed": false,
+  "production_changed": false,
+  "handoff": "docs/交接归档-具体地点与馆区匹配.md"
+}

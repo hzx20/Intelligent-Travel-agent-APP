@@ -1,0 +1,21 @@
+{
+  "production_main_pid": "1465894",
+  "production_health": {
+    "status": "ok"
+  },
+  "production_pillow": null,
+  "production_tables": [
+    "ai_plans",
+    "comments",
+    "favorites",
+    "guide_images",
+    "guide_spots",
+    "guides",
+    "spots",
+    "users"
+  ],
+  "private_snapshot_exists": false,
+  "private_data_exists": false,
+  "nginx_test_exit": 0,
+  "nginx_test_output": "nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nnginx: configuration file /etc/nginx/nginx.conf test is successful"
+}

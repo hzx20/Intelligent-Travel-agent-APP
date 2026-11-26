@@ -1,0 +1,43 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "one separately authorized IPv4 443 maintenance recheck, with rollback on failed external acceptance",
+  "host": "134.175.137.18",
+  "authorized_once": true,
+  "attempt": "1998b9bff910aeb0",
+  "selected_interface": "WLAN",
+  "selected_interface_index": 19,
+  "bundle_sha256": "15bf8aa028a941b1cb64296c4f3773c4c0a63160612db65edbb409f52f168a7c",
+  "execution_receipt": ".release-candidates/budget-https-load-2026-11-19/https-ip-entry-candidate/public-maintenance-route-recheck.jsonl",
+  "execution_receipt_sha256": "53a3ca60d2881fcb0eb0c9ecb9a8471763451eb5399848c1666c17eafcac8205",
+  "results_during_publication": {
+    "host_published_loopback": {
+      "stage": "complete",
+      "status": 503,
+      "fingerprint_sha256": "54d2dc41cedefd7d49889295d2accbad1b3b7759251febbf685b58749fdab88d"
+    },
+    "default_route_travel": {"stage": "tls", "error_type": "TimeoutError"},
+    "selected_interface_travel": {"stage": "tcp", "error_type": "TimeoutError"}
+  },
+  "ssh_exit": 1,
+  "public_acceptance_passed": false,
+  "commit_ack_sent": false,
+  "rollback_verified": true,
+  "post_rollback": {
+    "dedicated_bridge_absent": true,
+    "dedicated_container_absent": true,
+    "host_443_listener_absent": true,
+    "docker_443_publication_absent": true,
+    "shared_nginx_matches": true,
+    "wlan_existing_home_http_status": 200,
+    "wlan_existing_travel_http_status": 200,
+    "existing_8000_listen": "0.0.0.0:8000"
+  },
+  "cloud_firewall_checked": false,
+  "cloud_firewall_changed": false,
+  "host_firewall_config_changed": false,
+  "root_cause_proven": false,
+  "public_maintenance_enabled": false,
+  "production_ready": false
+}

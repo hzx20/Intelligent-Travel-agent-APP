@@ -1,0 +1,132 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "goal_status": "active",
+  "status": "linux_unified_private_plan_verified_not_deployed",
+  "production_ready": false,
+  "linux_plan_id": "effb123a9119956d419ba8e52aeaa307141254a10d775953330cc0721392fc42",
+  "linux_application_id": "2b3a3395e87d12ce10920642ebbace27ee7928f648d2f02d6a963a6cc7406383",
+  "frontend_id": "b13f55b253f90ebef299a6c3cae142ece51c43dc4e9a2008e58b6183da5b67fc",
+  "plan_manifest_files": 184,
+  "windows_preview_id": "7a0a8ab8a8f811b9c59fa1e1f5873e9d1317c45344716cff91ebc584bd266ea9",
+  "windows_source_application_id": "47631e19546a1c72fdf62ea21dbd7031cfd795f6c4680a306a371316cbf2b190",
+  "private_linux_plan": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\unified-plan-linux-2026-11-17",
+  "private_source_review": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\unified-linux-review-2026-11-17",
+  "transport": {
+    "files": 118,
+    "application_payload_files": 104,
+    "archive_bytes": 372743,
+    "archive_sha256": "1fad6e7c5e0c0f587458676bd5e2843bae86115e41275210cdb223657647fd50",
+    "existing_authorized_temporary_root_reused": true,
+    "wheel_bytes_retransmitted": 0,
+    "installation_or_service_start": false
+  },
+  "result": {
+    "success": true,
+    "production_ready": false,
+    "application_id": "2b3a3395e87d12ce10920642ebbace27ee7928f648d2f02d6a963a6cc7406383",
+    "application_files": 104,
+    "source_application_id": "47631e19546a1c72fdf62ea21dbd7031cfd795f6c4680a306a371316cbf2b190",
+    "source_files_unchanged": true,
+    "actual_python": "3.12.3",
+    "plan_id": "effb123a9119956d419ba8e52aeaa307141254a10d775953330cc0721392fc42",
+    "plan_files": 184,
+    "frontend_id": "b13f55b253f90ebef299a6c3cae142ece51c43dc4e9a2008e58b6183da5b67fc",
+    "runtime": {
+      "release_id": "2b3a3395e87d12ce10920642ebbace27ee7928f648d2f02d6a963a6cc7406383",
+      "python": "3.12.3",
+      "packages": {
+        "fastapi": "0.141.1",
+        "uvicorn": "0.52.4",
+        "langchain": "1.4.0",
+        "langchain-openai": "1.6.0",
+        "langgraph": "1.2.11",
+        "pyjwt": "2.13.0",
+        "pydantic-settings": "2.15.0",
+        "cachetools": "7.1.8",
+        "pytest": "9.1.1",
+        "httpx": "0.28.1",
+        "sqlalchemy": "2.0.52",
+        "pillow": "13.0.0"
+      },
+      "pinned_runtime_matches": true,
+      "errors": [],
+      "not_checked": [
+        "transitive dependencies and optional extras",
+        "Linux native libraries and platform behavior",
+        "production settings, data migration and external providers",
+        "independent startup and release approval"
+      ]
+    },
+    "installed_closure_count": 63,
+    "installed_closure_matches_wheels": true,
+    "standalone_plan_verify_exit": 0,
+    "formal_unit_check": {
+      "exit_code": 1,
+      "output": "/etc/systemd/system/tat_agent.service:7: PIDFile= references a path below legacy directory /var/run/, updating /var/run/tat_agent.pid → /run/tat_agent.pid; please update the unit file accordingly.\ntravel.service: Command /opt/travel/runtime-envs/2b3a3395e87d12ce10920642ebbace27ee7928f648d2f02d6a963a6cc7406383/bin/python is not executable: No such file or directory\n",
+      "formal_code_path_exists": false,
+      "formal_venv_path_exists": false
+    },
+    "grammar_fixture_check": {
+      "exit_code": 0,
+      "output": "/etc/systemd/system/tat_agent.service:7: PIDFile= references a path below legacy directory /var/run/, updating /var/run/tat_agent.pid → /run/tat_agent.pid; please update the unit file accordingly.\n",
+      "scope": "Only formal code/interpreter paths replaced; no unit installed or started; not a PrivateTmp startup proof"
+    },
+    "production_state_before": {
+      "config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "backend_pid": "1465894",
+      "nginx_pid": "1"
+    },
+    "production_state_after": {
+      "config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "backend_pid": "1465894",
+      "nginx_pid": "1"
+    },
+    "production_state_unchanged": true,
+    "application_imported": false,
+    "service_started": false,
+    "database_created": false,
+    "runtime_installed": false,
+    "plan_path": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/unified-plan-20261117-review1/plan-linux",
+    "local_linux_plan": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\unified-plan-linux-2026-11-17",
+    "local_reconstructed_from_remote_manifest_and_exact_unchanged_bytes": true,
+    "local_plan_verified": true
+  },
+  "local_validation": {
+    "result": "75 passed",
+    "elapsed_seconds": 7.61,
+    "exit_code": 0,
+    "skipped": 0,
+    "release_plan_tests": 28,
+    "release_candidate_tests": 16,
+    "nginx_merge_tests": 25,
+    "maintenance_transform_tests": 6,
+    "full_backend_rerun": false,
+    "full_browser_rerun": false
+  },
+  "plan_artifact_sha256": {
+    "plan.json": "e0f2e01640b5087335b60fe96ccae69c83398aba23c9ede5c9199a0c0c34ea72",
+    "application/release.json": "ad8be03ca0c0b10cc54d100c0a37e4938a1a21ef88427c9990fdcb9a62c0123f",
+    "ops/travel.service": "760f7f065498691d2116f5446fffe58c84acd1f533f2f8d81e10b4a9fcaff47b",
+    "ops/nginx-normal.conf": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+    "ops/nginx-maintenance.conf": "4f0b073fd6a90b3825981903b8cba0a6e481666c085f3fa0db6da7feaa57514f",
+    "ops/requirements-linux.lock": "bffd392fafdbf782ddc707ae88ece5e2de0bb6d30aa6086359be7be8c62b0e8c",
+    "ops/service-profile.conf.template": "672048a474f852d82bcdfb01e92534bd9dc7e3ba7ff136825b5f2a696afce974"
+  },
+  "file_sha256": {
+    "backend/tools/release_plan.py": "c08b7247fcd444dc142afbc4b165fd5179ff29aa00450bab5965b97fdd10cf9d",
+    "backend/tests/test_release_plan.py": "26a57be22fb56f11e2269c8bd756d2a5cab54aa8d6cddf4ef90af3a9bc68485c",
+    "deploy/RELEASE_RUNBOOK.md": "b97b9f27d0e32e4f315b52b4427ad961747354d8571cb788bcb6b8e9987963e2",
+    "deploy/travel-release.conf.template": "672048a474f852d82bcdfb01e92534bd9dc7e3ba7ff136825b5f2a696afce974",
+    "deploy/requirements-linux-cp312.lock": "bffd392fafdbf782ddc707ae88ece5e2de0bb6d30aa6086359be7be8c62b0e8c"
+  },
+  "limitations": [
+    "Files/bindings and actual Linux prepare verified; no app imported or unit started",
+    "Formal code/venv paths absent, formal systemd verify exit1 retained",
+    "Existing-path grammar fixture exit0 is not effective-unit or PrivateTmp startup proof",
+    "Whole private plan contains another site configuration; never publish it",
+    "Current docs progress updates are outside frozen snapshots",
+    "Original seven stages and all remaining external-service/device/publishing requirements remain"
+  ],
+  "handoff": "docs/交接归档-统一发布计划与服务语法.md"
+}

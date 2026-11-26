@@ -1,0 +1,49 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "legacy rollback dependency staging and origin signing provenance",
+  "inventory_sha256": "53d1aaf81eaff026edd85c7ecf76c9bdcd55011bea732cbedf1a5a7576692f68",
+  "source_map_sha256": "db1d8db8e722870ff2e874c3334f26440583048fa61865391998385a7bdc8e73",
+  "reviewed_legacy_git_revision": "f5bd17624d0e9981ca83b78b0486f6e650db6203",
+  "runtime_kit": {
+    "origin_directory": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/formal-backup-legacy-runtime",
+    "reused_origin_wheels": 62,
+    "transferred_wheels": 1,
+    "transferred_members": 3,
+    "uploaded_payload_bytes": 2007040,
+    "uploaded_payload_sha256": "5f76d58fe19ab511e730383f161d8b554984053c456b70a64913362f231c6007",
+    "wheel_bytes": 32739689,
+    "verified_members": 65,
+    "verified_wheels": 63,
+    "owner_only": true,
+    "independent_origin_recheck_passed": true,
+    "installed_dependencies": false
+  },
+  "signing": {
+    "source": "project_dotenv",
+    "legacy_mode": "explicit_jwt",
+    "project_dotenv_reproduces_legacy_signing_input": true,
+    "stable_unit_and_files_during_observation": true,
+    "synthetic_resolution_cases_passed": 8,
+    "synthetic_old_token_accepted_by_pinned_candidate": true,
+    "synthetic_candidate_token_accepted_by_reviewed_legacy": true,
+    "synthetic_old_token_rejected_by_candidate_with_different_key": true,
+    "external_environment_and_loopback_restart_tests_passed": 9,
+    "values_or_value_digests_exported": false
+  },
+  "private_candidate_directory": ".release-candidates/supplier-city-2026-11-20",
+  "private_evidence_sha256": {
+    "check_backup_inputs.py": "df14eaab917de02100c5d267fb8aa7f1e32307b37da44b0151267390cc91b35d",
+    "backup-inputs-origin-observation.json": "72a4f624d2bf6a8947e172d78ddd7bca2c7bf7e9753b63decfcff548b668eec3",
+    "stage_backup_runtime.py": "04fdd25150b027b624d39058bf1d9a4653c78c3c302d4f387a88747fb718bd42",
+    "backup-runtime-origin-stage.json": "4aeb9577b70ca26631b659fd339c1f197b0dee9338cfd410b748960cd9865ee7",
+    "backup-runtime-origin-check.json": "092433341c24ca27a1de4968474e0e8c9cbd25a137bf252b7bab3d4ec8ae6589",
+    "verify_backup_signing.py": "2c7d55a4147ad7f40b836be1d3ad500ea2e5c46cf68dd718a49f28395270378a",
+    "backup-signing-origin-recovery.json": "f455ebdbc2bd943e3e77ac764e3f41fba99682c616d20eac183d5e6f68a1e4dd"
+  },
+  "production_database_opened": false,
+  "production_configuration_changed": false,
+  "production_write_stop_executed": false,
+  "production_snapshot_created": false
+}

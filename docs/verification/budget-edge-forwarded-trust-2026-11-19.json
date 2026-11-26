@@ -1,0 +1,31 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "application_linux": "553a85ca32f4a4d339baaa618b8c9fc97e756b96d713dbcbbcd45ffe974ae363",
+  "tested_windows_app": "794de7fe05d9632371c4080d3f470e649802987a75eae71fef70684ffed7b18a",
+  "forwarded_behavior": {
+    "nginx_overrides_supplied_for_and_protocol": true,
+    "canonical_https_host_verified": true,
+    "uvicorn_adjacent_direct_peer_ignores_forwarded_headers": true,
+    "noncanonical_host_rejected": true,
+    "windows_loopback_only": true,
+    "backend_application_fixture_unchanged": true,
+    "local_regression_passed": 6
+  },
+  "docker_bridge": {
+    "read_only_probe": true,
+    "driver": "bridge",
+    "subnet": "172.18.0.0/16",
+    "gateway": "172.18.0.1",
+    "currently_shared_proxy": "172.18.0.5",
+    "network_internal": false,
+    "endpoint_count": 4,
+    "explicit_iprange_defined": false
+  },
+  "production_address_allocated": false,
+  "production_port_8000_direct_access_gated": false,
+  "production_tls_address_selected": false,
+  "production_changed": false,
+  "production_ready": false
+}

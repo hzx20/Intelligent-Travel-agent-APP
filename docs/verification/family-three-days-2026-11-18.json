@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "scope": "three-day itinerary endpoints, adopted map legs and continuous schedule fit",
+  "actual_departure_ready": false,
+  "actual_full_cost_verified": false,
+  "fixture_start_date": "2026-11-21",
+  "budget_limit_cny": 3000,
+  "fixture_item_counts": [7, 6, 5],
+  "frontend_id": "e361f1d21e459f8a97767fdf3d48407de4656901bbf4d44a8c1ce3cdf727c795",
+  "frontend_files": 49,
+  "endpoint_checks": [
+    ".release-candidates/family-endpoints-2026-11-18-o03vvwvp/result.json",
+    ".release-candidates/family-endpoints-2026-11-18-cclwm_nr/result.json"
+  ],
+  "route_fixture": {
+    "script": ".release-candidates/check-family-three-days-2026-11-18.py",
+    "script_sha256": "1e304a06c6ba4d468400b9543bf4f71845869499da208d51dab4d8c9c1b2641a",
+    "draft_result": ".release-candidates/family-three-days-2026-11-18-ggnqoh50/result.json",
+    "final_result": ".release-candidates/family-three-days-2026-11-18-xnl94326/result.json",
+    "offline_replay_result": ".release-candidates/family-three-days-2026-11-18-42qnqges/result.json",
+    "final_schedule": ".release-candidates/family-three-days-2026-11-18-xnl94326/schedule.json",
+    "final_schedule_sha256": "f37e21123661713ac583ae3092345bdd9ad521c481bc5ea3898b77fc4829f8f0",
+    "replay_responses": ".release-candidates/family-three-days-2026-11-18-xnl94326/route-responses.json",
+    "live_initial_calls": 10,
+    "live_revision_calls": 6,
+    "total_measured_final_legs": 12,
+    "adopted_counts": [5, 4, 3],
+    "known_interstop_walking_meters": [1486, 747, 0],
+    "all_estimates_fit_contiguous_gaps": true,
+    "actual_taxi_eligibility_and_waiting_verified": false
+  },
+  "browser": {
+    "script": ".release-candidates/family-three-day-ui-2026-11-18/check.mjs",
+    "result": ".release-candidates/family-three-day-ui-2026-11-18/result.json",
+    "viewports": [[1280, 900], [390, 844]],
+    "simulated_map_sdk": true,
+    "local_api_recorded_provider_responses": true,
+    "temporary_database_and_processes_closed": true
+  },
+  "published": false
+}

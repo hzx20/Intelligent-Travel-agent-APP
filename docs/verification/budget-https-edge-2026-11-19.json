@@ -1,0 +1,39 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "standalone 443 edge, on-host ephemeral container using running shared nginx image ID, no ports or host mounts, synthetic upstream",
+  "source_plan": "81ee1674adc6b9267e4b526ffdbf5313cae0b8094c5039ca220c528ef500f5b5",
+  "private_edge_directory": ".release-candidates/budget-https-load-2026-11-19/https-ip-edge-review",
+  "review": {
+    "source_sha256": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+    "host": "134.175.137.18",
+    "mode": "ip",
+    "challenge_source_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "files": {
+      "nginx-edge.conf": "148b9be054d1e23ee6ca9632a28dec1a598103f7ceba210b9201f84ab4e66910",
+      "nginx-edge-maintenance.conf": "63723bb8b149a576260c446e87664698a006be15fec81185ed51fdcba2a43dda",
+      "nginx-challenge-only.conf": "76bb957ebbd94fe6b67b0b7ae1b83f29d98f9a787cbe12df86e5ce926a993675",
+      "nginx-http-after-tls.conf": "66be24348ba7aca9809a989807ec3d2ec8b50765f76453949119048c22ba2eb1"
+    },
+    "production_ready": false
+  },
+  "remote": {
+    "exit_code": 0,
+    "receipt_path": ".release-candidates/budget-https-load-2026-11-19/edge-run-79870bdffacbf16c.jsonl",
+    "edge_routes_verified": true,
+    "maintenance_verified": true,
+    "certificate_validated": true,
+    "forged_proto_replaced": true,
+    "no_ports_published": true,
+    "no_host_mounts": true,
+    "fixture_container_removed": true,
+    "receipt_sha256": "1e2df4a8062a5ef7e236763ccf02c2b2e2fba275084606bdc0c6eec92854bf2e"
+  },
+  "local_tests_passed": 5,
+  "shared_overlay_unchanged": true,
+  "formal_address_selected": false,
+  "backend_proxy_trust_rebound": false,
+  "production_changed": false,
+  "production_ready": false
+}

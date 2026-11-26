@@ -1,0 +1,108 @@
+{
+  "scope": "bounded time repairs and lunch-gap rest in original planner",
+  "date": "2026-11-18",
+  "goal_status": "active",
+  "backend": {
+    "passed": 100,
+    "deselected": 3,
+    "seconds": 3.62
+  },
+  "source_sha256": {
+    "backend/app/services/itinerary.py": "fcb5e41c8698c12fed865562267874cf7277bac0fedb4346eaaa49e455fd97e0",
+    "backend/app/services/plan_schedule.py": "63163e4642f4da1f32a61078b7ccb6850e6a6dc53e249f20e0b9865c5d586540",
+    "backend/tests/test_plan_schedule.py": "d123e742a4425a59faa7343afc37af57a463c5e1c189d6e8ca9095fb198f7d88"
+  },
+  "retained_frontend_evidence": {
+    "frontend_id": "00654638f4220f2ed0a33441aee8528b27a6041f5c05660d2baf5d8b49c0bcf6",
+    "document": "docs/verification/plan-meal-and-retry-2026-11-18.json",
+    "rerun": false
+  },
+  "earlier_live_compact_repair": {
+    "passed": false,
+    "generated": false,
+    "frozen_base": "b46aabf3e26aec1b69856d1be8b1cda6e7121488e22609bc9f7abe5c720480bd",
+    "public_synthetic_requirements_only": true,
+    "production_changed": false,
+    "frozen_base_with_itinerary_and_schedule_overlay": true,
+    "schedule_sha256": "ba7198e4a3c793815096ac236693ccd0c4571a7f89c46ce534e682562f9afb9a",
+    "model": "glm-4-flash",
+    "source_sha256": "d777bd0fbf838209a3bb60f1d343b6fe47f9d091cddc102a451e70b763fdd35c",
+    "initial_reply_replayed": true,
+    "replay_sha256": "a6c72bae645f938e89418b9aae6d6f751b644359765a0c66e17eeacb03dc5b71",
+    "repair_reply_characters": 510,
+    "sends": [
+      {
+        "request": 1,
+        "http_status": 200
+      }
+    ],
+    "error_type": "RuntimeError",
+    "validation_error": "行程结构校验失败：日程调整后存在时间重叠或跨天",
+    "provider_status_code": null,
+    "temporary_budget_removed": true,
+    "local_env_unchanged": true,
+    "seconds": 7.984
+  },
+  "final_offline_replay": {
+    "initial_reply_replayed": true,
+    "model_requests": 0,
+    "schedule_and_budget_passed": true,
+    "rest": [
+      {
+        "day": 1,
+        "time": "13:30",
+        "minutes": 30
+      },
+      {
+        "day": 2,
+        "time": "12:30",
+        "minutes": 30
+      },
+      {
+        "day": 3,
+        "time": "12:30",
+        "minutes": 30
+      }
+    ],
+    "preserved_existing_times_destinations_and_amounts": true,
+    "budget_summary": {
+      "交通": 0,
+      "住宿": 0,
+      "餐饮": 0,
+      "门票": 0,
+      "其他": 0,
+      "总计": 0
+    },
+    "budget_validation": {
+      "source": "ai_estimate",
+      "calculation_basis": "items_and_additions_v1",
+      "summary_checked": true,
+      "item_costs_checked": false,
+      "total_is_partial": true,
+      "unpriced_items": 14,
+      "quotes_verified": false,
+      "unpriced_categories": [
+        "交通",
+        "餐饮",
+        "门票",
+        "其他"
+      ],
+      "unlisted_categories": [
+        "住宿"
+      ],
+      "model_summary_ignored": true,
+      "warnings": [
+        "有14项费用待确认，当前仅为已列估算小计，不能据此判断完整预算。"
+      ]
+    },
+    "declared_indoor_day_2": [
+      "杭州市博物馆",
+      "浙江省博物馆"
+    ],
+    "map_verified": false,
+    "full_complex_scenario_passed": false
+  },
+  "production_changed": false,
+  "full_complex_scenario_passed": false,
+  "handoff": "docs/交接归档-局部日程纠正与午休空档.md"
+}

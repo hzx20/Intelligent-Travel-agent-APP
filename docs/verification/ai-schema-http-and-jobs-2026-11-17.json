@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "goal_status": "active",
+  "scope": "AI strict integer validation through ASGI HTTP authentication, persistence and background scheduler",
+  "previous_turn_classification": "progress: actual Linux frozen candidate and independent cleanup evidence completed",
+  "changes": [
+    "Added two HTTP integration tests; no runtime product source changed in this module"
+  ],
+  "test": {
+    "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -B -m pytest tests/test_trip_ai_schema_http.py tests/test_trip_ai_schema.py tests/test_trip_ai_schema_routes.py tests/test_trip_ai.py -q",
+    "cwd": "backend",
+    "exit_code": 0,
+    "passed": 41,
+    "duration_seconds": 10.74,
+    "new_http_tests": 2,
+    "other_selected_tests": 39,
+    "tool_session": 12535,
+    "terminal": true
+  },
+  "verified": [
+    "Anonymous and other-account synchronous requests rejected before model stub execution",
+    "Two invalid boolean target replies return 502 with no proposal or trip mutation",
+    "Valid retry remains preview-only until explicit apply, preserves unrelated fields/coordinates, retains zero duration, rejects double apply",
+    "Background invalid boolean duration reaches persisted error after two model replies, clears snapshot and lease, saves no proposal",
+    "Explicit background retry obtains one saved proposal; fresh HTTP request recovers it without new model call; explicit apply clears actual 30-minute duration to null and advances trip version"
+  ],
+  "not_proven": [
+    "Real model output or provider account availability",
+    "Browser refresh or physical mobile behavior",
+    "Real TCP/nginx transport",
+    "Process restart in this module",
+    "New frozen candidate combined Linux runtime",
+    "Whole current worktree deployment readiness"
+  ],
+  "external_provider_calls": 0,
+  "production_deployed": false,
+  "runtime_code_changed": false,
+  "source_sha256": {
+    "backend/tests/test_trip_ai_schema_http.py": "dfb0835ebade32b8c3010f1cfbfaefaac2807267aabd0be985a4c893a4987336",
+    "backend/tests/test_trip_ai.py": "61ce5a84cc491c0c59f721944f3e197f4fda8f8cd733aeb2bdc8867490979f00",
+    "backend/tests/test_trip_ai_schema.py": "74a083b049c4daa0afd164e7012b3891ecad25305131b7215cb9553d1e012bc7",
+    "backend/tests/test_trip_ai_schema_routes.py": "dad412c83e1b33dbf5f82f804808b637b62b924e6bae59978d7f52fc889e2053",
+    "backend/tests/conftest.py": "82ccc18b08a57e264e44b2c90acaa3e28ebd15104ea1821a3882da1b0660051b",
+    "backend/app/services/trip_ai.py": "bcbff2bd5fe30591689b3b9ca5d748100c9733b4b1a0e22da337ad3ae2a29b5c",
+    "backend/app/routers/trips.py": "dc5fc723bd48cbcb362a69a49dd3f8b4991700a3cf5fd849b59f4762ba049388",
+    "backend/app/main.py": "64312439f70f5bb252c734d8737ec23678cd1b499a07eb32a1005ada8bbbeb4d"
+  },
+  "frozen_candidate": "033971e548ecbd22038b8d225ac50c51a214f2d0d9a507b8cdcc2b5393d20970",
+  "candidate_scope": "Prior frozen candidate preserved; current workspace supplier changes remain outside it. Tests above run against current worktree, not from the frozen Linux plan.",
+  "handoff": "docs/交接归档-当前候选收口与恢复.md",
+  "next_module": "Real AI complex scenarios or current candidate isolated runtime, according to active scope; hotel integration requires authorized test channel"
+}

@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "scope": "source date handoff, every scheduled block in planner, initial public venue and route audit",
+  "itinerary_end_to_end_passed": false,
+  "backend_passed": 51,
+  "frontend_passed": 213,
+  "travel_build": true,
+  "frontend_id": "23c8e91e9514862ad3d8f17155f3c00d2d717580f20e0d5c2639b6483fba6f4b",
+  "frontend_files": 49,
+  "source_sha256": {
+    "backend/app/services/plan_schedule.py": "52f9063d24ad0965a92e8f8ad032cd5c61bd2ca5f9655583703c770f9b4c30b8",
+    "backend/app/routers/trips.py": "66147fcee77bed926a0489b4d5f567bc950eb089e87142dab591d78cb3052d5e"
+  },
+  "offline_conversion": {
+    "result": ".release-candidates/family-itinerary-2026-11-18-dqkh3f8s/result.json",
+    "source_plan": ".release-candidates/real-plan-timing-repair-2026-11-18/deterministic-itinerary.json",
+    "source_points": ".release-candidates/plan-place-identity-live-2026-11-18/resolved.json",
+    "start_date": "2026-11-21",
+    "item_counts": [6, 6, 5],
+    "midday_rests": 3,
+    "source_unchanged": true,
+    "temporary_database_removed": true
+  },
+  "amap": {
+    "result": ".release-candidates/family-itinerary-2026-11-18-dzzrq7_8/result.json",
+    "responses": ".release-candidates/family-itinerary-2026-11-18-dzzrq7_8/route-responses.json",
+    "new_successful_calls": 3,
+    "script": ".release-candidates/check-family-itinerary-2026-11-18.py",
+    "coverage": "public venue comparison; unlocated original stops excluded"
+  },
+  "browser": {
+    "passed": true,
+    "result": ".release-candidates/family-itinerary-ui-2026-11-18/playwright-edge-reviewed/result.json",
+    "script": ".release-candidates/family-itinerary-ui-2026-11-18/check.mjs",
+    "viewports": [[1280, 900], [390, 844]],
+    "backend_and_map_mocks": true,
+    "external_requests_forwarded": 0,
+    "unpriced_items": 14,
+    "lodging_unlisted": true
+  },
+  "published": false
+}

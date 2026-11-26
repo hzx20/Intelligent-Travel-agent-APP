@@ -1,0 +1,49 @@
+{
+  "release_id": "a2bd8b01fcf847f04a03256522b62924288d14427bd0efc0feffa61be6973684",
+  "python": "3.12.3",
+  "packages": {
+    "fastapi": "0.141.1",
+    "uvicorn": "0.52.4",
+    "langchain": "1.4.0",
+    "langchain-openai": "1.6.0",
+    "langgraph": "1.2.11",
+    "pyjwt": "2.13.0",
+    "pydantic-settings": "2.15.0",
+    "cachetools": "7.1.8",
+    "pytest": "9.1.1",
+    "httpx": "0.28.1",
+    "sqlalchemy": "2.0.52",
+    "pillow": "13.0.0"
+  },
+  "pinned_runtime_matches": true,
+  "errors": [],
+  "not_checked": [
+    "transitive dependencies and optional extras",
+    "Linux native libraries and platform behavior",
+    "production settings, data migration and external providers",
+    "independent startup and release approval"
+  ],
+  "remote_root": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a",
+  "candidate_path": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/candidate",
+  "source_release_id": "9e98f19b25a1b5f79376a272d44653728c3f9ea679582f3f7910147f11939c5d",
+  "isolated_pillow_install": true,
+  "production_environment_modified": false,
+  "official_wheel": "pillow-13.0.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+  "wheel_sha256": "42d63be3af4f9b951b199b0a9d23365d37ab14687e6d77b74940432c8515c4ca",
+  "official_metadata_url": "https://pypi.org/pypi/Pillow/13.0.0/json",
+  "official_download_url": "https://files.pythonhosted.org/packages/e6/99/fdf65cc539e266ab93546c261bdf98411fe165c6e4e13f9dbf597097192b/pillow-13.0.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+  "local_linux_candidate_path": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\linux-app-2026-11-16-a2bd8b01",
+  "local_candidate_verified": true,
+  "isolated_pillow_codec_smoke": {
+    "PNG": {
+      "decoded": true,
+      "width": 32,
+      "height": 32
+    },
+    "JPEG": {
+      "decoded": true,
+      "width": 32,
+      "height": 32
+    }
+  }
+}

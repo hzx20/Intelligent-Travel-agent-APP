@@ -1,0 +1,19 @@
+{
+  "evidence_kind": "isolated_empty_application_schema_restored_copy_and_local_build",
+  "production_verified": false,
+  "local_checks_passed": true,
+  "checks": {
+    "database": [],
+    "frontend": [],
+    "runtime_single_worker": [],
+    "runtime_shared_two_workers": []
+  },
+  "frontend_manifest_sha256": "0cdb6122b8ac43194a76c08cfeb353c622d705ae5df2520ab888eb833adb5b40",
+  "not_checked": [
+    "production data and migration",
+    "production proxy/HTTPS/nginx -t",
+    "live configuration and capacity",
+    "real providers and devices",
+    "release approval"
+  ]
+}

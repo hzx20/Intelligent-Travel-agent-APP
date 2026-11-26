@@ -1,0 +1,134 @@
+{
+  "scope": "unlocated meal schedule entries and bounded itinerary correction",
+  "date": "2026-11-18",
+  "goal_status": "active",
+  "source_sha256": {
+    "backend/app/services/itinerary.py": "4bcfb6e115e1f8ad65c64469481976b14a19a81e55b288cd9b3db2aea9325015",
+    "backend/app/services/plan_schedule.py": "aee3baecb8ccc7ddfc1fe5ca7e789a158edfa00d793bc047036163989172b269",
+    "backend/app/services/map_verify.py": "76c2521852cbf196437dbe2d5e6a2b8ddc47e2e587586151863d29d8eb3177da",
+    "backend/app/routers/trips.py": "fb7c2104a2ea6af4cb0188014612d831366edd0db6d61bc9a3c23224cd341651",
+    "backend/tests/test_plan_schedule.py": "a7bb730d682bb768d3ca65de0bcb66f0bb7025b981eda0c98478d8c8edd9fcfc",
+    "frontend/src/utils/planLocation.js": "628b8bf73ae5e3b88760cc1551bb1173486fc77d543932672705b1ffa5ff6da2",
+    "frontend/src/views/PlanView.vue": "29ba30b25d8c0bc98e9bcdfedd2e3e53a0f1e732aee5a2404023fc3a75d0c770",
+    "frontend/test/planLocation.test.js": "99a0a904733293424e249bbf2989c8f01f83d372f15b51daa617d715dfa773a1"
+  },
+  "backend": {
+    "passed": 92,
+    "deselected": 3,
+    "seconds": 3.7,
+    "real_provider_used": false
+  },
+  "frontend": {
+    "node_passed": 205,
+    "build_modules": 130,
+    "build_passed": true
+  },
+  "browser": {
+    "frontend_id": "00654638f4220f2ed0a33441aee8528b27a6041f5c05660d2baf5d8b49c0bcf6",
+    "files_verified": 48,
+    "passed": true,
+    "browser": "msedge",
+    "external_requests_forwarded": 0,
+    "viewports": [
+      {
+        "label": "desktop",
+        "width": 1280,
+        "height": 900,
+        "screenshot": "desktop.png",
+        "screenshot_sha256": "680fd133c5e19db2f0dab1b3a76b97f66560ed98aae6b254d3946ad6b60b6521",
+        "subtotal": 470,
+        "unknown_expenses": 2,
+        "unlocated_meal_visible": true,
+        "unlocated_meal_excluded_from_map": true,
+        "rest_rows": 3,
+        "rest_excluded_from_map": true,
+        "indoor_candidate_label": true,
+        "unlisted_category_shown": true,
+        "supplements_expanded": true,
+        "place_markers": 8,
+        "verified_links": 8,
+        "correct_hotel_anchor": true,
+        "horizontal_overflow": false
+      },
+      {
+        "label": "mobile",
+        "width": 390,
+        "height": 844,
+        "screenshot": "mobile.png",
+        "screenshot_sha256": "fed7eccbf897e60556bfd14a49c29d06932d59ae6ebfc6a106d82612f4be247a",
+        "subtotal": 470,
+        "unknown_expenses": 2,
+        "unlocated_meal_visible": true,
+        "unlocated_meal_excluded_from_map": true,
+        "rest_rows": 3,
+        "rest_excluded_from_map": true,
+        "indoor_candidate_label": true,
+        "unlisted_category_shown": true,
+        "supplements_expanded": true,
+        "place_markers": 8,
+        "verified_links": 8,
+        "correct_hotel_anchor": true,
+        "horizontal_overflow": false
+      }
+    ],
+    "browser_version": "157.0.4341.60",
+    "isolated_browser_closed": true,
+    "static_server_closed": true,
+    "seconds": 1.263,
+    "screenshots_viewed": 2,
+    "data_and_sdk": "synthetic"
+  },
+  "previous_live_replies_replayed": [
+    {
+      "reply": "reply-1.txt",
+      "accepted": false,
+      "reason": "第1天缺少独立的休息时段；第2天缺少独立的休息时段；第2天将明显包含户外游览的地点整体标为室内，请改为具体室内场馆；第3天缺少独立的休息时段"
+    },
+    {
+      "reply": "reply-2.txt",
+      "accepted": false,
+      "reason": "第1天须在11:00至15:00之间开始午间休息，请在午间留出完整时段并检查前后安排"
+    }
+  ],
+  "live_generation": {
+    "passed": false,
+    "generated": false,
+    "frozen_base": "b46aabf3e26aec1b69856d1be8b1cda6e7121488e22609bc9f7abe5c720480bd",
+    "public_synthetic_requirements_only": true,
+    "production_changed": false,
+    "frozen_base_with_itinerary_and_schedule_overlay": true,
+    "schedule_sha256": "aee3baecb8ccc7ddfc1fe5ca7e789a158edfa00d793bc047036163989172b269",
+    "model": "glm-4-flash",
+    "source_sha256": "4bcfb6e115e1f8ad65c64469481976b14a19a81e55b288cd9b3db2aea9325015",
+    "sends": [
+      {
+        "request": 1,
+        "http_status": 200
+      },
+      {
+        "request": 2,
+        "http_status": 200
+      }
+    ],
+    "error_type": "RuntimeError",
+    "provider_status_code": null,
+    "temporary_budget_removed": true,
+    "local_env_unchanged": true,
+    "seconds": 221.643
+  },
+  "live_replies_replayed": [
+    {
+      "file": "reply-1.txt",
+      "accepted": false,
+      "reason": "第1天缺少独立的休息时段；第2天缺少独立的休息时段；第3天缺少独立的休息时段"
+    },
+    {
+      "file": "reply-2.txt",
+      "accepted": false,
+      "reason": "不是有效的 JSON 对象"
+    }
+  ],
+  "full_complex_scenario_passed": false,
+  "production_changed": false,
+  "handoff": "docs/交接归档-午餐时段与规划纠正.md"
+}

@@ -1,0 +1,16 @@
+{
+  "saved": {
+    "state": "waiting_for_first_trigger",
+    "last_trigger_utc": null,
+    "next_trigger_utc": "2026-11-26T01:24:00+00:00",
+    "started_utc": null,
+    "finished_utc": null
+  },
+  "public": {
+    "state": "waiting_for_first_trigger",
+    "last_trigger_utc": null,
+    "next_trigger_utc": "2026-11-26T01:42:00+00:00",
+    "started_utc": null,
+    "finished_utc": null
+  }
+}

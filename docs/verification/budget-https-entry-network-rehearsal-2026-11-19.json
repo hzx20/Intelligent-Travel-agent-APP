@@ -1,0 +1,40 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "one authorized isolation rehearsal of the dedicated travel bridge on the original Linux host",
+  "host": "134.175.137.18",
+  "authorized_once": true,
+  "attempt": "6be902ea40e17fef",
+  "bundle_sha256": "524f8ce0ca589f945abb359fd3f59caff98adde71b1f4db4281a782adc8a35fd",
+  "candidate_receipt_sha256": "5cdb18ff0c21e3b7051e3038787baf19f6f37069d2dff237e36d4fd1b91d129d",
+  "execution_receipt": ".release-candidates/budget-https-load-2026-11-19/https-ip-entry-candidate/network-rehearsal-attempt.jsonl",
+  "execution_receipt_sha256": "9ee0a7fc46dd6932afefc671c9e3830cd984fa78f2d91dce0ab08245d91cd14b",
+  "ssh_exit": 0,
+  "verified": true,
+  "network": "travel-edge",
+  "subnet": "172.31.240.0/28",
+  "host_gateway": "172.31.240.1",
+  "proxy_address": "172.31.240.2",
+  "checks": {
+    "fixed_ip_after_recreation": true,
+    "maintenance_503": true,
+    "private_gateway_forwarding": true,
+    "trusted_synthetic_tls": true,
+    "no_published_ports": true,
+    "cleanup_verified": true
+  },
+  "independent_readback": {
+    "dedicated_bridge_absent": true,
+    "dedicated_host_interface_absent": true,
+    "shared_http_config_matches": true,
+    "public_port_443_not_published": true,
+    "host_443_listener_absent": true,
+    "old_backend_listener": "0.0.0.0:8000",
+    "production_tls_roots_absent": true
+  },
+  "production_packet_filter_verified": false,
+  "production_certificate_issued": false,
+  "public_tls_verified": false,
+  "production_ready": false
+}

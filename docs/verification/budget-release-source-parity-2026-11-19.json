@@ -1,0 +1,40 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "local source parity and synthetic runtime checks for the frozen budget release",
+  "local_application_id": "794de7fe05d9632371c4080d3f470e649802987a75eae71fef70684ffed7b18a",
+  "linux_application_id": "553a85ca32f4a4d339baaa618b8c9fc97e756b96d713dbcbbcd45ffe974ae363",
+  "release_plan_id": "81ee1674adc6b9267e4b526ffdbf5313cae0b8094c5039ca220c528ef500f5b5",
+  "application": {
+    "backend_and_deployment_source_files_verified": 67,
+    "missing_files": [],
+    "changed_files": [],
+    "additional_application_files": [],
+    "backend_and_deployment_source_hashes_match_linux_candidate": true,
+    "weather_and_flight_adapters_in_manifest": true
+  },
+  "frontend": {
+    "build_mode": "travel",
+    "base_path": "/travel/",
+    "vite_version": "6.4.3",
+    "transformed_modules": 136,
+    "frontend_release_id": "83a024dca6cea7bc09c0005c5ad5f6083ca1c3e0a7f49a8583132ad6ba4944fc",
+    "rebuilt_files_matching_manifest": 49,
+    "missing_files": [],
+    "changed_files": [],
+    "additional_files": []
+  },
+  "runtime": {
+    "https_and_packaged_backend_tests_passed": 7,
+    "https_and_packaged_backend_seconds": 15.2,
+    "browser": "Microsoft Edge",
+    "browser_server": "Vite preview of rebuilt travel artifacts",
+    "browser_api_responses": "synthetic",
+    "browser_desktop_tests_passed": 3,
+    "browser_mobile_viewport_tests_passed": 3,
+    "browser_seconds": 4.7
+  },
+  "production_deployed": false,
+  "live_provider_requests": false
+}

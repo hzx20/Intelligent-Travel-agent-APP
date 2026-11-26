@@ -1,0 +1,31 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "authorized versioned code and offline venv staging on the origin",
+  "application_id": "28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+  "release_plan_id": "3546a422a4ce7b43bdde35b184c39f1d4ab886e33eb6df151dcf43c7346fdb80",
+  "stage_plan_sha256": "f4b0b798f5a006749c106cef53e108a63652d24a7f84f348896170949fa67e4b",
+  "staged_application_path": "/opt/travel/releases/28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+  "staged_runtime_path": "/opt/travel/runtime-envs/28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+  "top_owner_uid_gid_before": [1000, 1001],
+  "top_owner_uid_gid_after": [0, 0],
+  "top_mode_before_and_after": "0755",
+  "legacy_app_and_venv_metadata_unchanged": true,
+  "staging_inputs_removed": true,
+  "reviewed_application_file_digests_postchecked": 117,
+  "pinned_dependencies_postchecked": 63,
+  "root_owned_versions_and_parents_postchecked": true,
+  "ubuntu_read_execute_no_write_postchecked": true,
+  "original_service_pid_unchanged_during_stage": true,
+  "original_service_health_passed_independent_postcheck": true,
+  "unit_installed": false,
+  "nginx_reloaded": false,
+  "original_database_or_dotenv_opened": false,
+  "application_switched": false,
+  "private_candidate_directory": ".release-candidates/supplier-city-2026-11-20",
+  "private_evidence_sha256": {
+    "formal-runtime-stage-origin.json": "e0172df07ecf5bbafe5f5d76bb9c2413dc38d7d091d52da7599b6b3d5f286ee9",
+    "formal-runtime-stage-postcheck.json": "7a4d91f95a7d2bf713d1f5929bb210be5bc067374930068c3d9f70bb002029ed"
+  }
+}

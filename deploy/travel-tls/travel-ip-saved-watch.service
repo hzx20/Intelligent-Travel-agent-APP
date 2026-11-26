@@ -1,0 +1,13 @@
+# This check can run even while the public 443 entry is pending.
+[Unit]
+Description=Check the saved travel IP certificate
+OnFailure=travel-ip-alert@saved.service
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+PrivateTmp=yes
+NoNewPrivileges=yes
+TimeoutStartSec=40s
+ExecStart=/usr/bin/python3 -I -B /usr/local/libexec/travel_tls_check.py saved --pair

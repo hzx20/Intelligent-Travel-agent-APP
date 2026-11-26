@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope": "Independent local readback of the exact production cutover files",
+  "operations_id": "36f910e81862fa7c65e2ff9ec47f496b2934686d39cc51fdb5686bc1942afaf3",
+  "application_id": "28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+  "release_plan_id": "3546a422a4ce7b43bdde35b184c39f1d4ab886e33eb6df151dcf43c7346fdb80",
+  "https_companion_id": "f85a32dea9051cb7379b34ddba704f26ed4f990b0e728e1d61b4eef22ded70bd",
+  "payload_files": 10,
+  "payload_bytes": 40762,
+  "private_manifest": ".release-candidates/supplier-city-2026-11-20/cutover-operations/manifest.json",
+  "private_manifest_sha256": "89474a861a78e54dee7b74e796deaf8ac34b93857f85fadca1ae70105659a133",
+  "prepared_and_independently_verified": true,
+  "synthetic_manifest_cases_passed": 4,
+  "origin_contacted_or_changed_by_assembler": false,
+  "production_window_confirmed": false
+}

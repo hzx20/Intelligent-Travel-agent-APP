@@ -1,0 +1,35 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "live host firewall inventory and dry-run validation of the dedicated travel backend INPUT policy",
+  "host": "134.175.137.18",
+  "host_snapshot": {
+    "travel_service_state": "active/running",
+    "docker_service_state": "active",
+    "ufw_service_state": "active",
+    "ufw_runtime_status": "inactive",
+    "ufw_chains_used_by_ipv4_input": false,
+    "nftables_service_state": "inactive",
+    "firewalld_service_state": "inactive",
+    "iptables_backend": "iptables v1.8.10 (nf_tables)",
+    "nft_version": "nftables v1.0.9",
+    "ipv4_filter_input_policy": "accept",
+    "host_tcp_8000_listener_present": true
+  },
+  "candidate_sha256": {
+    "deploy/travel-tls/backend-ingress.nft.example": "707816e51b6926eea6814c275d8420f131407d07337a54b66ad9ee274c5c3b89",
+    "deploy/travel-tls/travel-backend-ingress.service": "e63ce1ddd6f79bc1be6f50aa5a318c15c9c489cfbe90edc6db9c2489c811a92e",
+    "deploy/travel-tls/travel.service.d/91-backend-ingress.conf.example": "24ae354246af6b47489fb925ce2855d299f316ae06eb531369120a1c82e4a9f0"
+  },
+  "nft_check_exit": 0,
+  "kernel_stateless_ruleset_unchanged": true,
+  "travel_table_present_after_check": false,
+  "systemd_verify_exit": 0,
+  "systemd_candidate_diagnostics": [],
+  "systemd_travel_unit_inert_for_dependency_check": true,
+  "systemd_files_installed": false,
+  "actual_packet_filtering_verified": false,
+  "tencent_cloud_firewall_verified": false,
+  "production_ready": false
+}

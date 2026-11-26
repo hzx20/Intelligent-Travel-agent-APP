@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-16",
+  "scope": "read_only_observation_before_isolated_rehearsal",
+  "host": "134.175.137.18",
+  "ssh_user": "ubuntu",
+  "python": "3.12.3",
+  "platform": "Linux x86_64",
+  "libc": "glibc 2.39",
+  "production_service": {
+    "active": true,
+    "main_pid": "1465894",
+    "working_directory": "/opt/travel/app/backend",
+    "user": "ubuntu",
+    "host": "0.0.0.0",
+    "port": 8000,
+    "workers": 1,
+    "proxy_headers": true,
+    "forwarded_allow_ips_argument": null,
+    "FORWARDED_ALLOW_IPS_environment": null,
+    "TRAVEL_DATA_DIR_environment": null,
+    "shared_control_environment": {"TRAVEL_SHARED_LIMITS": null, "TRAVEL_SHARED_CACHE": null, "TRAVEL_PROVIDER_BUDGET": null},
+    "EnvironmentFiles_systemd_property": null
+  },
+  "production_dependencies": {
+    "fastapi": "0.141.1", "uvicorn": "0.52.4", "langchain": "1.4.0",
+    "langchain-openai": "1.6.0", "langgraph": "1.2.11", "pyjwt": "2.13.0",
+    "pydantic-settings": "2.15.0", "cachetools": "7.1.8", "pytest": "9.1.1",
+    "httpx": "0.28.1", "sqlalchemy": "2.0.52", "Pillow": null
+  },
+  "production_pip_check": "No broken requirements found.",
+  "dotenv_presence_only": {"JWT_SECRET": true, "AMAP_API_KEY": true, "ZHIPU_API_KEY": true},
+  "source_database": {
+    "path": "/opt/travel/app/backend/data/app.db", "size": 335872, "mode": "0644",
+    "tables": ["ai_plans", "comments", "favorites", "guide_images", "guide_spots", "guides", "spots", "users"],
+    "integrity_check": "ok", "foreign_key_violation_count": 0,
+    "read_business_rows_in_observation": false
+  },
+  "nginx": {
+    "version": "1.27.0", "container": "continew-web", "container_ip": "172.18.0.5",
+    "nginx_test_passed": true, "sudo_noninteractive_required": true,
+    "host_config": "/opt/continew/nginx.conf",
+    "host_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "new_asset_rule_present": false, "vite_hidden_rule_present": false,
+    "deployment_hidden_rule_present": false, "no_store_header_rule_present": false
+  },
+  "public_http_observations": {
+    "homepage": {"status": 200, "content_type": "text/html", "cache_control": null},
+    "health": {"status": 200, "body": {"status": "ok"}},
+    "missing_asset_js": {"status": 200, "content_type": "text/html", "cache_control": null},
+    "vite_manifest_path": {"status": 200, "content_type": "text/html"},
+    "https_ip_probe": {"success": false, "error": "SSL UNEXPECTED_EOF_WHILE_READING", "named_host_sni_not_verified": true}
+  },
+  "production_deployed": false,
+  "secret_values_recorded": false
+}

@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope": "Prepare the protected collector for the shared HTTP redirect already being active during the cutover stop",
+  "original_backup_plan_sha256": "60c1b3d4f4ff95dfb824f6fdf5c4d8b27ba33ab00c899136ca89a285180bfdbe",
+  "original_backup_plan_still_verified": true,
+  "original_nginx_archive_member": "nginx/nginx.conf",
+  "original_nginx_sha256_required": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+  "reviewed_inventory_members": 122,
+  "source_mapping_changes_only_original_nginx_member": true,
+  "requires_new_plan_digest_bound_to_actual_private_copy_path": true,
+  "collector_and_stop_checks_unchanged": true,
+  "focused_tests_passed": 21,
+  "gpg_synthetic_restore_included": true,
+  "private_artifacts_sha256": {
+    "supplier-city-2026-11-20/run_formal_backup.py": "94986ba234ee7b930a4528e81d316e2187b7a9a7f730bff125f53ce742604bd8",
+    "supplier-city-2026-11-20/test_cutover_backup_source.py": "31c3c3a3e9bc788fb6de6deafbd474e8b4b6cbdd537748774d3d63dff50746b9",
+    "local-regression-2026-11-24/cutover-backup-regression.log": "a59bd422736992ed114e06b31e259919386d42691cd6df2b96daa869fa2dee94"
+  },
+  "new_production_backup_collected": false,
+  "origin_modified": false
+}

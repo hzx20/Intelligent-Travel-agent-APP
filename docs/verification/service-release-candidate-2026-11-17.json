@@ -1,0 +1,129 @@
+{
+  "date": "2026-11-17",
+  "status": "external_env_and_service_review_validated_not_deployed",
+  "local_source_candidate": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\app-env-2026-11-17-95a8feb4",
+  "source_release_id": "6bfbbead878a139782038772f6af5fd091c93762306e45e42011a708553410f8",
+  "frontend_id": "b13f55b253f90ebef299a6c3cae142ece51c43dc4e9a2008e58b6183da5b67fc",
+  "files": 104,
+  "new_external_env_support": true,
+  "core_config_sha256": "84dfa218e0889961d81fa892a055bac25954b6dea622fbc6f06e90332b4a7eee",
+  "service_template": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\deploy\\travel-release.conf.template",
+  "service_template_sha256": "e678956db2df7694c377caecf8f7f4dbdabc95de6226c54d1989d0e7971fed58",
+  "backend_regression_report": "docs/verification/backend-regression-2026-11-17.json",
+  "production_deployed": false,
+  "linux": {
+    "release_id": "23763269ee6fb2f14be9300adfb0d8ec288459460ec9d739946fe29834dd144b",
+    "python": "3.12.3",
+    "packages": {
+      "fastapi": "0.141.1",
+      "uvicorn": "0.52.4",
+      "langchain": "1.4.0",
+      "langchain-openai": "1.6.0",
+      "langgraph": "1.2.11",
+      "pyjwt": "2.13.0",
+      "pydantic-settings": "2.15.0",
+      "cachetools": "7.1.8",
+      "pytest": "9.1.1",
+      "httpx": "0.28.1",
+      "sqlalchemy": "2.0.52",
+      "pillow": "13.0.0"
+    },
+    "pinned_runtime_matches": true,
+    "errors": [],
+    "not_checked": [
+      "transitive dependencies and optional extras",
+      "Linux native libraries and platform behavior",
+      "production settings, data migration and external providers",
+      "independent startup and release approval"
+    ],
+    "remote_stage": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/service-env-20261117-ef348c2f",
+    "remote_root": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a",
+    "remote_candidate": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/service-env-20261117-ef348c2f/candidate",
+    "source_release_id": "6bfbbead878a139782038772f6af5fd091c93762306e45e42011a708553410f8",
+    "core_config_sha256": "84dfa218e0889961d81fa892a055bac25954b6dea622fbc6f06e90332b4a7eee",
+    "production_deployed": false
+  },
+  "upload_archive": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\service-env-20261117-ef348c2f.tar.gz",
+  "upload_archive_sha256": "79ef335171512c7935072a827bff76379bb7d8a02d1994f58e3adf5da59ca82f",
+  "service_plan": {
+    "release_id": "23763269ee6fb2f14be9300adfb0d8ec288459460ec9d739946fe29834dd144b",
+    "private_review_directory": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\service-review-2026-11-17-23763269",
+    "drop_in": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\service-review-2026-11-17-23763269\\90-travel-release.conf",
+    "drop_in_sha256": "5e3ef4b22e743db231c78a99e4b4614c7a961a6ae4542c4a8441b3d170f33008",
+    "proxy_ip": "172.18.0.5",
+    "working_directory": "/opt/travel/releases/23763269ee6fb2f14be9300adfb0d8ec288459460ec9d739946fe29834dd144b/backend",
+    "runtime_python": "/opt/travel/runtime-envs/23763269ee6fb2f14be9300adfb0d8ec288459460ec9d739946fe29834dd144b/bin/python",
+    "data_directory": "/opt/travel/app/backend/data",
+    "environment_file": "/opt/travel/app/.env",
+    "base_service_from_verified_package": true,
+    "production_ready": false,
+    "production_applied": false
+  },
+  "linux_service_validation": {
+    "linux_release_id": "23763269ee6fb2f14be9300adfb0d8ec288459460ec9d739946fe29834dd144b",
+    "settings_comparison": {
+      "matching_fields": {
+        "amap_api_key": true,
+        "amap_js_key": true,
+        "amap_js_security_code": true,
+        "glm_model": true,
+        "jwt_secret": true,
+        "zhipu_api_key": true
+      },
+      "jwt_present": true,
+      "explicit_env_file_selected": true,
+      "secret_values_recorded": false
+    },
+    "planned_unit_check": {
+      "exit_code": 1,
+      "output": "/etc/systemd/system/tat_agent.service:7: PIDFile= references a path below legacy directory /var/run/, updating /var/run/tat_agent.pid \u2192 /run/tat_agent.pid; please update the unit file accordingly.\ntravel-review.service: Command /opt/travel/runtime-envs/23763269ee6fb2f14be9300adfb0d8ec288459460ec9d739946fe29834dd144b/bin/python is not executable: No such file or directory\n"
+    },
+    "grammar_fixture_check": {
+      "exit_code": 0,
+      "output": "/etc/systemd/system/tat_agent.service:7: PIDFile= references a path below legacy directory /var/run/, updating /var/run/tat_agent.pid \u2192 /run/tat_agent.pid; please update the unit file accordingly.\n",
+      "substitutions": [
+        "WorkingDirectory to staged code",
+        "runtime executable to existing Python"
+      ],
+      "does_not_prove_production_runtime_ready": true
+    },
+    "planned_paths_exist": {
+      "working_directory": false,
+      "runtime_python": false
+    },
+    "production_pid_before": "1465894",
+    "production_pid_after": "1465894",
+    "production_deployed": false,
+    "candidate_unchanged": true
+  },
+  "local_linux_candidate": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\linux-app-env-2026-11-17-23763269",
+  "linux_external_env_http": {
+    "release_id": "23763269ee6fb2f14be9300adfb0d8ec288459460ec9d739946fe29834dd144b",
+    "startup_count": 2,
+    "external_environment_selected": true,
+    "token_survived_restart": true,
+    "original_creation_replayed": true,
+    "candidate_unchanged": true,
+    "synthetic_data_only": true,
+    "real_secrets_used_for_startup": false,
+    "production_deployed": false,
+    "temporary_data_and_env_removed": true
+  },
+  "legacy_token_contract": {
+    "legacy_signing_code_to_new_decode": true,
+    "synthetic_key_only": true,
+    "real_account_impersonated": false,
+    "temporary_env_removed": true,
+    "initial_blank_api_fixture_rejected_by_legacy_config": true
+  },
+  "completion_gate": {
+    "production_paths_not_created": true,
+    "production_service_install_approved": false,
+    "linux_nginx_to_candidate_chain_not_yet_tested": true,
+    "effective_live_unit_not_switched": true
+  },
+  "final_local_checks": {
+    "core_config_matches_regressed_source": true,
+    "drop_in_matches_reviewed_bytes": true
+  }
+}

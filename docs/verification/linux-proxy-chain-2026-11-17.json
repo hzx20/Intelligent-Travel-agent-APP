@@ -1,0 +1,201 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "goal_status": "active",
+  "status": "isolated_linux_chain_verified_not_deployed",
+  "production_ready": false,
+  "authorization": "User explicitly allowed this Linux isolated full-chain rehearsal on 2026-11-17",
+  "release_id": "23763269ee6fb2f14be9300adfb0d8ec288459460ec9d739946fe29834dd144b",
+  "merged_config_sha256": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+  "bundle_sha256": "5f3b10a23e6507f736658a4e61d852c6b0defb3c9ed2b10f0390301de542a1f5",
+  "bundle_bytes": 14479,
+  "private_review_directory": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\proxy-chain-review-2026-11-17-attempt2",
+  "remote_stage": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/proxy-chain-20261117-review2",
+  "result": {
+    "remote_exit_code": 0,
+    "remote": {
+      "release_id": "23763269ee6fb2f14be9300adfb0d8ec288459460ec9d739946fe29834dd144b",
+      "source_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "merged_config_sha256": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+      "production_deployed": false,
+      "synthetic_data_only": true,
+      "published_ports_created": false,
+      "success": true,
+      "fixture_syntax": {
+        "exit_code": 0,
+        "output": "nginx: the configuration file /dev/shm/travel-proxy-chain-03cb7083225946c59655735ed027afb0/nginx.conf syntax is ok\nnginx: configuration file /dev/shm/travel-proxy-chain-03cb7083225946c59655735ed027afb0/nginx.conf test is successful\n"
+      },
+      "proxy_observations": {
+        "proxied": {
+          "client": "172.18.0.1",
+          "scheme": "http"
+        },
+        "direct": {
+          "client": "10.1.0.3",
+          "scheme": "http"
+        },
+        "direct_spoofed": {
+          "client": "10.1.0.3",
+          "scheme": "http"
+        }
+      },
+      "http": {
+        "original_root_unchanged": true,
+        "deep_spa_and_no_store": true,
+        "asset_hashes_verified": 42,
+        "missing_and_private_paths_404": true,
+        "trusted_proxy_client_and_scheme": true,
+        "untrusted_direct_headers_ignored": true,
+        "synthetic_sse_unbuffered": true,
+        "ai_invalid_request_statuses": [
+          422,
+          422,
+          422,
+          429,
+          429,
+          429
+        ],
+        "ordinary_creation_after_quota": true
+      },
+      "own_processes_stopped": true,
+      "container_ram_removed": true,
+      "synthetic_data_and_env_removed": true,
+      "cleanup_errors": [],
+      "candidate_unchanged": true,
+      "source_config_unchanged": true,
+      "container_source_config_unchanged": true,
+      "production_service_pid_unchanged": true,
+      "production_nginx_pid_unchanged": true
+    },
+    "browser": {
+      "production_bundle_smoke": [
+        {
+          "viewport": "desktop",
+          "created": true,
+          "collected": true,
+          "scheduled": true,
+          "deep_reload": true,
+          "uncaught_errors": 0
+        },
+        {
+          "viewport": "mobile",
+          "created": true,
+          "collected": true,
+          "scheduled": true,
+          "deep_reload": true,
+          "uncaught_errors": 0
+        }
+      ]
+    },
+    "elapsed_seconds": 14.41,
+    "local_forward_stopped": true
+  },
+  "independent_postcheck": {
+    "report": {
+      "release_id": "23763269ee6fb2f14be9300adfb0d8ec288459460ec9d739946fe29834dd144b",
+      "source_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "merged_config_sha256": "94feef7cea0ac4f4de5c7b26863d58bd8f20f9c1bed774e71af5c772b29fdaae",
+      "production_deployed": false,
+      "synthetic_data_only": true,
+      "published_ports_created": false,
+      "success": true,
+      "fixture_syntax": {
+        "exit_code": 0,
+        "output": "nginx: the configuration file /dev/shm/travel-proxy-chain-03cb7083225946c59655735ed027afb0/nginx.conf syntax is ok\nnginx: configuration file /dev/shm/travel-proxy-chain-03cb7083225946c59655735ed027afb0/nginx.conf test is successful\n"
+      },
+      "proxy_observations": {
+        "proxied": {
+          "client": "172.18.0.1",
+          "scheme": "http"
+        },
+        "direct": {
+          "client": "10.1.0.3",
+          "scheme": "http"
+        },
+        "direct_spoofed": {
+          "client": "10.1.0.3",
+          "scheme": "http"
+        }
+      },
+      "http": {
+        "original_root_unchanged": true,
+        "deep_spa_and_no_store": true,
+        "asset_hashes_verified": 42,
+        "missing_and_private_paths_404": true,
+        "trusted_proxy_client_and_scheme": true,
+        "untrusted_direct_headers_ignored": true,
+        "synthetic_sse_unbuffered": true,
+        "ai_invalid_request_statuses": [
+          422,
+          422,
+          422,
+          429,
+          429,
+          429
+        ],
+        "ordinary_creation_after_quota": true
+      },
+      "own_processes_stopped": true,
+      "container_ram_removed": true,
+      "synthetic_data_and_env_removed": true,
+      "cleanup_errors": [],
+      "candidate_unchanged": true,
+      "source_config_unchanged": true,
+      "container_source_config_unchanged": true,
+      "production_service_pid_unchanged": true,
+      "production_nginx_pid_unchanged": true
+    },
+    "exact_ram_path_absent": true,
+    "exact_synthetic_data_absent": true,
+    "exact_synthetic_env_absent": true,
+    "test_listeners_closed": {
+      "172.18.0.5:42929": true,
+      "172.18.0.1:44771": true
+    },
+    "host_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "container_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "backend_pid": "1465894",
+    "nginx_pid": "1"
+  },
+  "first_attempt": {
+    "remote_exit_code": 1,
+    "success": false,
+    "own_processes_stopped": true,
+    "container_ram_removed": true,
+    "synthetic_data_and_env_removed": true,
+    "reason": "Hardcoded direct-peer gateway assumption; replaced with recorded actual baseline and spoof comparison, retaining strict trust checks"
+  },
+  "local_bootstrap_validation": {
+    "result": "1 passed",
+    "elapsed_seconds": 2.75,
+    "file": "backend/tests/test_proxy_chain_backend_runtime.py",
+    "full_backend_suite_rerun": false
+  },
+  "file_sha256": {
+    "backend/tools/qa_linux_proxy_chain.py": "c6cc53cad41c66d591df487ae313b1b1bc338b5d9d53c0fba37eb3b40d27fc3a",
+    "backend/tools/proxy_chain_fixture.py": "7b0f82cce84c869b91137d388bc53ecb3c029bb8dba084d5969e818bab0397b5",
+    "backend/tests/test_proxy_chain_backend_runtime.py": "a15f8c7f4b69655251c44350f4a134dca8324d0ed6e53388620d1d617e657634",
+    "frontend/e2e/production-smoke.mjs": "41e82ab7e5e31e929977d96367773bd2419d04d8c4475acaa4962961ab608c8f"
+  },
+  "screenshots": {
+    "desktop": {
+      "private_path": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\proxy-chain-review-2026-11-17-attempt2\\browser\\desktop.png",
+      "sha256": "6dc4a645efb19269edf8a12f0f4f66ef8cf802c4dfcc8c5b8eccfd1dbd170851",
+      "visually_reviewed": true
+    },
+    "mobile": {
+      "private_path": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\proxy-chain-review-2026-11-17-attempt2\\browser\\mobile.png",
+      "sha256": "79ce0a7abf9e87dde89d593fab18134a1fe3443e8abeaaf9e8360d5e4eb9615d",
+      "visually_reviewed": true
+    }
+  },
+  "limitations": [
+    "Synthetic SSE, no real model call",
+    "Blank map/provider keys and browser external requests blocked",
+    "Guest browser flow uses local storage; authenticated server writes separately verified over HTTP",
+    "Existing temporary dependency overlay, no independent release venv",
+    "No production deployment or TLS/load validation",
+    "Frozen code candidate and updated nginx are explicit separate review pieces"
+  ],
+  "handoff": "docs/交接归档-Linux代理静态后端整链验收.md"
+}

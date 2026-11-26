@@ -1,0 +1,37 @@
+{
+  "anonymous_api_rejected": true,
+  "application_id": "28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+  "authenticated_browser_queries_verified_per_viewport": 3,
+  "browser_channel": "msedge",
+  "date": "2026-11-20",
+  "external_supplier_calls": 0,
+  "form_edits_keep_previous_submitted_context": true,
+  "format": 1,
+  "frontend_id": "7c620cde98827c6704b818f28f14ab49ddc594f44d188cff28f87c0797304aff",
+  "harness_sha256": {
+    "verify_frozen_supplier_browser.cjs": "f7249341247e8dd35436b4b9656dd3da04f0254f75ba9440a9b786a84138260c",
+    "verify_frozen_supplier_browser.py": "b3e81231d5f77a1fccf42fdfdb2b2d2f09be2ab6cc56266c1d5b509c023a21eb"
+  },
+  "invalid_same_city_rejected_before_request": true,
+  "passed_viewports": [
+    "1280x900 desktop",
+    "390x844 mobile emulation"
+  ],
+  "plan_id": "3546a422a4ce7b43bdde35b184c39f1d4ab886e33eb6df151dcf43c7346fdb80",
+  "plan_verified_before_and_after": true,
+  "production_service_used": false,
+  "scope": "frozen frontend and backend with actual locally issued login and synthetic supplier transport",
+  "supplier_text_rendered_without_html": true,
+  "supplier_transport_events": [
+    "weather_geo",
+    "weather_forecast",
+    "searchFlightsByDepArr",
+    "getFlightPriceByCities",
+    "searchFlightsByDepArr",
+    "getFlightPriceByCities"
+  ],
+  "temporary_database_and_server_removed": true,
+  "timezone": "Asia/Shanghai",
+  "weather_attribution_and_signout_verified": true,
+  "windows_initial_cleanup_lock_resolved_by_graceful_shutdown": true
+}

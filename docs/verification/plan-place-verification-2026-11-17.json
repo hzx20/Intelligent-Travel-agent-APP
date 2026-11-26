@@ -1,0 +1,143 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "goal_status": "active",
+  "production_ready": false,
+  "whole_complex_scenario_passed": false,
+  "problem": "Generic meal/hotel/city names could match or be replaced by arbitrary library POIs; unresolved model coordinates could survive; progress could count unverified entries as passed.",
+  "changes": [
+    "Common placeholder names bypass lookup and substitution, preserve activity/time/note and receive unverified status",
+    "Canonical unverified spots lose guessed coordinates, POI identity/address and false replacement state",
+    "Only finite in-range coordinates with a provider ID count as positioned hits; malformed response shapes are rejected",
+    "UI shows pending verification, blocks map markers/navigation/hotel-search anchor even for flagged old records retaining guessed coordinates",
+    "Explicit plan-to-trip conversion clears flagged coordinates and retains pending-verification source without altering original plan",
+    "Graph progress separates total arrangements, matched positions and unresolved places"
+  ],
+  "source_sha256": {
+    "backend/app/services/map_verify.py": "42449d57758285fe9f332d37e8e8e1e57b1e938a87e24f93023de84ad805bb22",
+    "backend/app/services/graph.py": "e958fc33bd39f9bc71304763ec48c33d531d9697f1d866b89240f221044bb084",
+    "backend/app/routers/trips.py": "1a801b8ce5eff5bc61e9139c0089740bf036fe35bc99694fcdf566708321ea17",
+    "frontend/src/utils/planLocation.js": "b66d95629c09f5fecec0ff105e0f49dd889dfc4a2bc55a69f7fe1dec3db89e96",
+    "frontend/src/store/planSession.js": "4789fd02991ffbae9bc745811b11cc8de0e74f9c01e87c4f07f51760a2bb3a23",
+    "frontend/src/views/PlanView.vue": "fc9dcc14e3e51afa8444097fa66b7fc9a6e6718be92e3ad9bbfe5406699ae39a",
+    "backend/tests/test_plan_place_verification.py": "e63dcc05d6a3f79109994b3dbcf9bb5d0e431889330ef23e75f1e8cf6d5b59dd",
+    "frontend/test/planLocation.test.js": "788fc20cfd91a46ea590500f9e8145a6fcfc579a878e6db9b469f4ca0c23033b",
+    "frontend/test/planSession.test.js": "049317a998713291a733b8a91d6b03b421cc1e6d9b9596a082e12e713a42981e"
+  },
+  "offline_backend": {
+    "passed": 34,
+    "deselected": 3,
+    "seconds": 6.66,
+    "exit_code": 0,
+    "new_cases": 16,
+    "existing_selected": 18,
+    "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -B -m pytest tests/test_plan_place_verification.py tests/test_v07_graph.py tests/test_plan_trip_conversion.py tests/test_trips.py tests/test_trip_ai_schema_http.py -k 'not graph_compiled_and_flows and not plan_stream' -q",
+    "earlier_failure": "First iteration missed city name with 市 when city input omitted suffix: 1 failed,28 passed; fixed before final run"
+  },
+  "frontend": {
+    "node_tests_passed": 199,
+    "seconds": 0.6855287,
+    "new_pure_tests": 3,
+    "build_modules": 127,
+    "build_seconds": 1.05,
+    "build_exit_code": 0,
+    "candidate_id": "e669d48e3ba1a701106cc091219c3ca287075aadfe03dda8a32ef7e90dbea45b",
+    "candidate_files": 48,
+    "candidate_path": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\frontend-2026-11-17-plan-place1",
+    "scope": "Current frontend build includes other existing workspace weather/flight changes; this module does not certify those services or deployment."
+  },
+  "real_map": {
+    "api_sends": 8,
+    "http_statuses": [
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200
+    ],
+    "provider_infocodes": [
+      "10000",
+      "10000",
+      "10000",
+      "10000",
+      "10000",
+      "10000",
+      "10000",
+      "10000"
+    ],
+    "seconds": 6.056,
+    "matched": 8,
+    "placeholders_preserved_unqueried": 4,
+    "canonical_arrangements": 12,
+    "local_env_unchanged": true,
+    "temporary_data_removed": true,
+    "live_source_sha256": "e6dca4f6087c54a9074c3372d80cf5ae24752f1106f982146b2dbf2f69607a20",
+    "later_coordinate_validation_replayed_without_new_calls": {
+      "final_map_source_sha256": "42449d57758285fe9f332d37e8e8e1e57b1e938a87e24f93023de84ad805bb22",
+      "recorded_real_hits_valid_under_final_coordinates_check": 8,
+      "current_parser_replay_equals_real_captured_result": true,
+      "replayed_searches": 8,
+      "new_external_requests": 0
+    },
+    "first_search_result_is_not_a_guarantee_of_opening_prices_or_user_intent": true
+  },
+  "browser": {
+    "passed": true,
+    "elapsed_ms": 11410,
+    "viewports": [
+      {
+        "label": "desktop",
+        "size": {
+          "height": 900,
+          "width": 1280
+        },
+        "unverified_badges": 4,
+        "verified_links": 8,
+        "map_markers": 8,
+        "guessed_unverified_marker_absent": true,
+        "no_horizontal_overflow": true
+      },
+      {
+        "label": "mobile",
+        "size": {
+          "height": 844,
+          "width": 390
+        },
+        "unverified_badges": 4,
+        "verified_links": 8,
+        "map_markers": 8,
+        "guessed_unverified_marker_absent": true,
+        "no_horizontal_overflow": true
+      }
+    ],
+    "unverified_not_hotel_anchor": true,
+    "own_page_closed": true,
+    "own_synthetic_token_removed": true,
+    "screenshots_exported_and_viewed": 2,
+    "api_and_sdk": "Synthetic responses; no real model/map/account calls in browser check",
+    "finish_command": "Unknown task name; not recorded as a confirmed finish",
+    "global_task_postcheck": []
+  },
+  "cleanup": {
+    "owned_static_server_exit": 0,
+    "known_pid": 33096,
+    "known_port": 59050,
+    "independent_pid_matches": 0,
+    "independent_listeners": 0,
+    "backend_started_for_browser": false
+  },
+  "validation_limits": [
+    "Known placeholder patterns only; no general language-level guarantee of identity",
+    "Legacy unflagged history coordinates are not automatically re-verified or rewritten",
+    "Canonical spots are the verified output; original model items remain original proposal data",
+    "Indoor suitability, rests, ticket item costs and category agreement, real prices and hotel transactions remain unverified"
+  ],
+  "new_model_sends": 0,
+  "production_deployed": false,
+  "new_full_linux_candidate": false,
+  "previous_frozen_plan": "033971e548ecbd22038b8d225ac50c51a214f2d0d9a507b8cdcc2b5393d20970",
+  "handoff": "docs/交接归档-占位地点与核实状态.md"
+}

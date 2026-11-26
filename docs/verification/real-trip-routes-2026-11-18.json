@@ -1,0 +1,193 @@
+{
+  "scope": "public route verification and partial trip route totals",
+  "date": "2026-11-18",
+  "goal_status": "active",
+  "source_sha256": {
+    "backend/app/services/trip_routes.py": "32ec1cc7d4e47685e3f01a92e5f53d1f0b7c7edb3efb7711b51c93d20161f81f",
+    "backend/app/routers/trips.py": "7eb59ca4eaf303521c988b03743dd63272a777f39146f108ef739fa7bb214a09",
+    "backend/tests/test_trip_routes.py": "d3b7235a740d71efb9a46e2aab312754a5037e7a6c790418d930e2ce743937d5",
+    "frontend/src/components/TripRoutes.vue": "34af610943c088121a35940e15c5138d0a7dd7ee994efcbb5f82d7a937ef0c1b",
+    "frontend/src/components/TripMap.vue": "9cd11093566ee975510ef49b4862eeb1e2a3f0c3a8fa74f7f04740819bd5c1ea",
+    "frontend/src/views/TripDetailView.vue": "6a3ad67eab758a480b1f861acb863be0422bfa1f052222dd6bf5e44ae7b6e98d",
+    "frontend/src/utils/tripRouteSummary.js": "6f44e09c569967b91dae93660137af50f08a0a34ebd0e6f7658d76a3eb29b242",
+    "frontend/test/tripRouteSummary.test.js": "92e96c1241bbd87d8b5e7c073ecaef2834630f84b792a255e581b6a82c083873"
+  },
+  "backend": {
+    "passed": 67,
+    "seconds": 10.84,
+    "working_directory": "backend",
+    "initial_root_run_failure": "cache test child cannot import app"
+  },
+  "frontend": {
+    "passed": 207,
+    "build_passed": true,
+    "files": 48
+  },
+  "live_map": {
+    "calls": [
+      {
+        "mode": "walking",
+        "http_status": 200,
+        "status": "1",
+        "infocode": "10000"
+      },
+      {
+        "mode": "walking",
+        "http_status": 200,
+        "status": "1",
+        "infocode": "10000"
+      },
+      {
+        "mode": "driving",
+        "http_status": 200,
+        "status": "1",
+        "infocode": "10000"
+      },
+      {
+        "mode": "driving",
+        "http_status": 200,
+        "status": "1",
+        "infocode": "10000"
+      }
+    ],
+    "routes": [
+      {
+        "mode": "walking",
+        "origin": "杭州博物馆南馆",
+        "destination": "中国茶叶博物馆(双峰馆区)",
+        "status": "ok",
+        "distance_m": 5841,
+        "duration_s": 4673,
+        "geometry_points": 234,
+        "walking_features": [
+          "stairs"
+        ],
+        "cached_repeat": true
+      },
+      {
+        "mode": "walking",
+        "origin": "中国茶叶博物馆(双峰馆区)",
+        "destination": "浙江省博物馆(之江馆区)",
+        "status": "ok",
+        "distance_m": 11196,
+        "duration_s": 8957,
+        "geometry_points": 359,
+        "walking_features": [
+          "stairs"
+        ],
+        "cached_repeat": true
+      },
+      {
+        "mode": "driving",
+        "origin": "杭州博物馆南馆",
+        "destination": "中国茶叶博物馆(双峰馆区)",
+        "status": "ok",
+        "distance_m": 6692,
+        "duration_s": 1108,
+        "geometry_points": 186,
+        "walking_features": null,
+        "cached_repeat": true
+      },
+      {
+        "mode": "driving",
+        "origin": "中国茶叶博物馆(双峰馆区)",
+        "destination": "浙江省博物馆(之江馆区)",
+        "status": "ok",
+        "distance_m": 11140,
+        "duration_s": 1412,
+        "geometry_points": 230,
+        "walking_features": null,
+        "cached_repeat": true
+      }
+    ],
+    "points": [
+      "杭州博物馆南馆",
+      "中国茶叶博物馆(双峰馆区)",
+      "浙江省博物馆(之江馆区)"
+    ],
+    "production_changed": false,
+    "source_sha256": "32ec1cc7d4e47685e3f01a92e5f53d1f0b7c7edb3efb7711b51c93d20161f81f",
+    "passed": true,
+    "unresolved_meal_not_sent": true,
+    "rest_skipped_in_first_leg": true,
+    "temporary_database_removed": true,
+    "local_env_unchanged": true,
+    "seconds": 2.73
+  },
+  "totals": {
+    "walking": {
+      "distance_m": 17037,
+      "duration_s": 13630
+    },
+    "driving": {
+      "distance_m": 17832,
+      "duration_s": 2520
+    }
+  },
+  "browser": {
+    "passed": true,
+    "frontend_id": "01d1ce47fa44753c976bd54ef5bbe3d210a0f63f3cdb6dd0c06ef8aaf2ebd58a",
+    "assets_verified": 48,
+    "viewports": [
+      {
+        "label": "desktop",
+        "width": 1280,
+        "height": 900,
+        "screenshot": "desktop.png",
+        "screenshot_sha256": "701a42247117b4a948e6fafcd2296d9ae0e1305b4a256c17c201e8d31c8aeb05",
+        "walking_segments": 2,
+        "driving_segments": 2,
+        "remaining_segment_pending": true,
+        "walking_stairs": 2,
+        "polylines": 2
+      },
+      {
+        "label": "mobile",
+        "width": 390,
+        "height": 844,
+        "screenshot": "mobile.png",
+        "screenshot_sha256": "42e48d13df29cbb2f3596572e62101f9551f22f58cc5f212fd2a7e3f94d0b0dd",
+        "walking_segments": 2,
+        "driving_segments": 2,
+        "remaining_segment_pending": true,
+        "walking_stairs": 2,
+        "polylines": 2
+      }
+    ],
+    "browser_version": "157.0.4341.60",
+    "backend_exit": 0,
+    "static_server_closed": true,
+    "browser_closed": true,
+    "backend": {
+      "map_queries": [],
+      "route_calls": [
+        {
+          "origin": "B023B014F0",
+          "destination": "B023B13PFT",
+          "mode": "walking"
+        },
+        {
+          "origin": "B023B13PFT",
+          "destination": "B0I15SU50Z",
+          "mode": "walking"
+        },
+        {
+          "origin": "B023B014F0",
+          "destination": "B023B13PFT",
+          "mode": "driving"
+        },
+        {
+          "origin": "B023B13PFT",
+          "destination": "B0I15SU50Z",
+          "mode": "driving"
+        }
+      ],
+      "temporary_database_removed": true
+    },
+    "screenshots_viewed": 2,
+    "data": "recorded route responses and synthetic map SDK"
+  },
+  "full_complex_scenario_passed": false,
+  "production_changed": false,
+  "handoff": "docs/交接归档-真实交通与步行小计.md"
+}

@@ -1,0 +1,87 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "host": "134.175.137.18",
+  "scope": "one explicitly authorized public marker and staging-only certificate attempt",
+  "public_probe": {
+    "exact_body": true,
+    "cleanup_confirmed_separately": true,
+    "initial_ack_missing": true,
+    "raw_receipt_sha256": "cd63f0112825ea3d7bb6607a3ab00e1505dc9505800df14c79bcac79751d6c5f",
+    "cleanup_receipt_sha256": "4ab53e7a35a615663ee374cf7628ab36b4ca176f782f6f1ba28818992f13017e"
+  },
+  "installation": {
+    "snap_change": 2,
+    "initial_client_timeout": true,
+    "terminal_status": "Done",
+    "version": "5.10.0",
+    "installation_repeated": false,
+    "receipt_sha256": "2cc6f0f5a6d7adc2a682c632596cc9ec937eeb2f3e5d93f709801c6a0b9ed4f8"
+  },
+  "staging": {
+    "state": "not_verified",
+    "events": [
+      {
+        "event": "phase",
+        "name": "reuse_completed_install"
+      },
+      {
+        "event": "certbot",
+        "version": "5.10.0"
+      },
+      {
+        "event": "phase",
+        "name": "request_staging_only"
+      },
+      {
+        "event": "temporary_state",
+        "name": "travel-acme-test-c3d53d3c87c7564c69a1e535-nowa9x3u"
+      },
+      {
+        "event": "public_cleanup",
+        "verified": true
+      },
+      {
+        "event": "failed",
+        "phase": "request_staging_only",
+        "error_type": "RuntimeError"
+      }
+    ],
+    "ssh_exit": 1,
+    "receipt": ".release-candidates/budget-https-load-2026-11-19/https-ip-acme-existing-webroot/staging-after-install-attempt.jsonl",
+    "production_ready": false,
+    "verification_passed": false,
+    "repeat_issued": false,
+    "exact_failure_check_unknown": true,
+    "receipt_sha256": "da8ca9aa670abacc12af9843333170c9c4f14e949a4a87b5804adecda4433155"
+  },
+  "read_only_postcheck": {
+    "temporary_state_absent": true,
+    "webroot_challenge_directory_absent": true,
+    "shared_config_unchanged": true,
+    "certbot_version": "certbot 5.10.0",
+    "global_certificate_state_absent": true
+  },
+  "offline_postcheck": {
+    "acme_request_made": false,
+    "cases": {
+      "dns_instead_of_ip": false,
+      "exact_ip": true,
+      "exact_ip_critical_san": true,
+      "extra_dns_name": false,
+      "no_san": false,
+      "nonstaging_issuer": false,
+      "wrong_ip": false
+    },
+    "openssl_version": "OpenSSL 3.5.7 9 Jun 2026 (Library: OpenSSL 3.5.7 9 Jun 2026)",
+    "remote_contacted": false,
+    "synthetic_cert_and_key_removed": true,
+    "validity_window_positive_and_negative": true
+  },
+  "local_probe_and_staging_tests_passed": 21,
+  "shared_nginx_config_changed": false,
+  "public_tls_enabled": false,
+  "production_ready": false,
+  "current_unexecuted_action_sha256": "b63e9dbcf9b2c2ad9c09b848d1067d3664ecb82cc7fbed36ea910c19fd42655d"
+}

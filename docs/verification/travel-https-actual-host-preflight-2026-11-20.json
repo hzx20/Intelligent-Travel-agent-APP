@@ -1,0 +1,25 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "read-only candidate verification against the origin's actual staged paths",
+  "application_id": "28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+  "https_companion_id": "f85a32dea9051cb7379b34ddba704f26ed4f990b0e728e1d61b4eef22ded70bd",
+  "staged_working_directory_and_executable_verified": true,
+  "staged_python_as_ubuntu": "3.12.3",
+  "real_docker_unit_loaded": true,
+  "draft_travel_and_ingress_units_verify_exit": 0,
+  "host_nft_check_exit": 0,
+  "systemd_diagnostic_count": 1,
+  "systemd_diagnostic_source": "existing tat_agent.service PIDFile uses /var/run",
+  "diagnostic_from_travel_candidates": false,
+  "original_service_identity_and_host_rules_unchanged": true,
+  "temporary_inputs_removed": true,
+  "production_units_installed": false,
+  "production_nft_rules_applied": false,
+  "private_candidate_directory": ".release-candidates/supplier-city-2026-11-20",
+  "private_evidence_sha256": {
+    "actual-host-companion-preflight.json": "f13b6687ee9f8c69cb7154f326b695ab55e532e7395f83bd4ff37fe5bc6c6bb0",
+    "actual-host-companion-diagnostics.json": "0bce7cbb87ea8fced46dc0244f9054c78e7b9df7c9788b8acfb65893e408f8b9"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "systemd": "systemd 255 (255.4-1ubuntu8.17)",
+  "service": {
+    "MainPID": "1465894",
+    "WorkingDirectory": "/opt/travel/app/backend",
+    "User": "ubuntu",
+    "Group": "ubuntu",
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "/etc/systemd/system/travel.service",
+    "DropInPaths": ""
+  },
+  "selected_environment": {
+    "TRAVEL_DATA_DIR": null,
+    "TRAVEL_ENV_FILE": null,
+    "FORWARDED_ALLOW_IPS": null,
+    "TRAVEL_SHARED_LIMITS": null,
+    "TRAVEL_SHARED_CACHE": null,
+    "TRAVEL_PROVIDER_BUDGET": null
+  },
+  "process_jwt_present": false,
+  "python_path_present": false,
+  "dotenv_presence_only": {
+    "JWT_SECRET": true,
+    "AMAP_API_KEY": true,
+    "ZHIPU_API_KEY": true
+  },
+  "nginx_container_ips": [
+    "172.18.0.5"
+  ],
+  "production_pillow": null,
+  "planned_parent_directories": {
+    "/opt/travel/releases": false,
+    "/opt/travel/runtime-envs": false
+  },
+  "production_deployed": false,
+  "date": "2026-11-17"
+}

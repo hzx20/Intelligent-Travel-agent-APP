@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-16",
+  "scope": "frontend_only",
+  "candidate_path": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\frontend-2026-11-16-d69566a9",
+  "frontend_release_id": "b13f55b253f90ebef299a6c3cae142ece51c43dc4e9a2008e58b6183da5b67fc",
+  "file_count": 44,
+  "candidate_verified": true,
+  "production_deployed": false,
+  "release_tool_sha256": "0F32C94CF93BB6E0A6A020D8F2BF70223F9D33DA477DC1888B4189A319268710",
+  "manifest_sha256": "0CDB6122B8AC43194A76C08CFEB353C622D705AE5DF2520AB888EB833ADB5B40"
+}

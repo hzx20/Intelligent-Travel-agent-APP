@@ -1,0 +1,271 @@
+{
+  "date": "2026-11-18",
+  "goal_status": "active",
+  "scope": "expense contributions, server calculated estimates and supplier context",
+  "implementation_and_automated_regression_complete": true,
+  "final_browser_acceptance_complete": true,
+  "full_complex_scenario_passed": false,
+  "source_sha256": {
+    "backend/app/services/itinerary.py": "25cef3e2aab1634f2a8ddf2822fe1adccfdc16b6901e9a71d20e44d814998b93",
+    "frontend/src/utils/planBudget.js": "6610a0b64bd0b59bf2acd3a1d69d6ceb8ad160ee666c39a6aa7a4152a6e79673",
+    "frontend/src/components/PlanBudgetSummary.vue": "4dc4a1e131e28de44ecceacaa65d0df454317b652b1183c3bf019e36cb811dfc",
+    "frontend/src/views/PlanView.vue": "4f7e0be9f12e9574b6358edab68dcce62fa576747e093f3e0575841166ab8150",
+    "backend/tests/test_budget_components.py": "ebcd17c247ab5a9e02e73ce358187cfcd6449753d5e935734abc82a5b0bfad25",
+    "backend/tests/test_itinerary_budget_and_days.py": "1f1bfae3383c4f001f4b4354a8a4c09ca7e7c302d4304af49a1fe72c1b4feb39",
+    "backend/tests/test_itinerary_item_costs.py": "fb4b884bb9cf0eaf38353a14272b4ae43128daddd4226a1f7821e249096f99b7",
+    "backend/tests/test_itinerary_budget_jobs.py": "33ed46bcadd5324ddc4275fcc88b9d3a0aa869ebfabaa12562d0f54c3dca82a8",
+    "backend/tests/test_llm_output_recovery.py": "a081b8e2f18c0989e205e5c0ed381832888839a677fa255dc019a0fbe13419c3",
+    "backend/tests/test_v07_graph.py": "32c86942839704fdbd471586d17b9545e68dab25694efc485b95e7262035504e",
+    "frontend/test/planBudget.test.js": "dc0f7e25f23a3040a3864bc6902f088d661f23e36bd05f7a32c5a121b845c451",
+    "docs/travel-data-suppliers.md": "fc55ef7042d89d018f80079a267a38de0dfba10567bbae7dfd953e9738d0a160"
+  },
+  "backend_tests": {
+    "passed": 74,
+    "deselected": 3,
+    "seconds": 3.24,
+    "files": [
+      "test_budget_components.py",
+      "test_itinerary_budget_and_days.py",
+      "test_itinerary_item_costs.py",
+      "test_itinerary_budget_jobs.py",
+      "test_llm_output_recovery.py",
+      "test_v07_graph.py",
+      "test_plan_place_verification.py",
+      "test_plan_trip_conversion.py"
+    ],
+    "excluded": [
+      "test_graph_compiled_and_flows",
+      "test_plan_stream_sse_guest",
+      "test_plan_stream_saves_history_when_logged_in"
+    ],
+    "production_database_used": false
+  },
+  "frontend_tests": {
+    "passed": 204,
+    "failed": 0
+  },
+  "build": {
+    "passed": true,
+    "modules": 130,
+    "seconds": 1.02
+  },
+  "final_frontend": {
+    "id": "67e000ae84eaeefe387642190f7f7bbd0780cf69d734e000a37c7e387f2f8eb5",
+    "files": 48,
+    "directory": ".release-candidates/frontend-2026-11-18-budget-components-final"
+  },
+  "earlier_browser": {
+    "passed": true,
+    "seconds": 14.131,
+    "frontend_id": "354b544956652c07236432bdead026fad75d1a77c9549fc10266586b7495e41b",
+    "viewports": [
+      "1280x900",
+      "390x844"
+    ],
+    "data_and_map_sdk": "synthetic",
+    "known_subtotal": 470,
+    "unknown_expenses": 2,
+    "screenshots_viewed": 2,
+    "includes_final_unlisted_label": false,
+    "own_token_removed": true,
+    "own_page_closed": true,
+    "finish_confirmed": false,
+    "diagnose_tasks_empty": true
+  },
+  "live_model": {
+    "passed": true,
+    "generated": true,
+    "frozen_base": "b46aabf3e26aec1b69856d1be8b1cda6e7121488e22609bc9f7abe5c720480bd",
+    "public_synthetic_requirements_only": true,
+    "production_changed": false,
+    "frozen_base_with_single_source_overlay": true,
+    "model": "glm-4-flash",
+    "source_sha256": "59b61c68ada57d7cfa2738aaf24ec0b86bfefd791310a9bf56d1c0a92a59e426",
+    "problems": [],
+    "day_numbers": [
+      1,
+      2,
+      3
+    ],
+    "daily_items": [
+      4,
+      4,
+      4
+    ],
+    "budget_summary": {
+      "交通": 0,
+      "住宿": 0,
+      "餐饮": 500,
+      "门票": 250,
+      "其他": 0,
+      "总计": 750
+    },
+    "budget_validation": {
+      "source": "ai_estimate",
+      "calculation_basis": "items_and_additions_v1",
+      "summary_checked": true,
+      "item_costs_checked": false,
+      "total_is_partial": true,
+      "unpriced_items": 5,
+      "quotes_verified": false,
+      "unpriced_categories": [
+        "交通",
+        "餐饮",
+        "门票"
+      ],
+      "model_summary_ignored": false,
+      "warnings": [
+        "有5项费用待确认，当前仅为已列估算小计，不能据此判断完整预算。"
+      ]
+    },
+    "candidate_poi_names": [
+      [
+        "杭州",
+        "西湖",
+        "湖滨银泰in77",
+        "杭州动物园"
+      ],
+      [
+        "酒店",
+        "杭州博物馆",
+        "西湖边餐厅",
+        "杭州科技馆"
+      ],
+      [
+        "酒店",
+        "西湖文化广场",
+        "西湖银泰in77",
+        "西湖银泰in77"
+      ]
+    ],
+    "qualitative_constraints_require_manual_review": true,
+    "lodging_and_transit_figures_are_estimates_not_live_quotes": true,
+    "sends": [
+      {
+        "request": 1,
+        "http_status": 200
+      }
+    ],
+    "temporary_budget_removed": true,
+    "local_env_unchanged": true,
+    "seconds": 139.324
+  },
+  "final_source_replay": {
+    "passed": true,
+    "additional_model_requests": 0,
+    "recorded_reply": "reply-1.txt",
+    "unchanged_contribution_amounts": true,
+    "unchanged_known_subtotal": 750,
+    "final_source_sha256": "25cef3e2aab1634f2a8ddf2822fe1adccfdc16b6901e9a71d20e44d814998b93",
+    "budget_validation": {
+      "source": "ai_estimate",
+      "calculation_basis": "items_and_additions_v1",
+      "summary_checked": true,
+      "item_costs_checked": false,
+      "total_is_partial": true,
+      "unpriced_items": 5,
+      "quotes_verified": false,
+      "unpriced_categories": [
+        "交通",
+        "餐饮",
+        "门票"
+      ],
+      "unlisted_categories": [
+        "住宿",
+        "其他"
+      ],
+      "model_summary_ignored": false,
+      "warnings": [
+        "有5项费用待确认，当前仅为已列估算小计，不能据此判断完整预算。"
+      ]
+    },
+    "full_complex_scenario_passed": false,
+    "remaining_semantic_issues": [
+      "lodging costs omitted",
+      "no explicit daily rest",
+      "generic hotel/city/restaurant names",
+      "live prices and venue identity not verified"
+    ]
+  },
+  "cleanup": {
+    "initial_static_server_exit": 0,
+    "final_static_server_exit": 0,
+    "real_model_process_exit": 0,
+    "owned_processes_and_listeners_absent": true,
+    "real_backend_started": false,
+    "temporary_provider_budget_removed": true,
+    "local_env_unchanged": true
+  },
+  "supplier_context": {
+    "document": "docs/travel-data-suppliers.md",
+    "new_weather_calls": 0,
+    "new_map_calls": 0,
+    "new_paid_flight_calls": 0,
+    "hotel_orders_created": 0,
+    "hotel_transaction_channel_still_required": true
+  },
+  "production_changed": false,
+  "new_full_application_or_linux_plan": false,
+  "old_linux_plan_stale": true,
+  "remaining": [
+    "Complex planning semantics and price sources",
+    "Hotel buyer transaction channel",
+    "Real OCR and authorized guides",
+    "Real accounts, devices and collaboration",
+    "New full candidate, Linux isolation and release validation"
+  ],
+  "handoff": "docs/交接归档-费用组成与程序汇总.md",
+  "tabbit_attempt": {
+    "code_dispatched": false,
+    "error": "CLI_REGISTRATION_UNAVAILABLE",
+    "registered_cli_exists": false,
+    "registered_browser_exists": false,
+    "registration_changed": false,
+    "no_approval_rejection": true
+  },
+  "final_browser": {
+    "frontend_id": "67e000ae84eaeefe387642190f7f7bbd0780cf69d734e000a37c7e387f2f8eb5",
+    "files_verified": 48,
+    "passed": true,
+    "browser": "msedge",
+    "external_requests_forwarded": 0,
+    "viewports": [
+      {
+        "label": "desktop",
+        "width": 1280,
+        "height": 900,
+        "screenshot": "desktop.png",
+        "screenshot_sha256": "05dfdd0c1cc76c9ef85edca1c3a803450f867f9be8a8ed5c494f9d6fd9a6176d",
+        "subtotal": 470,
+        "unknown_expenses": 2,
+        "unlisted_category_shown": true,
+        "supplements_expanded": true,
+        "place_markers": 8,
+        "verified_links": 8,
+        "correct_hotel_anchor": true,
+        "horizontal_overflow": false
+      },
+      {
+        "label": "mobile",
+        "width": 390,
+        "height": 844,
+        "screenshot": "mobile.png",
+        "screenshot_sha256": "8e1bd0caf4d52eddf9af7821d31fd1421e6f3cae5f3e6e6a42ea41f8211bc5cf",
+        "subtotal": 470,
+        "unknown_expenses": 2,
+        "unlisted_category_shown": true,
+        "supplements_expanded": true,
+        "place_markers": 8,
+        "verified_links": 8,
+        "correct_hotel_anchor": true,
+        "horizontal_overflow": false
+      }
+    ],
+    "browser_version": "157.0.4341.60",
+    "isolated_browser_closed": true,
+    "static_server_closed": true,
+    "seconds": 1.3,
+    "data_and_map_sdk": "synthetic",
+    "screenshots_viewed": 2
+  }
+}

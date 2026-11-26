@@ -1,0 +1,113 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "goal_status": "active",
+  "phase": "ai_integer_validation_fixed_hotel_transactions_require_channel",
+  "production_ready": false,
+  "user_confirmed_scope": {
+    "map_provider": "AMap; existing key available",
+    "hotel_realtime_inventory_quotes_orders_required": true,
+    "transport": "AMap route queries; no ticket-order integration requested this phase",
+    "other_transaction_channel_available": false
+  },
+  "code_change": "Strict AI operation models reject coerced integer IDs, positions and minutes; normal integer/zero/null behavior retained",
+  "source_sha256": {
+    "backend/app/services/trip_ai.py": "bcbff2bd5fe30591689b3b9ca5d748100c9733b4b1a0e22da337ad3ae2a29b5c",
+    "backend/tests/test_trip_ai_schema.py": "74a083b049c4daa0afd164e7012b3891ecad25305131b7215cb9553d1e012bc7",
+    "backend/tests/test_trip_ai_schema_routes.py": "dad412c83e1b33dbf5f82f804808b637b62b924e6bae59978d7f52fc889e2053"
+  },
+  "before_after": {
+    "previous_source_candidate": "cf7978b42324625c775c5ac1f8de788a2b067d66da9f6227604674c1926cd9a8",
+    "previous_module_sha256": "65b346dda5926f5ba98b17e46d2c9dd07997b3fff301c9b2820c140a34f6a9e9",
+    "cases": [
+      {
+        "input": {
+          "action": "remove",
+          "item_id": true
+        },
+        "previously_accepted_as": [
+          {
+            "action": "remove",
+            "item_id": 1
+          }
+        ],
+        "now_rejected": true
+      },
+      {
+        "input": {
+          "action": "move",
+          "item_id": 1,
+          "day_id": "1",
+          "index": false
+        },
+        "previously_accepted_as": [
+          {
+            "action": "move",
+            "item_id": 1,
+            "day_id": 1,
+            "index": 0
+          }
+        ],
+        "now_rejected": true
+      },
+      {
+        "input": {
+          "action": "edit",
+          "item_id": 1.0,
+          "changes": {
+            "duration_min": true
+          }
+        },
+        "previously_accepted_as": [
+          {
+            "action": "edit",
+            "item_id": 1,
+            "changes": {
+              "duration_min": 1
+            }
+          }
+        ],
+        "now_rejected": true
+      }
+    ]
+  },
+  "final_test": {
+    "passed": 28,
+    "deselected": 11,
+    "seconds": 0.13,
+    "exit_code": 0,
+    "new_pure_cases": 25,
+    "direct_route_sqlite_cases": 2,
+    "existing_structure_repair_case": 1,
+    "http_transport_tested": false,
+    "real_provider_called": false
+  },
+  "initial_interrupted_test": {
+    "session_id": 85235,
+    "dots_before_interrupt": 24,
+    "exit_code": 1,
+    "complete_result": false
+  },
+  "stale_candidate_guard": {
+    "guarded": true,
+    "subprocess_forbidden_during_offline_check": true,
+    "old_bundle_unchanged": true,
+    "marker": ".release-candidates/unified-map-ready-review-2026-11-17/superseded.json",
+    "old_candidate_not_current": true
+  },
+  "booking_plan": "docs/酒店真实交易接入方案.md",
+  "booking_status": "official docs reviewed; no partner/test permission, no real inventory query/order/payment",
+  "external_review_status": "last known automatic-review usage-limit failure; not retried or bypassed this module",
+  "source_requires_fresh_release_candidate": true,
+  "archive": "docs/交接归档-AI整数校验与酒店交易范围.md",
+  "external_actions_this_module": [
+    "read-only official public documentation browsing"
+  ],
+  "not_done": [
+    "full backend or ASGI/HTTP rerun",
+    "real complex model/OCR acceptance",
+    "hotel transaction channel onboarding/integration",
+    "final independent process/browser-task postcheck",
+    "new Linux release rebind or production operations"
+  ]
+}

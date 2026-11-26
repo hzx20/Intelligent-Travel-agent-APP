@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "formal_entry": "https://134.175.137.18/travel/",
+  "formal_entry_confirmed_by_user": true,
+  "subnet_candidate": "172.31.240.0/28",
+  "bridge_gateway": "172.31.240.1",
+  "proxy_address": "172.31.240.2",
+  "local_checks_passed": 39,
+  "candidate_manifest": ".release-candidates/budget-https-load-2026-11-19/https-ip-entry-candidate/report.json",
+  "candidate_manifest_sha256": "13d6908352928fa8e665cd05ddd9cce0f6d4ae7ed1beb194d7440338f2a9a757",
+  "files_sha256": {
+    "nginx-edge.conf": "daf22f110166808d8b5f5f9d9241b1acd90e5dec002dc3d239606b1296347cef",
+    "nginx-edge-maintenance.conf": "e2ba23f487a2ede868983373fc3af0d60652c7b6ab4b1da4bc2d945240288e1e",
+    "travel.service": "296e15a30f5d53778722645d1800fa9b3d71ad15fcbce7064b1939944dd2bb41"
+  },
+  "source_sha256": {
+    "backend/tools/bind_travel_https_network.py": "f39ccd45e3baa38e278ecb18ce2b65b7f0007d139a8bdd0c5042e47ec789375b",
+    "backend/tools/travel_tls_edge.py": "dc57940cd85e7d44af1037f1210ab3b954693801d8975e9243f61386b4f8a806",
+    "backend/tools/rehearse_travel_https_network.py": "01979aa4d613a1ca6462f1dfd521e67787a7879502c432192ecd4d0900e2e0c0",
+    "backend/tools/rehearse_travel_https_network_remote.py": "6d1f1f9384811cb20e87575c36c86df3cbed363a5b95d87a0e1e1eeea88b9816"
+  },
+  "rehearsal_bundle_sha256": "524f8ce0ca589f945abb359fd3f59caff98adde71b1f4db4281a782adc8a35fd",
+  "rehearsal_bundle_bytes": 30652,
+  "remote_rehearsal_run": false,
+  "production_certificate_issued": false,
+  "public_tls_enabled": false,
+  "production_ready": false
+}

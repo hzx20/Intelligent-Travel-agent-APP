@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-25",
+  "scope": "Local gate tying an interactive recovery receipt to the current staged production window",
+  "gate_sha256": "0f494194bca86d315533b3ef48bb0be5bac54be7f4d1160828fe1cc43ca744d1",
+  "reviewed_operations_id": "cc20126ea565ff67579527f98b3e6a4e63ddcd3093fcf966a22b568041247cbf",
+  "snapshot_gate_tests_passed": 7,
+  "backup_source_binding_tests_passed": 5,
+  "closed_previous_window_receipts_rejected": true,
+  "install_and_start_shell_syntax_checked_locally": true,
+  "preparation_before_backend_start_verified_in_runbook": true,
+  "production_install_executed": false,
+  "origin_contacted": false
+}

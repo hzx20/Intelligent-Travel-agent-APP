@@ -1,0 +1,12 @@
+# Certbot decides whether a renewal is due. No forced renewal.
+[Unit]
+Description=Check travel IP renewal four times per day
+
+[Timer]
+OnCalendar=*-*-* 00,06,12,18:15:00
+Persistent=true
+AccuracySec=1min
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

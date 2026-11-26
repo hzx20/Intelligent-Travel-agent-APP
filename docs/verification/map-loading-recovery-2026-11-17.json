@@ -1,0 +1,147 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "phase": "module_complete_pause_requested",
+  "production_ready": false,
+  "production_operations_this_module": false,
+  "source_sha256": {
+    "frontend/src/utils/amap.js": "d2e734bfa5d84cbf7689f7c8b901f308789b56679ec702e879ba9c40d0bd573e",
+    "frontend/src/components/TripMap.vue": "dfef4f813aed7425c8dd5ed4e0337b69bcb5e51a9343c9ed0b4c73066f28aca1",
+    "frontend/src/views/PlanView.vue": "a0977b5f3ce19d787da82365bf2c320aa118bc027cb9f1a68268ee9241644914",
+    "frontend/test/amapLoader.test.js": "50530b228f33fba45963b8c47d2e9cc63217ee17ed7e34429040b60c7833fc49",
+    "frontend/test/tripMapComponent.test.js": "05842afaa1fab779dd6b246e71c90c342315eb4c436c3820150bf0418e15393e",
+    "frontend/e2e/map-loading.spec.js": "39e6b6d7f65aa2bcefef4bc68c83be7c176520f44159512230530d7fd67f6d68",
+    "frontend/playwright.map-loading.config.mjs": "3c1ddc395f5407c7ca35c957f48bb6b20a0998300c7ebe5a8193ecba17219e2f"
+  },
+  "dist_file_count": 44,
+  "dist_sha256": {
+    ".vite/manifest.json": "2a5c89d2d6c9d69f4ec200643f60b1048c9446746b6f0a78f27c6dc1e3698be5",
+    "assets/AdminView-BIQ1Bo2o.css": "2f93d7ae6f72625bbb43a82fe560ea69532009eeb5d9e27c0c1212473f9b2122",
+    "assets/AdminView-C37Z_Y0i.js": "94c1c9294c87688479a70b65b91c88667f2d1160612a0c6c86cc6ac17de76de2",
+    "assets/amap-BkvyQHup.js": "482090ed21f5c5cf468dba8fb995ba2862c621997175c71a0bc8850a2d9b636f",
+    "assets/discoveryData-BEuCRyzn.js": "d29fea8d2e1643ec0a62fe187f469ae2c8b2e6ae4353c8e1bbbdc3c68c67eca7",
+    "assets/FootprintPhoto-CAdp0owg.css": "177c36e9d06d3193ce013517928fc51d392bd049b94e7c584f5c9147675728a0",
+    "assets/FootprintPhoto-CYD9HylQ.js": "e84e728971814e80c87e06a3ee31aef43489e052ccfa3b075419fed1088d1879",
+    "assets/FootprintsView-BNUPVb4o.js": "1c104b2ac311473aa6df7029b3d7d88e738c2e1f4ed59a985da94733a03e28a7",
+    "assets/FootprintsView-DWeSvLLx.css": "551c7b7d9d1ba8724ea77598143fda317738aa31f6e39a47ba62d198c248f152",
+    "assets/guestTrips-DA6vPBQg.js": "6cce5001af74e03cb47fa800b05c369bbfbd124ac3a605f5d366c6f897c8c965",
+    "assets/GuideDetailView-BenfZmlg.js": "a5c25e026ae4f2b8779d4b1d29e78950aa7a3e7edfcd9eb4e242da716fc28613",
+    "assets/GuideDetailView-CwShb7bR.css": "583ede40d0b94bda0930c2325dc5a3163498c812026767d36c94b484657e3f2d",
+    "assets/GuideEditView-B0AUjZ2g.css": "63fc702fe7ff8015f3f108d1a78fb9c6b8fa7d788d2cd7bd7b26cae7248e32f8",
+    "assets/GuideEditView-CBjzGKkG.js": "4326b4f7abc3a626ae78dba20057e051bbe7e7761611cf646f19b6636be584c8",
+    "assets/GuidesView-DNYj9lkU.js": "3e8ed2a8ef615fea77f6329815a40046d6f4653213e481c1c32a2ed8024a9880",
+    "assets/GuidesView-sGlasZBu.css": "d4cb52d6f39fb709022d170de84041e66549201c172dbe169d16e6d2e4961ef5",
+    "assets/HomeView-D7kXdJSa.css": "05cf367f667e08ac2843a05211bbe6a1fa553baadd9f058a3bc2d21a3e377fe6",
+    "assets/HomeView-DuR1S3oB.js": "fe1fee00f62b6323618df9e17b2dc4246f6cd9c9f0810649fb0fd216a1c2a033",
+    "assets/index-DhyTrI39.css": "60e5c47e727e2e8d4c5838c84a28bb128cd6ff1268a92230454b7f42d1600f01",
+    "assets/index-FC-18m2o.js": "8646bd07de1ba43e39a9a57b559050c4dcffbe20c4670339dfd972b6fd756a9f",
+    "assets/MeView-B_8T_9lz.js": "6f94d0c320c5281583a25b52ef067a5bbb3ce4363eeb64b2d1cbae92f3351b8c",
+    "assets/MeView-Bwb6q8uu.css": "3041effc91922ba7c49aaf5778061a8f4dc7ac3ac159751dd26815f61460b194",
+    "assets/pagination-InLipQq5.js": "51c249f53e3be2355b91f1adce001363ec6c133f8872e2c86096e69c87bae9dc",
+    "assets/planHistory-Ch2OPXkW.js": "342abd3db6a29006c791e9dec778e3b12f8f330380c120fa183474a330d49f67",
+    "assets/PlanView-BSbeQLlj.css": "1fd80c8181c83fbc9470ff638da6265ff6261d550e095733f9a3f5b29b4c754b",
+    "assets/PlanView-Bvf9-hbi.js": "8d17c54237677e06d48f485e0d6f5f02ddf62b6c269ffea3c3cbbb8b89b7aee9",
+    "assets/readResource-D8bxzmFY.js": "d48b23ef71549ddf6b699e535d0d8ccb8b0c9bc3761ffba325279d3ad18e86ca",
+    "assets/regionpicker-Bz4x34qR.css": "fb384c9722a34a768557a479ccffab15fb1d1eecb69d9360e52aabbb4d189143",
+    "assets/regionpicker-CzPJdONC.js": "35dee961026489cd5ae9b7c0dc57a1b89373cc9bb325bdb546184cb453bfad71",
+    "assets/SpotCard-BGN_bWZw.js": "890cdf6711abc4e047c1ae3fb28116c473553bfa8458817662437301d684f8ed",
+    "assets/SpotDetailView-DOV-PIP4.css": "fbb30a84f0e005a38f7de109f8e6627adda1ce13e57e9079a50534497d6e9c46",
+    "assets/SpotDetailView-src1ne5P.js": "483c8db4d3cde89bced9cdfa376c4938f62ecd41aad754fe818a920a1e6ae970",
+    "assets/SpotsView-CNhQ2pdD.js": "dc3199343d2b2105f712b23528a1f5bf1d7da8b18ddcf88710fe7a9299c34d9d",
+    "assets/SpotsView-qIIZkLMP.css": "80f4b4ba83eb36d8dcd2a11da6c50233419f08956574fd0236f25f8f92459cfa",
+    "assets/TripCreateView-BbJwa-aD.js": "339caddc8f7c356e52aafedd3ef191c1af18a269aab556c410b0a3e0aaa44c32",
+    "assets/TripCreateView-CVngQJD6.css": "1babcec061a829e2806a709d9a05bac9b5fb8529188417de8478e6ba24302872",
+    "assets/TripDetailView-C-CDNf7Q.css": "808cdcac74117b8bf9459f4341820f03fc004f566b899838f78e5a44de7d5ec2",
+    "assets/TripDetailView-tFUWETTI.js": "27f31339171aec7954ab8f9bd855666020fb93c19aa87dafe08793b88a64caae",
+    "assets/tripDraftGuard-Co-iXuPt.js": "222b7007c3f56cf9eb21776e391eda9257df56b7c119d362df50a78c77d79f1c",
+    "assets/TripSharedView-4L-Grqic.css": "a5f4cc8b59e33c89023eca1cf9d85631a0db8968bcf33db60a9a7eb12fc7212c",
+    "assets/TripSharedView-LIo13QzB.js": "d5a2ffd536b955497bc1777c4452c2288b0098f8925c12fa0f1f7891ec9ab8d1",
+    "assets/TripsView-Cr0Qu-NK.css": "63e2fd664bd4bf1dc58c8ad3286c77aa71f7992fd95c1b4c6583852efbd46c74",
+    "assets/TripsView-Dg0Gkenp.js": "f2b8e00cd552a8722241422586501963ee7687e0a037a8ae451acbe9e405a73a",
+    "index.html": "4ef7861fd149eca95565f3f9763f9d3142c69a7589a3786818e9ab413bf1a157"
+  },
+  "checks": {
+    "node_full_before_cleanup_guard": {
+      "passed": 190,
+      "duration_ms": 673.0201,
+      "exit_code": 0
+    },
+    "node_final_targeted": {
+      "passed": 15,
+      "duration_ms": 189.3495,
+      "exit_code": 0
+    },
+    "build_travel_final": {
+      "exit_code": 0,
+      "modules": 121,
+      "duration_seconds": 1.03
+    },
+    "browser_first_complete": {
+      "passed": 4,
+      "duration_seconds": 47.4,
+      "exit_code": 0
+    },
+    "browser_final": {
+      "passed": 4,
+      "duration_seconds": 46.9,
+      "exit_code": 0,
+      "viewports": [
+        "1280x900",
+        "390x844"
+      ],
+      "provider": "synthetic SDK/config; external network intercepted"
+    },
+    "browser_initial_restricted_attempt": {
+      "tests_started": false,
+      "interrupted": true,
+      "exit_code": 1
+    },
+    "final_local_postcheck": {
+      "listeners_5264_18963": 0,
+      "matching_test_processes": 0
+    }
+  },
+  "screenshots": [
+    {
+      "path": ".release-candidates/map-loading-review-2026-11-17/screenshots/map-loading-地图配置挂起后显示失败，迟到响应不插入脚本，规划页可原地重试-desktop/plan-map-timeout.png",
+      "sha256": "c722e80816ad483ac6baf2777433a5e54dddb52408d02b9625264f1adc826801"
+    },
+    {
+      "path": ".release-candidates/map-loading-review-2026-11-17/screenshots/map-loading-地图配置挂起后显示失败，迟到响应不插入脚本，规划页可原地重试-mobile/plan-map-timeout.png",
+      "sha256": "af471e6736e4943cbfe559facc8d3c5fb9dc97eed4b943882e1e86fe5bf1a97c"
+    },
+    {
+      "path": ".release-candidates/map-loading-review-2026-11-17/screenshots/map-loading-工作区脚本挂起后可重试，模拟SDK恢复只创建一次且行程仍可编辑-desktop/workspace-map-recovered.png",
+      "sha256": "72bc7ae8bd5c76ee963763ebbc5e9685324dc3441104bd115d5716c9075b7e3a"
+    },
+    {
+      "path": ".release-candidates/map-loading-review-2026-11-17/screenshots/map-loading-工作区脚本挂起后可重试，模拟SDK恢复只创建一次且行程仍可编辑-desktop/workspace-map-timeout.png",
+      "sha256": "c5e8db9d8b16e628012c2aad41976a926a882b6ee586ea552d76706d8eccb75e"
+    },
+    {
+      "path": ".release-candidates/map-loading-review-2026-11-17/screenshots/map-loading-工作区脚本挂起后可重试，模拟SDK恢复只创建一次且行程仍可编辑-mobile/workspace-map-recovered.png",
+      "sha256": "973e8a86a657bd2a803429511902bdd8efe08e7934d1a9e7ff9f8a928fa89a89"
+    },
+    {
+      "path": ".release-candidates/map-loading-review-2026-11-17/screenshots/map-loading-工作区脚本挂起后可重试，模拟SDK恢复只创建一次且行程仍可编辑-mobile/workspace-map-timeout.png",
+      "sha256": "9e3cd8cf911f51a83c6d13814f5d297101e949e31576ec8a1085f08f7356b669"
+    }
+  ],
+  "visual_inspection": [
+    "desktop workspace timeout",
+    "mobile workspace timeout",
+    "mobile plan timeout"
+  ],
+  "temp_data_cleanup": "fixture teardown completed without error; exact generated temp path not separately recorded; no claim about historical directories",
+  "frozen_plan_id": "effb123a9119956d419ba8e52aeaa307141254a10d775953330cc0721392fc42",
+  "frozen_application_id": "2b3a3395e87d12ce10920642ebbace27ee7928f648d2f02d6a963a6cc7406383",
+  "frozen_plan_includes_current_map_changes": false,
+  "systemd_sandbox_authorization": "pending explicit reply; no upload/start performed",
+  "limits": [
+    "Mock SDK is not real map/vendor acceptance",
+    "DOM removal cannot guarantee cancellation of executing external script",
+    "Frozen releases not modified; final release must be rebuilt",
+    "No production state rechecked remotely this module"
+  ],
+  "archive": "docs/交接归档-地图加载恢复与暂停.md"
+}

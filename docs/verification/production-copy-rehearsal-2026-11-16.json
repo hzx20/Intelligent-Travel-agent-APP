@@ -1,0 +1,53 @@
+{
+  "release_id": "a2bd8b01fcf847f04a03256522b62924288d14427bd0efc0feffa61be6973684",
+  "python": "3.12.3",
+  "platform": "linux",
+  "source_read_only": true,
+  "production_deployed": false,
+  "success": true,
+  "startup_count": 2,
+  "original_tables_preserved": {
+    "ai_plans": {
+      "rows": 2,
+      "columns": 12
+    },
+    "comments": {
+      "rows": 0,
+      "columns": 7
+    },
+    "favorites": {
+      "rows": 0,
+      "columns": 4
+    },
+    "guide_images": {
+      "rows": 0,
+      "columns": 4
+    },
+    "guide_spots": {
+      "rows": 0,
+      "columns": 2
+    },
+    "guides": {
+      "rows": 0,
+      "columns": 10
+    },
+    "spots": {
+      "rows": 500,
+      "columns": 16
+    },
+    "users": {
+      "rows": 2,
+      "columns": 8
+    }
+  },
+  "original_values_preserved": true,
+  "second_startup_unchanged": true,
+  "schema_and_frontend_preflight_passed": true,
+  "candidate_and_snapshot_unchanged": true,
+  "business_copies_removed": true,
+  "source_file_observed_unchanged": true,
+  "remote_root": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a",
+  "workdir": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/rehearsal-001",
+  "linux_candidate_path": "/tmp/travel-release-rehearsal-20261116-3d8b3a0a/candidate",
+  "execution_exit": 0
+}

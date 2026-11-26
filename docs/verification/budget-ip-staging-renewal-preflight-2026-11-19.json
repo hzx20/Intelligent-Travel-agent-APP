@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "local review of an isolated ACME staging renewal check and live read-only systemd syntax verification",
+  "staging_only": true,
+  "bundle_sha256": "5c9022f38e999c883e043647db8d3011199bada5230ccfad57bffb957ba6aeae",
+  "source_sha256": {
+    "backend/tools/rehearse_travel_renewal.py": "5d291cb6d6579ea2b33c7bda2b0928e0cf5b077522ac0b121d0ba22df9f07bdc",
+    "backend/tools/rehearse_travel_renewal_remote.py": "59057b431fc2db5c3067fcdfc9c51f72ee410d7e4c9bead5f5181c1ffc0ef8fe",
+    "backend/tests/test_rehearse_travel_renewal.py": "7e0a2846c869981e51fb0a74c8f22588bc86aaba4f1ca2e070a071db49189a60",
+    "deploy/travel-tls/travel-ip-renew.service": "896ab0341ba91d84ec520996612d6a88e51dd02a0734a325710be35d41b92630",
+    "deploy/travel-tls/travel-ip-renew.timer": "25d03d687e55a788be7acaf4cde18a8ac7997abf86d2c535c0016bfa7ecc0213"
+  },
+  "previous_renew_unit_sha256": "8abafeaf189a559d7246144d1a317940e915532a0035e859b52cf9e8d42936f9",
+  "systemd_verify_exit": 0,
+  "systemd_diagnostics": [],
+  "local_tests_passed": 3,
+  "systemd_jitter_seconds": 600,
+  "certbot_internal_renewal_jitter_disabled_in_candidate": true,
+  "external_staging_renewal_executed": false,
+  "production_renewal_triggered": false,
+  "production_renewal_unit_installed": false
+}

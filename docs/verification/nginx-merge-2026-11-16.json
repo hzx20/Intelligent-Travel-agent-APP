@@ -1,0 +1,154 @@
+{
+  "date": "2026-11-16",
+  "status": "review_candidate_validated_not_deployed",
+  "source_host": "134.175.137.18",
+  "source_path": "/opt/continew/nginx.conf",
+  "private_review_directory": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\nginx-review-2026-11-16-bb57aa1d",
+  "private_source_copy": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\nginx-review-2026-11-16-bb57aa1d\\production-before.conf",
+  "source_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+  "source_bytes": 4491,
+  "production_deployed": false,
+  "private_candidate": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\nginx-review-2026-11-16-bb57aa1d\\merged-final\\nginx-candidate.conf",
+  "private_diff": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\nginx-review-2026-11-16-bb57aa1d\\merged-final\\nginx.diff",
+  "merge": {
+    "unrelated_directives_unchanged": true,
+    "standard_mime_include_only": true,
+    "unrelated_directives_sha256": "c362c6fb8c56f1ed4422e145183d337dbb2d6a771c7b934c8b4eb81cfb6dcdd0",
+    "replaced_locations": [
+      [
+        "location",
+        "^~",
+        "/travel/api/plan/stream"
+      ],
+      [
+        "location",
+        "^~",
+        "/travel/api/"
+      ],
+      [
+        "location",
+        "^~",
+        "/travel/"
+      ],
+      [
+        "location",
+        "=",
+        "/travel"
+      ]
+    ],
+    "new_location_count": 8,
+    "zone_names": [
+      "travel_ai",
+      "travel_guest_route",
+      "travel_place",
+      "travel_plan",
+      "travel_plan_control"
+    ],
+    "map_bucket_before": null,
+    "map_bucket_after": 128,
+    "source_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "template_sha256": "afdc08a1d25380857da6a0a4b72a57fd9969df7848d4ab40a97f320d19fd7d49",
+    "candidate_sha256": "02f7fae48c9e6a5b210f43bddb3b69db2e1a361e97f6cffad87de644b3e9dfe7",
+    "idempotent": true,
+    "syntax_tested": true,
+    "production_deployed": false,
+    "syntax_scope": "Exact merged bytes checked by production Linux nginx 1.27.0; not loaded by running master"
+  },
+  "linux_candidate_syntax": {
+    "method": "ram_directory_with_relative_mime_include",
+    "candidate_sha256": "02f7fae48c9e6a5b210f43bddb3b69db2e1a361e97f6cffad87de644b3e9dfe7",
+    "source_before_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "source_after_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "source_unchanged": true,
+    "service_pid_before": "1465894",
+    "service_pid_after": "1465894",
+    "syntax_exit": 0,
+    "syntax_output": "nginx: the configuration file /dev/shm/travel-nginx-check.M2vq6N/nginx.conf syntax is ok\nnginx: configuration file /dev/shm/travel-nginx-check.M2vq6N/nginx.conf test is successful\n",
+    "ram_check_copy_removed": true,
+    "production_deployed": false
+  },
+  "authorization": "User explicitly allowed this stdin-only nginx syntax check on 2026-11-16",
+  "stdin_check_attempt": {
+    "candidate_sha256": "02f7fae48c9e6a5b210f43bddb3b69db2e1a361e97f6cffad87de644b3e9dfe7",
+    "source_before_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "source_after_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "source_unchanged": true,
+    "service_pid_before": "1465894",
+    "service_pid_after": "1465894",
+    "syntax_exit": 1,
+    "syntax_output": "nginx: the configuration file /dev/stdin syntax is ok\nnginx: [emerg] no \"events\" section in configuration\nnginx: configuration file /dev/stdin test failed\n",
+    "production_deployed": false
+  },
+  "syntax_attempts": [
+    {
+      "candidate_sha256": "02f7fae48c9e6a5b210f43bddb3b69db2e1a361e97f6cffad87de644b3e9dfe7",
+      "source_before_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "source_after_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "source_unchanged": true,
+      "service_pid_before": "1465894",
+      "service_pid_after": "1465894",
+      "syntax_exit": 1,
+      "syntax_output": "nginx: the configuration file /dev/stdin syntax is ok\nnginx: [emerg] no \"events\" section in configuration\nnginx: configuration file /dev/stdin test failed\n",
+      "production_deployed": false
+    },
+    {
+      "candidate_sha256": "02f7fae48c9e6a5b210f43bddb3b69db2e1a361e97f6cffad87de644b3e9dfe7",
+      "source_before_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "source_after_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "source_unchanged": true,
+      "service_pid_before": "1465894",
+      "service_pid_after": "1465894",
+      "syntax_exit": 1,
+      "syntax_output": "nginx: [emerg] open() \"/dev/shm/mime.types\" failed (2: No such file or directory) in /dev/shm/travel-nginx-check.yIgKkk:41\nnginx: configuration file /dev/shm/travel-nginx-check.yIgKkk test failed\n",
+      "ram_check_copy_removed": true,
+      "production_deployed": false
+    },
+    {
+      "method": "ram_directory_with_relative_mime_include",
+      "candidate_sha256": "02f7fae48c9e6a5b210f43bddb3b69db2e1a361e97f6cffad87de644b3e9dfe7",
+      "source_before_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "source_after_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+      "source_unchanged": true,
+      "service_pid_before": "1465894",
+      "service_pid_after": "1465894",
+      "syntax_exit": 0,
+      "syntax_output": "nginx: the configuration file /dev/shm/travel-nginx-check.M2vq6N/nginx.conf syntax is ok\nnginx: configuration file /dev/shm/travel-nginx-check.M2vq6N/nginx.conf test is successful\n",
+      "ram_check_copy_removed": true,
+      "production_deployed": false
+    }
+  ],
+  "merge_tool_sha256": "827033b420948aa91a9d6f441fb95be8d66936b0d815c40cdd84b73f3444b51a",
+  "completed_date": "2026-11-17",
+  "deployment_mount_observation": {
+    "selected_mounts": [
+      {
+        "Type": "bind",
+        "Source": "/opt/continew/nginx.conf",
+        "Destination": "/etc/nginx/nginx.conf",
+        "RW": false
+      },
+      {
+        "Type": "bind",
+        "Source": "/opt/continew/web",
+        "Destination": "/usr/share/nginx/html",
+        "RW": false
+      }
+    ],
+    "container_current_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73"
+  },
+  "local_validation": {
+    "result": "26 passed",
+    "elapsed_seconds": 10.61,
+    "merge_unit_tests": 25,
+    "real_nginx_http_tests": 1,
+    "full_backend_suite_rerun": false,
+    "full_browser_suite_rerun": false
+  },
+  "candidate_bytes": 7770,
+  "authorization_scope": "User allowed this merged configuration back to the same host/container for syntax checking only; no production save, reload or service switch",
+  "review_notes": [
+    "Source config is a read-only single-file bind mount; promotion must preserve visibility and verify host/container hashes before any reload",
+    "Unknown config includes and external travel zone/map references are refused by the merge tool",
+    "Local HTTP test uses portable Windows nginx with synthetic backend and production dist; actual Linux candidate HTTP behavior is not yet validated"
+  ]
+}

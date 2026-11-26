@@ -1,0 +1,12 @@
+# Review unit for the approved production cutover.
+[Unit]
+Description=Restrict incoming connections to the travel backend
+Requires=docker.service
+After=docker.service
+Before=travel.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/usr/sbin/nft --check --file /etc/travel-tls/backend-ingress.nft
+ExecStart=/usr/sbin/nft --file /etc/travel-tls/backend-ingress.nft

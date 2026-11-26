@@ -1,0 +1,27 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "production IP certificate issuance and lifetime operations review only",
+  "local_tests_passed": 8,
+  "actual_host_calendar_readback": [
+    "*-*-* 00,06,12,18:15:00",
+    "*-*-* *:42:00"
+  ],
+  "calendar_parser_exit": 0,
+  "validated_staging_receipt_sha256": "ea526fead5f71b4d39eb3d9ad73035075ae2c15856d36a624f620c7766037bea",
+  "checksummed_review_files": {
+    "backend/tools/travel_tls_check.py": "0bde8ab80c94be3c1b68282625c5efeb0571d404150ac2c6a54dce95710937f3",
+    "backend/tests/test_travel_tls_check.py": "6e1fa18a4706cfded801b4ad5ea153555128c0d8c818ccf74a138b66c869ba17",
+    "deploy/travel-tls/travel-ip-renew.service": "8abafeaf189a559d7246144d1a317940e915532a0035e859b52cf9e8d42936f9",
+    "deploy/travel-tls/travel-ip-renew.timer": "25d03d687e55a788be7acaf4cde18a8ac7997abf86d2c535c0016bfa7ecc0213",
+    "deploy/travel-tls/travel-ip-watch.service": "5f66780fb73a93e30d8b61b632e9a8b2566fc9fb1dd607df5496748e6aad8bd3",
+    "deploy/travel-tls/travel-ip-watch.timer": "03ededd36dbcd2cddf49283c28e9ee59c6348975f534f666a0191da865b156cb"
+  },
+  "certificate_issued": false,
+  "systemd_units_installed": false,
+  "automatic_edge_loading_ready": false,
+  "alert_delivery_configured": false,
+  "production_changed": false,
+  "production_ready": false
+}

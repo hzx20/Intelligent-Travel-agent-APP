@@ -1,0 +1,37 @@
+{
+  "format": 1,
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope": "Windows offline regression and byte-for-byte comparison against the staged Linux application",
+  "application_id": "28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+  "frontend_id": "7c620cde98827c6704b818f28f14ab49ddc594f44d188cff28f87c0797304aff",
+  "local_python": "3.13.14",
+  "local_node": "24.20.0",
+  "backend_and_deployment_files_matching": 67,
+  "frontend_build_files_matching": 49,
+  "frontend_tests_passed": 215,
+  "backend_main_run": {"passed": 727, "skipped": 1, "deselected": 3, "elapsed_seconds": 209.5},
+  "backend_followup_passes": [
+    "test_plan_place_verification.py::test_graph_progress_counts_only_actual_matched_locations",
+    "test_seal_travel_backup.py::test_recover_verified_sqlite_from_public_key_encrypted_archive"
+  ],
+  "backend_distinct_passes": 729,
+  "excluded_live_inputs": [
+    "test_m1.py",
+    "test_m2.py",
+    "test_v07_graph.py::test_graph_compiled_and_flows",
+    "test_v07_graph.py::test_plan_stream_saves_history_when_logged_in"
+  ],
+  "synthetic_supplier_configuration_and_database_used": true,
+  "production_or_supplier_requests_made": false,
+  "duplicate_build_and_main_test_artifacts_removed": true,
+  "private_logs": ".release-candidates/local-regression-2026-11-24",
+  "private_log_sha256": {
+    "backend.log": "9eb2497be13e72c8a462756a3b05b29a1ce3f210c91178bdec09b1d00242e5f8",
+    "graph-progress-isolated.log": "ef72a13f9958b536e504227b8820285bd090a9dcf888ae1b2c3c702c477036cf",
+    "gpg-roundtrip.log": "eaa1a131117344796b353202ffd0e35b7ad1945682d3b5ca439d78ad0dd33689",
+    "frontend.log": "9d30316aa8876cba729beb5f7a35204e97b11522d87e560093f235ab20308f14",
+    "build.log": "8366179309c14f27278347ad15ad3682a22cce95926b0984c662d11fa61f2a78",
+    "source-parity.json": "5ffd6536ffde8b5e27ae94538fd2f90b3ded3a43fe2edbeb899577bd493ad5dc"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "scope": "authorized native Linux proxy, static assets, budget API and desktop and mobile browser chain with synthetic data",
+  "native_application_id": "27592646387039b1e5d167264fa7fc1b31f672e3392167de0cf550dabeab45a6",
+  "frontend_id": "83a024dca6cea7bc09c0005c5ad5f6083ca1c3e0a7f49a8583132ad6ba4944fc",
+  "local": {
+    "targeted_tests_passed": 39,
+    "seconds": 16.07,
+    "frozen_budget_patch_reload_conflict_and_ledger_via_nginx": true,
+    "merged_with_frozen_nginx_fragment_matches_reviewed_bytes": true,
+    "nonexecuting_bash_syntax_passed": true,
+    "expected_assets": 47
+  },
+  "local_budget_browser": {
+    "report": ".release-candidates/budget-proxy-chain-2026-11-18/local-budget-browser-ec3c3dae/result.json",
+    "initial_close_probe_unconfirmed": ".release-candidates/budget-proxy-chain-2026-11-18/local-budget-browser-9c018886/result.json",
+    "real_local_nginx_and_frozen_api": true,
+    "viewports": ["1280x900", "390x844"],
+    "both_save_reload_conflict_and_ledger_passed": true,
+    "screenshots_reviewed": true,
+    "both_loopback_listeners_closed": true,
+    "browser_and_synthetic_runtime_removed": true
+  },
+  "local_combined_browser": {
+    "report": ".release-candidates/budget-proxy-chain-2026-11-18/local-budget-browser-d5c016fb/result.json",
+    "guest_viewports_passed": 2,
+    "signed_in_budget_viewports_passed": 2,
+    "browser_elapsed_seconds": 4.18,
+    "shared_browser_deadline_seconds": 60,
+    "listeners_closed_and_synthetic_runtime_removed": true
+  },
+  "packet": {
+    "path": ".release-candidates/budget-proxy-chain-2026-11-18/budget-proxy-qa.tar.gz",
+    "manifest": ".release-candidates/budget-proxy-chain-2026-11-18/packet.json",
+    "bytes": 13367,
+    "sha256": "ee0cd54d4eb31fae334c9800b6cbaba4c03215dc4d38586feb2835d68130d6c0",
+    "files": 4,
+    "includes_shared_nginx_configuration": false,
+    "uploaded": true
+  },
+  "controller": {
+    "path": ".release-candidates/budget-proxy-chain-2026-11-18/run_review.py",
+    "sha256": "25ddb3ca561ac1b201fc25c415308d5cb9cddd8cd0a1672b5f365eeb7fe9c00a",
+    "rejects_unexpected_forward_port": true,
+    "keeps_failure_report_on_early_exit": true,
+    "requires_both_browser_scenarios": true
+  },
+  "linux_proxy_chain": {
+    "attempt": "3072ebff4fc5",
+    "result": ".release-candidates/budget-proxy-chain-2026-11-18/attempt-3072ebff4fc5/result.json",
+    "result_sha256": "8a4212690a24d30581471339792b279ee2c2c8655beb713bd08dc121c0de01ab",
+    "events_sha256": "e2f1d9392f6bc261f648a4b480f6c2dbce7a817893200969f5fc25f5d3e7049a",
+    "upload_exit": 0,
+    "remote_exit": 0,
+    "elapsed_seconds": 48.46,
+    "exact_linux_dependency_count": 63,
+    "asset_hashes_verified": 47,
+    "guest_viewports_passed": 2,
+    "signed_in_budget_viewports_passed": 2,
+    "screenshots_reviewed": 4,
+    "synthetic_sse_and_rate_limit_passed": true,
+    "budget_write_reload_conflict_and_separate_ledger_passed": true,
+    "isolated_processes_tunnel_ram_and_data_removed": true,
+    "production_configuration_and_pids_unchanged": true
+  },
+  "remote_contacted": true,
+  "linux_proxy_chain_passed": true,
+  "production_changed": false,
+  "production_ready": false
+}

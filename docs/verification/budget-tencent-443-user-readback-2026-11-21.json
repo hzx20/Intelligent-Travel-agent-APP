@@ -1,0 +1,48 @@
+{
+  "format": 1,
+  "date": "2026-11-21",
+  "timezone": "Asia/Shanghai",
+  "scope": "user-provided Tencent Lighthouse console screenshot",
+  "attachment_sha256": "c853c1d9a8013e62d96e11afe709cb5d57789e2428e7e7f7d4176fbe2e1d71d0",
+  "visible_instance_name": "Ubuntu-quVA",
+  "public_ipv4": "134.175.137.18",
+  "visible_rule_count": 4,
+  "visible_page_count": 1,
+  "shown_allow_rules_in_order": [
+    {
+      "source": "all IPv4",
+      "protocol": "TCP",
+      "port": "443",
+      "remark": "Travel HTTPS"
+    },
+    {
+      "source": "all IPv4",
+      "protocol": "TCP",
+      "port": "22"
+    },
+    {
+      "source": "all IPv4",
+      "protocol": "TCP",
+      "port": "80"
+    },
+    {
+      "source": "all IPv4",
+      "protocol": "ICMP",
+      "port": "ALL"
+    }
+  ],
+  "tcp_8000_allow_rule_shown": false,
+  "host_443_listener_observed": false,
+  "host_travel_active_and_loopback_health_200": true,
+  "public_tls_or_maintenance_route_verified": false,
+  "console_modified_by_assistant": false,
+  "selected_ipv4_interface": {
+    "name": "WLAN",
+    "index": 18
+  },
+  "direct_http_root_and_travel": [
+    200,
+    200
+  ],
+  "direct_https_probe_progress": "tcp"
+}

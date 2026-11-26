@@ -1,0 +1,56 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "read-only SSH inventory and application-layer readback from the current workstation",
+  "host": "134.175.137.18",
+  "inputs_sha256": {
+    "backend/tools/travel_https_host.py": "6790ddb8ff89329cf00485e9e992ccd3ce1b7ba78d754517b51268728d755b5a",
+    "backend/tools/acme_probe_remote.py": "fb7c503949f39f90d64d2b4faf2693c96b87f481ad09a7a678805b2d4335db02"
+  },
+  "ssh_exit": 0,
+  "public_readback_exit": 0,
+  "inventory": {
+    "state": "host_inventory_read",
+    "certbot_version": "5.10.0",
+    "shared_http_config_matches": true,
+    "listeners_443": [],
+    "docker_publishes_443": false,
+    "listeners_8000": ["0.0.0.0:8000"],
+    "dedicated_edge_exists": false,
+    "dedicated_tls_roots_exist": {
+      "/etc/travel-tls": false,
+      "/var/lib/travel-tls": false,
+      "/var/log/travel-tls": false
+    },
+    "network_candidate": {
+      "subnet": "172.31.240.0/28",
+      "gateway": "172.31.240.1",
+      "proxy_ip": "172.31.240.2",
+      "dynamic_range": "172.31.240.8/29",
+      "docker_network": "travel-edge",
+      "host_interface": "br-travel-edge",
+      "overlaps_observed_routes": false,
+      "overlaps_observed_docker_ipam": false,
+      "docker_name_in_use": false,
+      "interface_name_in_use": false
+    },
+    "current_bridge": {
+      "endpoint_count": 4,
+      "internal": false,
+      "ipv4": [{"dynamic_range": null, "gateway": "172.18.0.1", "subnet": "172.18.0.0/16"}],
+      "shared_proxy": "172.18.0.5"
+    }
+  },
+  "external_application_readback": {
+    "80_http": {"status": 200},
+    "443_tls": {"error": "SSLEOFError", "trusted_tls": false},
+    "8000_http": {"error": "TimeoutError"}
+  },
+  "public_8000_access_policy_verified": false,
+  "production_address_confirmed": true,
+  "dedicated_bridge_allocated": false,
+  "production_certificate_issued": false,
+  "production_changed": false,
+  "production_ready": false
+}

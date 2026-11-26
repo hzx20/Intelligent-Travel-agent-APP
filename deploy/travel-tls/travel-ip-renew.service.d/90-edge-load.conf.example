@@ -1,0 +1,4 @@
+# Review example. Add only after the first public leaf and actual edge target have passed verification.
+[Service]
+# Appends to the existing saved-pair check. Retryable even if Certbot did not need another order.
+ExecStartPost=/usr/bin/python3 -I -B /usr/local/libexec/travel_tls_edge.py reconcile --apply

@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "local review of one prospective new staging-only attempt",
+  "verified_controller": {
+    "state": "local_staging_reviewed",
+    "remote_contacted": false,
+    "action_sha256": "b63e9dbcf9b2c2ad9c09b848d1067d3664ecb82cc7fbed36ea910c19fd42655d",
+    "verified_probe_available": true,
+    "prior_order_cleanup_verified": true,
+    "reverification_attempt_exists": false,
+    "production_ready": false
+  },
+  "local_tests_passed": 22,
+  "awaiting_new_authorization": true,
+  "production_changed": false
+}

@@ -1,0 +1,133 @@
+{
+  "format": 1,
+  "checked_date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "fixture": {
+    "start_date": "2026-11-21",
+    "end_date": "2026-11-23",
+    "adults": 2,
+    "children": 1,
+    "child_age": 5,
+    "group_budget_cny": 3000
+  },
+  "scope": "public admission rules, conditional taxi baseline and hotel policy for the existing Hangzhou sample",
+  "places": {
+    "hangzhou_museum_south": {
+      "planned_slot": "2026-11-22T09:30:00+08:00",
+      "within_published_regular_hours": true,
+      "regular_admission_listed_free": true,
+      "sunday_reservation_and_capacity_confirmed": false,
+      "sources": [
+        "https://www.hkx.org.cn/index/kpdj/8801.html",
+        "https://edu.hangzhou.com.cn/2024rdzt/zdagzyjd/content/content_8763527.html?k=0",
+        "https://www.hzzx.gov.cn/cshz/content/2024-04/02/content_8710138.htm"
+      ]
+    },
+    "china_finance_taxation_museum": {
+      "planned_slot": "2026-11-22T13:15:00+08:00",
+      "within_published_regular_hours": true,
+      "standard_display_admission_free": true,
+      "under_12_requires_adult_accompaniment": true,
+      "date_specific_admission_guaranteed": false,
+      "source": "https://www.fmuseum.cn/guide"
+    },
+    "china_tea_museum_shuangfeng": {
+      "planned_slot": "2026-11-23T11:00:00+08:00",
+      "within_published_regular_hours": true,
+      "weekday_individual_no_advance_reservation_published": true,
+      "sources": [
+        "https://www.teamuseum.cn/mobile/basicIntroduction.htm",
+        "https://www.teamuseum.cn/japanese/message/memorabilia.htm",
+        "https://www.teamuseum.cn/english/message/detail.htm?id=8468"
+      ]
+    }
+  },
+  "transport": {
+    "route_data_path": ".release-candidates/family-three-days-2026-11-18-xnl94326/result.json",
+    "route_data_sha256": "6ac403fb0f5879f6365d07ddaab460a6e63400c81f0c8e653a644b4cb1690cc7",
+    "tariff": {
+      "source": "https://zfgb.hangzhou.gov.cn/upload/default/bigfile/2025/06/03/20250603_a6738909dc520976f8699b02ac586109.pdf",
+      "document": "杭发改价格〔2019〕455号",
+      "initial_cny": 13,
+      "included_metres": 3000,
+      "standard_cny_per_km": 2.5,
+      "empty_return_surcharge_starts_metres": 10000,
+      "rounding": "round half up, per ride to whole yuan",
+      "scope": "estimate of ordinary metered taxi pickup plus distance, before waiting, detours, fuel or other surcharges"
+    },
+    "days": [
+      {
+        "date": "2026-11-21",
+        "driving_distance_metres": [
+          2884,
+          2094
+        ],
+        "base_fare_by_ride_cny": [
+          13,
+          13
+        ],
+        "base_fare_total_cny": 26
+      },
+      {
+        "date": "2026-11-22",
+        "driving_distance_metres": [
+          2691,
+          2796
+        ],
+        "base_fare_by_ride_cny": [
+          13,
+          13
+        ],
+        "base_fare_total_cny": 26
+      },
+      {
+        "date": "2026-11-23",
+        "driving_distance_metres": [
+          7687,
+          6502,
+          2342
+        ],
+        "base_fare_by_ride_cny": [
+          25,
+          22,
+          13
+        ],
+        "base_fare_total_cny": 60
+      }
+    ],
+    "estimated_taxi_base_cny": 112,
+    "actual_ride_quote": null,
+    "weekend_taxi_restrictions": "https://zfgb.hangzhou.gov.cn/11/105220253/t117220253054/518894.shtml",
+    "autumn_2026_subway_alternative": "https://ori.hangzhou.com.cn/ornews/content/2026-09/07/content_9301062.htm",
+    "metro_accompanied_child_free_if_under_metres": 1.3,
+    "metro_child_fare_source": "https://www.hhtz.gov.cn/col/col1486030/art/2026/art_9ffbe2254c4e4965b904aaff9332ac0a.html",
+    "dated_accessibility_and_wait_confirmed": false
+  },
+  "hotel": {
+    "name": "杭州西湖湖滨银泰亚朵酒店",
+    "source": "https://hotels.ctrip.com/hotels/15083387.html",
+    "published_extra_bed_available": false,
+    "published_check_in_after": "14:00",
+    "breakfast_cny_per_paying_guest_per_day": 48,
+    "child_breakfast_free_if_under_metres": 1.2,
+    "two_breakfasts_if_not_included_cny": [
+      192,
+      288
+    ],
+    "two_adults_one_child_room_availability_confirmed": false,
+    "two_night_all_in_quote_cny": null,
+    "attempt_to_access_dated_booking_result_available": false
+  },
+  "verified_cost_total_cny": null,
+  "full_budget_passed": null,
+  "actual_departure_ready": false,
+  "not_yet_verified": [
+    "room_occupancy_availability_and_total",
+    "lunch_and_other_meals",
+    "nap_locations",
+    "realtime_rides",
+    "intercity_rail_scope_and_fare",
+    "venue_capacity_and_day_of_admission"
+  ],
+  "supplier_calls_or_bookings": 0
+}

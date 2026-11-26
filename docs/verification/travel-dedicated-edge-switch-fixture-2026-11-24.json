@@ -1,0 +1,19 @@
+{
+  "format": 1,
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope": "Local validation of dedicated HTTPS replacement and maintenance recovery",
+  "source_sha256": "5cd566349208ab0028fff6ea46ac4b63c5b4049d1ff284c79bcaf9f6c19831e1",
+  "related_local_tests_passed": 24,
+  "synthetic_fixture_checks_replacement_privileges_and_ports": true,
+  "synthetic_fixture_checks_durable_write_gate_before_normal_opening": true,
+  "synthetic_fixture_checks_restore_maintenance_on_mark_or_route_failure": true,
+  "review_mode_verified_with_frozen_configuration": true,
+  "operation_bundle_id": "cc70bd16f9b8a26cdf00274f4c9e226cb0e3e0662dce5a4848f02932588298af",
+  "operation_bundle_members": 11,
+  "operation_bundle_payload_bytes": 52548,
+  "operation_bundle_manifest_sha256": "9a0f5ce6d1c002ec00543f301e8a29a8a0f953fe7023b4f64d5b85e65bcca05d",
+  "previous_ten_file_bundle_still_verifies": true,
+  "actual_linux_replacement_performed": false,
+  "production_database_modified": false
+}

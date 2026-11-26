@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "scope": "adopt walking or driving by current directed leg; verify measured walking and schedule using adopted modes",
+  "backend_passed": 40,
+  "backend_suites": ["test_trip_routes", "test_trip_guest_import", "test_database_migration", "test_trips", "test_walking_preferences", "test_trip_sharing", "test_deployment_check", "test_trip_ai_schema_routes", "test_trip_ai_schema_http"],
+  "frontend_passed": 212,
+  "travel_build": true,
+  "frontend_id": "018ad9db10ef2c653e55fbee5f164146b21e96d1b5b671a0a7a8d55c0a19ffc9",
+  "frontend_files": 49,
+  "sqlite_migration_sha256": "36d21a842deb82fc86a73aea9d85d117a7cb1f5285b9fb4caf5782d1b908cb6c",
+  "browser": {
+    "passed": true,
+    "engine": "Edge 157.0.4341.60",
+    "viewports": [[1280, 900], [390, 844]],
+    "result": ".release-candidates/adopted-transport-ui-2026-11-18/result.json",
+    "source_routes": ".release-candidates/real-trip-routes-2026-11-18/route-responses.json",
+    "live_local_api": true,
+    "map_sdk_stub": true,
+    "temporary_database_removed": true,
+    "closed_local_servers_and_browser": true,
+    "adopted_modes": ["walking", "driving"],
+    "measured_legs": 2,
+    "total_legs": 3,
+    "walking_meters": 5841,
+    "measured_travel_seconds": 6085,
+    "continuous_gap_shortfall_minutes": 48,
+    "geometry_points": [234, 230]
+  },
+  "new_supplier_calls": 0,
+  "published": false,
+  "remaining": "complete the end-to-end family itinerary and remaining supplier, collaboration, and release gates"
+}

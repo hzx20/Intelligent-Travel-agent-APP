@@ -1,0 +1,60 @@
+{
+  "format": 1,
+  "verified_at_utc": "2026-11-18T21:23:15.252499+08:00",
+  "attempt": "attempt-7ee202e785b9",
+  "scope": "frozen Windows release, synthetic data, HTTP loopback, no production or vendors",
+  "candidate_id": "9349719f177f76155a3b13e02fe9e7609f7b673b3401a749050f2da548d56b04",
+  "frontend_id": "83a024dca6cea7bc09c0005c5ad5f6083ca1c3e0a7f49a8583132ad6ba4944fc",
+  "candidate_members": 117,
+  "backup_tool_sha256": "b00cf9f0cb778355ccaaf568bae85524edfc829f690d7bf453efaeedd58958e0",
+  "environment": {
+    "system": "Windows",
+    "python": "3.13.14",
+    "sqlite": "3.53.1"
+  },
+  "tests": {
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "test_snapshot_includes_committed_wal_and_private_blobs_and_can_restore",
+      "test_backup_refuses_overwrite_missing_source_and_same_target",
+      "test_invalid_source_does_not_leave_a_completed_backup",
+      "test_timeout_removes_incomplete_output",
+      "test_application_trip_reservation_and_photo_survive_restore",
+      "test_orphaned_rows_fail_verification_and_do_not_leave_snapshot",
+      "test_verification_deadline_is_part_of_backup_cleanup",
+      "test_verify_only_cli_is_read_only_and_rejects_orphans",
+      "test_verification_interrupts_sql_work_at_deadline",
+      "test_online_snapshot_restore_serves_private_data_and_original_attempts"
+    ]
+  },
+  "test_sources_sha256": {
+    "conftest.py": "82ccc18b08a57e264e44b2c90acaa3e28ebd15104ea1821a3882da1b0660051b",
+    "test_backup_rehearsal.py": "600784b79cbb1b01a44691461a557cecca472a38bf0781d82710ac47bf40db49",
+    "test_database_backup.py": "6de87ae7e685623df18b9d692610076b21e6e1cc86d737d255cbdce7f69ececd",
+    "test_footprint_photos.py": "8d46f4d267e940d9c7e98b8f033a802f5f93e78e2e19ee6e5d3fedf914650571",
+    "test_service_restart.py": "476499878129c69021114113dd16671e9b5b7b102ed14686d5f13b21bb71c2a7",
+    "test_trips.py": "3641490eed7cd8073341435bb9434bcb4a35261182eeebbf5d585ce444453ce9"
+  },
+  "pytest_exit_code": 0,
+  "elapsed_seconds": 6.49,
+  "cleanup": {
+    "scratch_removed": true,
+    "prior_timed_out_synthetic_workspace_removed": true
+  },
+  "candidate_reverified_unchanged": true,
+  "production_ready": false,
+  "receipt_path": ".release-candidates\\budget-backup-restore-2026-11-18\\attempt-7ee202e785b9/result.json",
+  "receipt_sha256": "d8d654b08df836362c1cd08f7884a7e355271f2ed0e4282d24896da3923735d9",
+  "rehearsal_runner": ".release-candidates/budget-backup-restore-2026-11-18/run_rehearsal.py",
+  "runner_sha256": "2ec0f5e12fa9b2df7c979fa398853f912fdfb2535eed0e0fe3b7378a02a458b5",
+  "test_sources_archive": ".release-candidates\\budget-backup-restore-2026-11-18\\attempt-7ee202e785b9/test-sources/",
+  "production_pending": [
+    "actual backup and restore trace, data/secret locations and storage capacity",
+    "formal paths, permissions and effective systemd unit",
+    "HTTPS and load on deployment setup",
+    "approved maintenance, promotion and cutover"
+  ]
+}

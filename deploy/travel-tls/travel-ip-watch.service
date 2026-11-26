@@ -1,0 +1,14 @@
+# Review file. Enable only after trusted public port 443 is serving the reviewed edge.
+[Unit]
+Description=Check the public travel IP certificate and detect a stale served leaf
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+TimeoutStartSec=20s
+NoNewPrivileges=yes
+PrivateTmp=yes
+ExecStart=/usr/bin/python3 -I -B /usr/local/libexec/travel_tls_check.py public --expect-saved

@@ -1,0 +1,44 @@
+{
+  "scope": "local QWeather and VariFlight integration",
+  "backend_tests": {
+    "passed": 38,
+    "supplier_responses": "synthetic",
+    "database": "temporary"
+  },
+  "session_tests": {
+    "passed": 7
+  },
+  "frontend_build": {
+    "passed": true
+  },
+  "browser_tests": {
+    "passed": 6,
+    "viewports": [
+      "1280x900",
+      "390x844"
+    ],
+    "supplier_responses": "synthetic",
+    "external_requests_blocked": true
+  },
+  "live_qweather": {
+    "passed": true,
+    "forecast_days": 7,
+    "attribution_present": true
+  },
+  "live_variflight": {
+    "passed": true,
+    "method": "tools/list",
+    "three_tool_schemas_verified": true,
+    "paid_data_queried": false
+  },
+  "production_deployed": false,
+  "existing_services_restarted": false,
+  "secrets_in_report": false,
+  "remaining": [
+    "paid flight data acceptance",
+    "richer flight result display",
+    "city code picker",
+    "production release"
+  ],
+  "supplier_keys_absent_from_frontend_build": true
+}

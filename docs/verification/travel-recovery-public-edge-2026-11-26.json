@@ -1,0 +1,1 @@
+{"mode": "open", "certificate_trusted_and_ip_verified": true, "leaf_sha256": "19c0f0f01f07f295794d5cf58764a689d32fe8a2acec69e1d91aef606f27c44c", "public_8000_blocked": true, "direct_probe_interface": 18, "statuses": {"shared_http_root": 200, "travel_http_page": 308, "travel_http_api": 403, "travel_https_page": 200, "travel_https_api": 200}}

@@ -1,0 +1,35 @@
+# Review-only drop-in. Render every @...@ field from a verified release plan.
+# Intended filename after final approval: travel.service.d/90-travel-release.conf
+# Do not install this template or point the live service at a temporary directory.
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/travel/releases/@RELEASE_ID@/backend
+
+# Keep the existing dotenv parser and process-setting precedence.
+# Clear inherited systemd EnvironmentFile entries; the app reads TRAVEL_ENV_FILE.
+EnvironmentFile=
+Environment="TRAVEL_ENV_FILE=/opt/travel/app/.env"
+Environment="TRAVEL_DATA_DIR=/opt/travel/app/backend/data"
+Environment="FORWARDED_ALLOW_IPS=@PROXY_IP@"
+Environment="PYTHONUNBUFFERED=1"
+Environment="PYTHONDONTWRITEBYTECODE=1"
+Environment="TZ=Asia/Shanghai"
+# Remain on the tested single-worker configuration; no production opt-in yet.
+Environment="TRAVEL_SHARED_LIMITS=0"
+Environment="TRAVEL_SHARED_CACHE=0"
+Environment="TRAVEL_PROVIDER_BUDGET=0"
+UnsetEnvironment=PYTHONPATH PYTHONHOME
+UMask=0077
+
+# Reset the inherited command before specifying the version's separate runtime.
+ExecStart=
+# Bind the verified host bridge address; do not expose an alternate public API.
+ExecStart=/opt/travel/runtime-envs/@RELEASE_ID@/bin/python -B -m uvicorn app.main:app --host @BACKEND_BIND_IP@ --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips @PROXY_IP@
+Restart=always
+RestartSec=3
+MemoryMax=1200M
+NoNewPrivileges=true
+PrivateTmp=true

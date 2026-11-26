@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "goal_status": "paused",
+  "pause_requested_by_user": true,
+  "whole_goal_complete": false,
+  "module_complete": false,
+  "production_ready": false,
+  "production_deployed": false,
+  "stopped_at": "Initial contribution-based budget contract written into itinerary.py; no follow-up test migration, frontend subtotal work, build, model evaluation or integration performed for this new draft.",
+  "unverified_current_source": {
+    "path": "backend/app/services/itinerary.py",
+    "sha256": "da01cefd4e691c7b55461f18e083df3e3bd03fff576a33ac7474ff5eeb10f729"
+  },
+  "draft_changes": [
+    "Prompt now asks budget_format=items_and_additions_v1 and additional_costs, with program-calculated category totals",
+    "Added _calculate_budget; known contributions are summed and checked against numeric cap, unknown costs retained with partial-total metadata",
+    "New generations require the contribution contract; legacy direct parsing still uses earlier strict aggregate checks"
+  ],
+  "not_done": [
+    "Migrate existing mocked generation replies/tests to new required contribution contract",
+    "Add and run calculator-specific tests including unknown costs and over-cap rejection",
+    "Update frontend subtotal label and display of additional costs",
+    "Review whether model-provided aggregate fields are ignored/audited consistently",
+    "Build and revalidate current frontend/backend and real bounded complex sample",
+    "Prepare new complete candidate and Linux integration after coherent validation"
+  ],
+  "last_verified_evidence": "docs/verification/item-costs-and-supplier-context-2026-11-17.json",
+  "last_verified_itinerary_sha256": "11791eafcfcca5bb680ed27d0ca12e182bf916addd6975c6a9c7f634b3d002f9",
+  "last_verified_frontend_id": "102000bdcc2bf3a5eec4d188d92bfb25b12dbf014363ce355e4cde279c83d03e",
+  "last_test_counts_are_prior_version_only": {
+    "budget_backend_passed": 50,
+    "budget_backend_deselected": 3,
+    "frontend_node_passed": 202,
+    "supplier_mock_backend_passed": 38
+  },
+  "known_active_test_services_from_this_turn": false,
+  "current_draft_tested": false,
+  "current_draft_packaged": false,
+  "user_supplied_supplier_handoff": "docs/travel-data-suppliers.md",
+  "supplier_scope": "Weather and read-only flight data; paid flight query not performed here; hotel transactions still need an independent authorized channel",
+  "resume_requires_new_user_continue_instruction": true,
+  "handoff": "docs/交接归档-暂停检查点-2026-11-18.md"
+}

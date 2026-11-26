@@ -1,0 +1,119 @@
+{
+  "unit": {
+    "active_state": "active",
+    "drop_ins_present": false,
+    "environment_files_present": false,
+    "explicit_wildcard": true,
+    "explicit_worker_count_one": true,
+    "fragment_is_expected_system_file": true,
+    "fragment_sha256": "7ff4dc5f4c925f607f1b36ddf5b0fef6f228c22eb5c4dc0f5c8e2d3824496c07",
+    "identity_is_ubuntu": true,
+    "memory_max": "1258291200",
+    "need_daemon_reload": "no",
+    "no_new_privileges": "yes",
+    "private_tmp": "yes",
+    "restart": "always",
+    "restart_delay": "3s",
+    "sub_state": "running",
+    "type": "simple",
+    "umask": "0022",
+    "uses_legacy_runtime": true,
+    "uses_release_runtime": false,
+    "working_directory_is_legacy": true,
+    "working_directory_matches_release": false
+  },
+  "listeners_8000": [
+    "0.0.0.0:8000"
+  ],
+  "nginx": {
+    "config_bind_matches": true,
+    "config_bind_read_only": true,
+    "container_file_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "direct_travel_mount_present": false,
+    "gateway": "172.18.0.1",
+    "matching_config_bytes": true,
+    "proxy_ip": "172.18.0.5",
+    "single_network": true,
+    "source_config_sha256": "300ba0f22714e4942ac5e7ddeb6d51269f0f6b4557e78c3364e04ff50e589f73",
+    "web_bind_matches": true
+  },
+  "release_path": {
+    "canonical": true,
+    "exists": true,
+    "gid": 0,
+    "inspector_readable": true,
+    "inspector_searchable_or_executable": true,
+    "inspector_writable": false,
+    "kind": "directory",
+    "mode": "0755",
+    "uid": 0
+  },
+  "runtime_path": {
+    "canonical": true,
+    "exists": true,
+    "gid": 0,
+    "inspector_readable": true,
+    "inspector_searchable_or_executable": true,
+    "inspector_writable": false,
+    "kind": "directory",
+    "mode": "0755",
+    "uid": 0
+  },
+  "runtime_directory": {
+    "canonical": true,
+    "exists": true,
+    "gid": 0,
+    "inspector_readable": true,
+    "inspector_searchable_or_executable": true,
+    "inspector_writable": false,
+    "kind": "directory",
+    "mode": "0755",
+    "uid": 0
+  },
+  "env": {
+    "canonical": true,
+    "exists": true,
+    "gid": 1001,
+    "inspector_readable": true,
+    "inspector_searchable_or_executable": false,
+    "inspector_writable": true,
+    "kind": "file",
+    "mode": "0600",
+    "uid": 1000
+  },
+  "data_dir": {
+    "canonical": true,
+    "exists": true,
+    "gid": 1001,
+    "inspector_readable": true,
+    "inspector_searchable_or_executable": true,
+    "inspector_writable": true,
+    "kind": "directory",
+    "mode": "0755",
+    "uid": 1000
+  },
+  "database": {
+    "canonical": true,
+    "exists": true,
+    "gid": 1001,
+    "inspector_readable": true,
+    "inspector_searchable_or_executable": false,
+    "inspector_writable": true,
+    "kind": "file",
+    "mode": "0644",
+    "uid": 1000
+  },
+  "mutate": false,
+  "format": 1,
+  "date": "2026-11-21",
+  "timezone": "Asia/Shanghai",
+  "scope": "read-only drift check for the staged HTTPS cutover",
+  "same_shared_nginx_bytes_as_frozen_baseline": true,
+  "same_legacy_unit_digest_as_prior_inventory": true,
+  "would_narrow_permissions_during_authorized_cutover": {
+    "data_dir": "0700",
+    "database": "0600"
+  },
+  "database_or_environment_file_contents_read": false,
+  "inspector_sha256": "75bc3359c746cec2041ebc8d9460780addbad176f433ab4ddd85f4a1fb9297c1"
+}

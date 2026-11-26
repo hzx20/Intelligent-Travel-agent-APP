@@ -1,0 +1,176 @@
+{
+  "format": 1,
+  "date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "candidate_id": "27592646387039b1e5d167264fa7fc1b31f672e3392167de0cf550dabeab45a6",
+  "observation_scope": "Production file metadata only; no live database content",
+  "preflight": {
+    "config_metadata": {
+      "/etc/systemd/system/travel.service": {
+        "bytes": 486,
+        "canonical": true,
+        "exists": true,
+        "gid": 0,
+        "kind": "file",
+        "mode": "0644",
+        "readable": true,
+        "uid": 0
+      },
+      "/opt/continew/nginx.conf": {
+        "bytes": 4491,
+        "canonical": true,
+        "exists": true,
+        "gid": 1001,
+        "kind": "file",
+        "mode": "0664",
+        "readable": true,
+        "uid": 1000
+      },
+      "/opt/continew/web/travel/index.html": {
+        "bytes": 453,
+        "canonical": true,
+        "exists": true,
+        "gid": 1001,
+        "kind": "file",
+        "mode": "0644",
+        "readable": true,
+        "uid": 1000
+      },
+      "/opt/travel/app/.env": {
+        "bytes": 314,
+        "canonical": true,
+        "exists": true,
+        "gid": 1001,
+        "kind": "file",
+        "mode": "0600",
+        "readable": true,
+        "uid": 1000
+      }
+    },
+    "data_directory": {
+      "bytes": null,
+      "canonical": true,
+      "exists": true,
+      "gid": 1001,
+      "kind": "directory",
+      "mode": "0755",
+      "readable": true,
+      "uid": 1000
+    },
+    "database_content_read": false,
+    "eligible_for_ram_rehearsal": false,
+    "opt_available_bytes": 45043970048,
+    "ram": {
+      "memory_available_bytes": 1867403264,
+      "no_active_swap": false,
+      "ram_free_bytes": 1952366592,
+      "tmpfs": true
+    },
+    "rehearsal_required_bytes": 19464192,
+    "sqlite_artifacts": {
+      ".jwt_secret": {
+        "exists": false
+      },
+      "app.db": {
+        "bytes": 335872,
+        "canonical": true,
+        "exists": true,
+        "gid": 1001,
+        "kind": "file",
+        "mode": "0644",
+        "readable": true,
+        "uid": 1000
+      },
+      "app.db-journal": {
+        "exists": false
+      },
+      "app.db-shm": {
+        "exists": false
+      },
+      "app.db-wal": {
+        "exists": false
+      }
+    },
+    "unknown_data_entries": 0,
+    "eligibility_context": "global RAM mount, before making isolated noswap mount"
+  },
+  "synthetic_receipt": {
+    "ssh_exit": 0,
+    "private_workdir": "/dev/shm/travel-budget-restore-3gxg3z9d",
+    "phase": "passed",
+    "scope": "synthetic",
+    "candidate_id": "27592646387039b1e5d167264fa7fc1b31f672e3392167de0cf550dabeab45a6",
+    "app_health_and_private_gate_passed": true,
+    "apps_bound_to_network": false,
+    "media_reference_types": {
+      "external_urls": false,
+      "inline_data": false,
+      "local_or_unclassified_references": false
+    },
+    "no_credentials_or_rows_exported": true,
+    "original_tables_verified": 1,
+    "original_values_preserved": true,
+    "process_memory_locked": true,
+    "production_deployed": false,
+    "ram_mount_disables_swap": true,
+    "ram_workdir_removed": true,
+    "second_init_unchanged": true,
+    "snapshot_bytes": 8192,
+    "snapshot_unchanged": true,
+    "sqlite_journal_mode_observed": "delete",
+    "timings_seconds": {
+      "restore_migrate_verify": 2.779,
+      "snapshot": 0.001
+    }
+  },
+  "pending": "User authorization for current production database protected copy",
+  "production_opened": false,
+  "production_ready": false,
+  "runner_sha256": "d8b08b183c887b725cc198fe88426c4901bab2bccbf0ca72a172fe30758f5a71",
+  "local_backup_and_migration_tests_passed": 10,
+  "initial_synthetic_runner_sha256": "2d2c659c9f6bae40971f559e4941df6c4e24257cf87a84f68f22d1c80f1f2247",
+  "enhanced_synthetic_receipt": {
+    "app_health_and_private_gate_passed": true,
+    "apps_bound_to_network": false,
+    "candidate_id": "27592646387039b1e5d167264fa7fc1b31f672e3392167de0cf550dabeab45a6",
+    "candidate_schema_check_passed": true,
+    "media_reference_types": {
+      "external_urls": false,
+      "inline_data": false,
+      "local_or_unclassified_references": false
+    },
+    "no_credentials_or_rows_exported": true,
+    "original_tables_verified": 30,
+    "original_values_preserved": true,
+    "phase": "passed",
+    "process_dump_disabled": true,
+    "process_memory_locked": true,
+    "production_deployed": false,
+    "ram_mount_disables_swap": true,
+    "ram_workdir_removed": true,
+    "scope": "synthetic",
+    "second_init_unchanged": true,
+    "snapshot_bytes": 409600,
+    "snapshot_unchanged": true,
+    "sqlite_journal_mode_observed": "delete",
+    "synthetic_negative_checks": {
+      "changed_photo_despite_sqlite_integrity_rejected": true,
+      "wal_header_rejected_before_sqlite_open": true
+    },
+    "timings_seconds": {
+      "restore_migrate_verify": 2.044,
+      "snapshot": 0.002
+    },
+    "private_workdir": "/dev/shm/travel-budget-restore-44z_sibo",
+    "ssh_exit": 0
+  },
+  "local_control_verification": {
+    "path": "backend/tools/run_protected_restore.py",
+    "sha256": "0d01b3bf17b6b6efa96e2ba6ac3722e0f65ddac5b8cd7884a6752532d1f9ddd9",
+    "payload_bytes": 16198,
+    "local_tests_passed": 9,
+    "invalid_payload_id_rejected_before_ssh": true,
+    "default_checks_only_local": true,
+    "production_attempt_created": false
+  }
+}

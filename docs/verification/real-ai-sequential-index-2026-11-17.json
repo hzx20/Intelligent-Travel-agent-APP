@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "goal_status": "active",
+  "production_ready": false,
+  "problem": "Real glm-4-flash replies moved an item to another day then used the original day length for a later insertion; generic retry and abstract sequential instructions both failed.",
+  "fix": "Explicit sequential-index prompt; simulation raises a ValueError subtype carrying validated numeric step/day/list-length context; retry explains the actual legal range. No clamping, coercion, extra attempts or automatic apply.",
+  "current_source_sha256": {
+    "backend/app/services/trip_ai.py": "0368d98bff278747dfd58076caa78e4925ff560c5d1cba830ca7b9c3489c5976",
+    "backend/tests/test_trip_ai_index_retry.py": "e6c7f83da9a8d4525d110333c5a91532aa7c5c7ab8507a774487002c37f9abe6"
+  },
+  "offline_regression": {
+    "passed": 46,
+    "seconds": 10.08,
+    "exit_code": 0,
+    "new_tests": 5,
+    "prior_related_tests": 41,
+    "command": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -B -m pytest tests/test_trip_ai_index_retry.py tests/test_trip_ai_schema_http.py tests/test_trip_ai_schema.py tests/test_trip_ai_schema_routes.py tests/test_trip_ai.py -q",
+    "cwd": "backend",
+    "terminal_session": 5903
+  },
+  "real_evaluation": {
+    "passed": true,
+    "model": "glm-4-flash",
+    "seconds": 8.295,
+    "scenarios": [
+      {
+        "scenario": "cross_day_and_rest",
+        "passed": true,
+        "operation_actions": [
+          "move",
+          "edit",
+          "add"
+        ],
+        "input_unchanged": true,
+        "preview_only": true,
+        "model_calls": 2
+      },
+      {
+        "scenario": "instructions_inside_data",
+        "passed": true,
+        "operation_actions": [
+          "edit"
+        ],
+        "input_unchanged": true,
+        "preview_only": true,
+        "model_calls": 1
+      }
+    ],
+    "observed_http_statuses": [
+      200,
+      200,
+      200
+    ],
+    "model_calls": 3,
+    "source_overlay_sha256": "0368d98bff278747dfd58076caa78e4925ff560c5d1cba830ca7b9c3489c5976",
+    "base_application_id": "b46aabf3e26aec1b69856d1be8b1cda6e7121488e22609bc9f7abe5c720480bd",
+    "scope": "Frozen base plus current trip_ai module loaded from an exact snapshot in memory, on local Python3.13.14; no frozen package modified",
+    "public_synthetic_inputs_only": true,
+    "local_env_unchanged": true,
+    "temporary_budget_data_removed": true,
+    "preview_only": true
+  },
+  "earlier_failed_evaluations_retained": [
+    {
+      "directory": "real-ai-complex-review-2026-11-17",
+      "model_calls_returned_text": 3,
+      "complex_passed": false,
+      "data_instruction_sample_passed": true,
+      "network_count_incomplete": true,
+      "note": "First instrumentation patched legacy httpx, while SDK uses httpx2; empty network list does not mean zero supplier calls. See instrumentation-note.json."
+    },
+    {
+      "directory": "real-ai-complex-diagnose-2026-11-17",
+      "model_calls_returned_text": 2,
+      "complex_passed": false,
+      "http_200_observed": 2
+    },
+    {
+      "directory": "real-ai-complex-fixed-2026-11-17",
+      "model_calls_returned_text": 3,
+      "complex_passed": false,
+      "data_instruction_sample_passed": true,
+      "http_200_observed": 3
+    }
+  ],
+  "total_real_model_invocations_returning_text_this_module": 11,
+  "independently_observed_http_200_requests": 8,
+  "semantic_results": {
+    "complex_first_response_insert_index": 2,
+    "complex_second_response_insert_index": 1,
+    "old_items_preserved": true,
+    "coordinates_names_notes_preserved": true,
+    "new_rest_has_no_coordinates_and_is_unverified": true,
+    "single_data_instruction_sample_ignored_embedded_instructions": true,
+    "universal_prompt_injection_guarantee": false
+  },
+  "not_proven": [
+    "Real browser or HTTP flow with the real model in this module",
+    "Current full worktree or revised frozen Linux runtime",
+    "Current new Linux plan",
+    "Complex original planner itinerary generation, OCR or hotel transaction channels",
+    "Production deployment or physical devices"
+  ],
+  "previous_linux_plan": "033971e548ecbd22038b8d225ac50c51a214f2d0d9a507b8cdcc2b5393d20970",
+  "previous_linux_plan_includes_this_fix": false,
+  "previous_upload_client_guarded_as_superseded": true,
+  "production_deployed": false,
+  "real_suggestions_applied": false,
+  "hotel_scope": "Real hotel booking still requires authorized transaction test channel; transport remains AMap route queries",
+  "handoff": "docs/交接归档-真实AI跨天位置修正.md"
+}

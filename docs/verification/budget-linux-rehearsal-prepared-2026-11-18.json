@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-18",
+  "timezone": "Asia/Shanghai",
+  "scope": "authorized candidate-specific Linux loopback migration and restart with synthetic data",
+  "application_id": "9349719f177f76155a3b13e02fe9e7609f7b673b3401a749050f2da548d56b04",
+  "frontend_id": "83a024dca6cea7bc09c0005c5ad5f6083ca1c3e0a7f49a8583132ad6ba4944fc",
+  "windows_proof": {
+    "result": ".release-candidates/unified-budget-review-2026-11-18/linux-harness-windows-proof.json",
+    "passed": true,
+    "migration_and_restart": true,
+    "private_work_removed": true
+  },
+  "packet": {
+    "path": ".release-candidates/unified-budget-review-2026-11-18/linux-budget-runtime-inputs.tar.gz",
+    "report": ".release-candidates/unified-budget-review-2026-11-18/linux-packet.json",
+    "bytes": 363572,
+    "sha256": "ac58987ae461251e295bec2d89cdbd45eddf4edc5e03004fe64d4cf3f4836fe6",
+    "script_sha256": "177b79a770c23e1d222ddd51469d3d6356195626289020132153e664e00a1996",
+    "uploaded": true
+  },
+  "controller": {
+    "path": ".release-candidates/unified-budget-review-2026-11-18/run_linux_budget_review.py",
+    "sha256": "966075ab0ac2cc04ee50ecc5b9601b21f6e4434b38115e43401a641baa17ccb2",
+    "expected_linux_application_id": "27592646387039b1e5d167264fa7fc1b31f672e3392167de0cf550dabeab45a6",
+    "offline_tests_passed": 8,
+    "bash_syntax_checks_passed": 2,
+    "worktree_comparison": {
+      "vite_travel_rebuild_matches": true,
+      "application_files_match": 117,
+      "frontend_files_match": 49,
+      "mismatched_backend_digest_rejected": true,
+      "checked_before_upload": true
+    },
+    "remote_contacted": true,
+    "remote_attempt_created": true
+  },
+  "linux_runtime": {
+    "receipt": ".release-candidates/unified-budget-review-2026-11-18/attempt-38ba927c4ae4.json",
+    "receipt_sha256": "d7701439a9c1c34248a688f926b879adfe7e1f8c8b2df3c812a483bedfe4cad9",
+    "attempt": "38ba927c4ae4",
+    "ssh_exit": 0,
+    "report": {
+      "scope": "linux_loopback_candidate",
+      "python": "3.12.3",
+      "passed": true,
+      "published": false,
+      "no_supplier_or_production_access": true,
+      "exact_linux_package_count": 63,
+      "application_id": "27592646387039b1e5d167264fa7fc1b31f672e3392167de0cf550dabeab45a6",
+      "manifest_python": "3.12.3",
+      "frontend_id": "83a024dca6cea7bc09c0005c5ad5f6083ca1c3e0a7f49a8583132ad6ba4944fc",
+      "source_files_preserved": true,
+      "candidate_files": 117,
+      "first_start_passed": true,
+      "second_start_passed": true,
+      "resumed_budget_and_route": true,
+      "resumed_jwt_and_creation": true,
+      "original_and_backup_unchanged": true,
+      "frozen_bytes_unchanged": true,
+      "private_work_removed": true
+    }
+  },
+  "linux_runtime_verified": true,
+  "production_changed": false,
+  "production_ready": false,
+  "published": false
+}

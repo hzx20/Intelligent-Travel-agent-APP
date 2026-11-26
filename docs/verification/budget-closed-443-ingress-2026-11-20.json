@@ -1,0 +1,54 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "origin": "134.175.137.18",
+  "scope": "read-only TCP SYN delivery observation from Windows WLAN with the origin HTTPS listener closed",
+  "release_plan": {
+    "id": "3546a422a4ce7b43bdde35b184c39f1d4ab886e33eb6df151dcf43c7346fdb80",
+    "verified_file_count": 197
+  },
+  "origin_readback": {
+    "https_listeners_before_and_after": 0,
+    "travel_health_http": 200,
+    "certificate_not_after": "2026-11-26T13:20:25+08:00",
+    "certificate_sha256": "54d2dc41cedefd7d49889295d2accbad1b3b7759251febbf685b58749fdab88d",
+    "saved_certificate_watch_timer_active": false,
+    "travel_ip_renew_timer_active": false
+  },
+  "wlan_interface_index": 19,
+  "earlier_controls": [
+    {
+      "method": "correlate HTTP SYN source port",
+      "positive_client_controls": 3,
+      "correlated_origin_controls": 0,
+      "conclusive_for_443_delivery": false,
+      "receipt": "closed-443-syn-20261120T032529Z.json",
+      "sha256": "34e478f32d2503d54f6d666e773dd70bb9f83eac7785ebec91f5a4a9818b7e57"
+    },
+    {
+      "method": "match marked HTTP requests on eth0",
+      "positive_client_controls": 3,
+      "correlated_origin_controls": 0,
+      "conclusive_for_443_delivery": false,
+      "receipt": "closed-443-syn-20261120T032652Z.json",
+      "sha256": "b8914c4df5b24cac6bc6d05e8ef52e16d06540255103a10861f645602c198968"
+    }
+  ],
+  "validated_observation": {
+    "observed_at": "2026-11-20T11:28:42+08:00",
+    "control": "SSH identification string with unique marker, no authentication",
+    "capture": "12 seconds, incoming IPv4 on all interfaces, matching control headers and TCP 443 SYN headers",
+    "origin_control_ports_seen": 3,
+    "single_source_confirmed": true,
+    "client_443_tcp_timeouts": 3,
+    "origin_443_syn_ports_from_confirmed_control_peer": 0,
+    "origin_443_syn_ports_matching_client_probe_ports": 0,
+    "kernel_packet_drops": 0,
+    "receipt": "closed-443-syn-20261120T032842Z.json",
+    "sha256": "9c51ef489ba2132f375cc7daf82eb5d52b0b77402fa5a885e99cea4c6da89355"
+  },
+  "cloud_firewall_rules_read": false,
+  "public_https_verified": false,
+  "packet_or_peer_address_retained": false
+}

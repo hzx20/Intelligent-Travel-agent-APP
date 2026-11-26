@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-25",
+  "scope": "Local checks for legacy startup readiness during an authorized pre-migration rollback",
+  "trigger_receipt": "travel-cutover-maintenance-2026-11-25.json",
+  "operations_id": "cc20126ea565ff67579527f98b3e6a4e63ddcd3093fcf966a22b568041247cbf",
+  "operations_members_including_manifest": 12,
+  "operations_archive_bytes": 17346,
+  "operations_archive_sha256": "2a5d16326438b194442c8c3a17cf022a2a4f6280a7fadd33c2e1fe45ba71c18e",
+  "staging_plan_sha256": "00d9d923db78f725f101ad955ddd16b97209d7be481958f8eeeaa605b30d9d83",
+  "only_changed_operation_file": "tools/switch_travel_cleartext.py",
+  "application_private_plan_and_https_companion_ids_unchanged": true,
+  "related_pytest_cases_passed": 30,
+  "local_archive_receiver_cases_passed": 4,
+  "previous_staging_plan_still_verifies": true,
+  "origin_contacted": false,
+  "production_state_changed": false
+}

@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-17",
+  "goal_status": "active",
+  "phase": "prepared_waiting_for_explicit_transient_service_authorization",
+  "production_ready": false,
+  "service_started": false,
+  "private_review_directory": "C:\\Users\\i\\Desktop\\travel\\Intelligent-Travel-agent-APP\\.release-candidates\\systemd-sandbox-review-2026-11-17",
+  "target_plan_id": "effb123a9119956d419ba8e52aeaa307141254a10d775953330cc0721392fc42",
+  "application_id": "2b3a3395e87d12ce10920642ebbace27ee7928f648d2f02d6a963a6cc7406383",
+  "archive_bytes": 9941,
+  "archive_sha256": "3a569b32175ea0bf69487fa59bdc60cae19fb2b4a3ccd63deb3ad0a99ad1163b",
+  "capabilities": {
+    "version": "systemd 255 (255.4-1ubuntu8.17)",
+    "run_options": [
+      "-p --property=NAME=VALUE        Set service or scope unit property",
+      "--service-type=TYPE          Service type",
+      "-E --setenv=NAME[=VALUE]        Set environment variable",
+      "-G --collect                    Unload unit after it ran, even when failed"
+    ],
+    "sudo_run_policy_exit": 0,
+    "cgroup_controllers": "cpuset cpu io memory hugetlb pids rdma misc",
+    "cgroup_v2": true
+  },
+  "local_validation": {
+    "result": "21 passed",
+    "elapsed_seconds": 0.09,
+    "exit_code": 0,
+    "scope": "Pure transient-spec paths/controls/command guards only; not Linux runtime"
+  },
+  "limits": {
+    "unit_count": 1,
+    "memory_bytes": 402653184,
+    "cpu_percent": 25,
+    "tasks": 64,
+    "planned_process_starts": 2
+  },
+  "file_sha256": {
+    "backend/tools/systemd_sandbox_fixture.py": "88fbfd0660217d9254f5b116f7db1f189544c9e66dc9c9db1ef6adffebc34a09",
+    "backend/tools/qa_systemd_preflight.py": "be1fb24d27282e0cef871fc627c9dcb2995cdf64665a37830112477abee1681a",
+    "backend/tools/qa_systemd_inspect.py": "3d870813f134f03fe656024d31dda6abb0747e686fa3de811c9d3e982784ba82",
+    "backend/tools/qa_systemd_sandbox.py": "64f42ecde7f4e3b164b3826220facd9a2acddcba0cffca34e677d475ee5afb1e",
+    "backend/tests/test_systemd_sandbox_fixture.py": "f14ba83827a8daa261361e1ea73549179249b7c5e82d7a4f650dd94bce129a6d"
+  },
+  "pending_authorization": "User asked to permit one bounded transient service, namespace-only synthetic mappings, owned-sink network probe, one crash/restart and cleanup; no response recorded yet",
+  "sudo_policy": {
+    "sudo_command_policies": {
+      "/usr/bin/systemd-run": true,
+      "/usr/bin/systemctl": true,
+      "/usr/bin/journalctl": true,
+      "/usr/bin/python3": true
+    },
+    "commands_executed": false
+  },
+  "handoff": "docs/交接归档-临时systemd沙箱准备.md"
+}

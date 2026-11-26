@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "inventory-bound encrypted collection and synthetic isolated restore",
+  "files_sha256": {
+    "backend/tools/collect_travel_backup.py": "491883a0770ca996401d0fb0b71596aa52393057f90dd32c3ce95454e5545336",
+    "backend/tools/seal_travel_backup.py": "957365b329ecbae512d7c11ec28fae590057d0afb42a6073b522fee013bd91fd",
+    "backend/tools/backup_db.py": "b00cf9f0cb778355ccaaf568bae85524edfc829f690d7bf453efaeedd58958e0",
+    "backend/tests/test_seal_travel_backup.py": "6da5b114048ff8e77a2d8ef9ee5e66c0a5324b6aeec086aaefdf32809e6395e7",
+    ".release-candidates/supplier-city-2026-11-20/map_formal_backup_sources.py": "449c0fb290eac7f84f18891c7f2380c5b3c7324dd1b721f50f376602d8af2e50",
+    ".release-candidates/supplier-city-2026-11-20/formal-backup-inventory-2026-11-20.json": "53d1aaf81eaff026edd85c7ecf76c9bdcd55011bea732cbedf1a5a7576692f68",
+    ".release-candidates/supplier-city-2026-11-20/formal-backup-source-map-candidate.json": "db1d8db8e722870ff2e874c3334f26440583048fa61865391998385a7bdc8e73",
+    ".release-candidates/supplier-city-2026-11-20/rehearse_backup_collection.py": "349e6f0b2e8d1ff26fdd72272a5555327980c89f695b8faf2392b6608af039dc",
+    ".release-candidates/supplier-city-2026-11-20/backup-collection-linux-fixture.json": "197a2cedaac62fc9df694ce3c4413d03dc5c2d917e82cbd7429d4b245e8b7244"
+  },
+  "source_map_members": 122,
+  "source_map_matches_inventory_members": true,
+  "windows_targeted_tests_passed": 25,
+  "windows_stop_gate_failure_prevents_ciphertext_handoff": true,
+  "linux_synthetic_members": 7,
+  "linux_committed_wal_records_restored": true,
+  "linux_uncommitted_transaction_excluded": true,
+  "linux_source_database_and_wal_sha256_stable": true,
+  "linux_live_service_stop_gate_refused": true,
+  "linux_synthetic_directories_removed": true,
+  "production_snapshot_created": false,
+  "production_write_stop_executed": false,
+  "effective_signing_source_confirmed": false,
+  "legacy_runtime_kit_production_staged": false,
+  "paused_at": "collection and encryption rehearsed, before production backup and cutover"
+}

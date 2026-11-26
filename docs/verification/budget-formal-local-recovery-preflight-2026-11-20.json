@@ -1,0 +1,21 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "attempt": "6c1e7189c93110b43dab2deb",
+  "scope": "interactive recovery utility and independent public-envelope verification",
+  "ciphertext_sha256": "16aa17c15fac81e6655a6d829db6828ff6cde2f3abafa2616334e5cf158846e4",
+  "execution_receipt_sha256": "0d349b55133404e3979e9d366ef4ff9e297407daff705bf857071e5925d0a9c7",
+  "verifier_sha256": "073d926cea59037a6f8c238b877c2c13b2ed77113cd9e4854b48cc9b833a2e42",
+  "interactive_launcher_sha256": "94c3d0df20b97ee7728175604a1cbe58aab63a3183fa14c64026040af0b152c1",
+  "local_ciphertext_hash_size_and_owner_acl_match": true,
+  "public_envelope_matches_exported_encryption_subkey": true,
+  "public_envelope_inspected_without_private_key": true,
+  "synthetic_protected_private_key_decrypted_with_loopback": true,
+  "synthetic_wal_snapshot_reopened_in_memory": true,
+  "synthetic_wrong_passphrase_rejected": true,
+  "synthetic_missing_legacy_schema_rejected": true,
+  "synthetic_ciphertext_digest_mismatch_rejected": true,
+  "production_decryption_performed_in_preflight": false,
+  "production_restore_receipt_expected": ".release-candidates/supplier-city-2026-11-20/formal-backup-6c1e7189c93110b43dab2deb-local-verify.json"
+}

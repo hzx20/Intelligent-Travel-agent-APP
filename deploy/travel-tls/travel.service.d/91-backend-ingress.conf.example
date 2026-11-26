@@ -1,0 +1,4 @@
+# Review candidate used with the dedicated bridge version of travel.service.
+[Unit]
+Requires=travel-backend-ingress.service
+After=travel-backend-ingress.service

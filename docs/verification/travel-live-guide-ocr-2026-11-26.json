@@ -1,0 +1,9 @@
+{
+  "fixture_sha256": "5be2a19eebd40e339451318c5ef78709f2221eddfd22920cc3aa9ed404bff323",
+  "fixture_bytes": 27051,
+  "source": "synthetic Chinese guide card with public place names",
+  "expected_count": 5,
+  "state": "billing_unavailable",
+  "outbound_attempts": 1,
+  "provider_http": 400
+}

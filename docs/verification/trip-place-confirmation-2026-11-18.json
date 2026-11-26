@@ -1,0 +1,80 @@
+{
+  "scope": "historical POI candidates in editable trips and route after explicit save",
+  "date": "2026-11-18",
+  "goal_status": "active",
+  "source_sha256": {
+    "backend/app/db/database.py": "81f63270ffc5e65c46d03ae5486212ccc6f4a2cfd0c3dd1fe08cf6e6e030799f",
+    "backend/app/db/trip_models.py": "536d30407123ca60023853c8d5e6bdbd1d60770b887d2d1a8fb86a1809fc09af",
+    "backend/app/routers/trips.py": "9ce8dced0ab0f0b2182dcff13ffb9b30579f670f25790be2417b225b17eb8346",
+    "backend/tests/test_database_migration.py": "7a7dac3263c7b9b0d3aca3f293bbb3f1cabf49f76cd1ebaf48dcb391b92c7e22",
+    "backend/tests/test_plan_trip_conversion.py": "9030cfcd0830bb7c5859390f23bb62b21b0c366a591499b89638124074ee30b4",
+    "frontend/src/views/TripDetailView.vue": "8f6653fffe9f2e699cf3ee34424a3e6b43d31a9cf9914ff653c776f2751f84dd",
+    "frontend/src/components/PlaceSearch.vue": "fd03c4cf70312bb9fbff4e770f91a9c31e42c5e4d1701d71bb5376b6422f4dff"
+  },
+  "backend": {
+    "passed": 65,
+    "seconds": 6.66,
+    "migration_rehearsed": true
+  },
+  "frontend": {
+    "passed": 205,
+    "build_passed": true,
+    "files": 48
+  },
+  "browser": {
+    "passed": true,
+    "frontend_id": "5ef2aae91108dd8d4c282f580c2ad548fb17b6192aa312108ddb0dad2f9855bb",
+    "assets_verified": 48,
+    "viewports": [
+      {
+        "label": "desktop",
+        "width": 1280,
+        "height": 900,
+        "screenshot": "desktop.png",
+        "screenshot_sha256": "2c4904fda210964ddf5094bf23546abb48196a4a9a7981af7ad7560dbd40c89f",
+        "initially_unroutable": true,
+        "live_local_api_saved_and_reloaded": true,
+        "correct_candidate_used": true,
+        "queried_after_save": true,
+        "dialog_no_horizontal_overflow": true,
+        "original_duration_preserved": true
+      },
+      {
+        "label": "mobile",
+        "width": 390,
+        "height": 844,
+        "screenshot": "mobile.png",
+        "screenshot_sha256": "6358dbf5aabfdf5bef6157bc9a2284fb72161972e676d1bf9fb925bccecd66f9",
+        "initially_unroutable": true,
+        "live_local_api_saved_and_reloaded": true,
+        "correct_candidate_used": true,
+        "queried_after_save": true,
+        "dialog_no_horizontal_overflow": true,
+        "original_duration_preserved": true
+      }
+    ],
+    "browser_version": "157.0.4341.60",
+    "backend_exit": 0,
+    "static_server_closed": true,
+    "browser_closed": true,
+    "backend": {
+      "map_queries": [
+        "合成博物馆（南馆区）",
+        "合成博物馆（南馆区）"
+      ],
+      "route_calls": [
+        {
+          "destination": "120.150200,30.260200",
+          "destination_id": "synthetic-south"
+        }
+      ],
+      "temporary_database_removed": true
+    },
+    "screenshots_viewed": 2,
+    "backend_kind": "local FastAPI and SQLite",
+    "supplier_transport": "synthetic"
+  },
+  "full_complex_scenario_passed": false,
+  "production_changed": false,
+  "handoff": "docs/交接归档-旅行馆区确认与路线衔接.md"
+}

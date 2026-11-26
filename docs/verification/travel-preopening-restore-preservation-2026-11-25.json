@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-25",
+  "scope": "Local recovery rehearsal with a synthetic failed migration, SQLite WAL, and a temporary GnuPG key",
+  "related_tests_passed": 20,
+  "verified_inventory_passed_to_restore_cli": true,
+  "restore_to_existing_failed_database_refused": true,
+  "failed_database_and_wal_hashes_match_after_restore": true,
+  "simulated_interrupted_migration_row_preserved_in_failed_database": true,
+  "separate_restore_matches_original_schema_and_rows": true,
+  "production_credentials_or_data_used": false,
+  "production_state_changed": false
+}

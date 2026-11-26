@@ -1,0 +1,31 @@
+{
+  "format": 1,
+  "date": "2026-11-19",
+  "timezone": "Asia/Shanghai",
+  "scope": "local review of the first certificate and renewal loading adapter and systemd drop-in",
+  "local_checks_passed": 30,
+  "local_docker_metadata_simulated": true,
+  "local_synthetic_certificates_verified_with_openssl": true,
+  "source_sha256": {
+    "backend/tools/travel_tls_edge.py": "5bd819993cf398d73bcd56b23df2cd87e531988ea849f5083639911727d196b2",
+    "backend/tools/travel_tls_rotate.py": "870becb7c41bb34805e76916c4e6913b2d61897197207319f4996bfebe261a15",
+    "backend/tools/travel_tls_check.py": "0bde8ab80c94be3c1b68282625c5efeb0571d404150ac2c6a54dce95710937f3",
+    "backend/tests/test_travel_tls_edge.py": "d99d7bfde8c1f1703614518055cd68640cc0a8052dbc1300cfbb4eba4c81ca2a",
+    "deploy/travel-tls/travel-ip-renew.service": "8abafeaf189a559d7246144d1a317940e915532a0035e859b52cf9e8d42936f9",
+    "deploy/travel-tls/travel-ip-renew.service.d/90-edge-load.conf.example": "099f0a17387d696266beae8aacb8e6270ea4d5e29f6876ad93491e471bee3328"
+  },
+  "nginx_config_sha256": {
+    "normal": "222493b507c7737477061e944ec019d3b99f8b5d0c404d6e7d681790d50f5601",
+    "maintenance": "e2ba23f487a2ede868983373fc3af0d60652c7b6ab4b1da4bc2d945240288e1e"
+  },
+  "prior_evidence_sha256": {
+    "docs/verification/budget-ip-tls-rotation-2026-11-19.json": "eeacc230916c67c55d52e9b3a564076e6c490863d9f59ae8d313a7c8f7631ca7",
+    "docs/verification/budget-ip-acme-staging-reverification-2026-11-19.json": "15fad80513485a416fe42e2ca5afcb821d2be61f01b0f4269d18067facdff67e"
+  },
+  "live_target_bound": false,
+  "production_certificate_issued": false,
+  "public_tls_verified": false,
+  "drop_in_installed": false,
+  "renewal_timer_enabled": false,
+  "production_ready": false
+}

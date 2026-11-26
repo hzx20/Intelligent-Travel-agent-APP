@@ -1,0 +1,19 @@
+{
+  "format": 1,
+  "date": "2026-11-25",
+  "timezone": "Asia/Shanghai",
+  "state": "scheduled_hook_verified",
+  "scope": "Read-only systemd and public HTTPS verification of the first two scheduled edge load checks",
+  "scheduled_runs": [
+    {"started_at": "2026-11-25T00:19:00+08:00", "completed_at": "2026-11-25T00:19:05+08:00", "hook_outcome": "unchanged", "reload_sent": false, "service_completed_successfully": true},
+    {"started_at": "2026-11-25T06:20:00+08:00", "completed_at": "2026-11-25T06:20:03+08:00", "hook_outcome": "unchanged", "reload_sent": false, "service_completed_successfully": true}
+  ],
+  "last_timer_trigger_utc": "2026-11-24T22:20:00.871550+00:00",
+  "next_timer_observed_at": "2026-11-25T12:23:32+08:00",
+  "saved_selected_and_public_leaf_sha256": "19c0f0f01f07f295794d5cf58764a689d32fe8a2acec69e1d91aef606f27c44c",
+  "public_travel_page_and_api_status": 503,
+  "legacy_http_root_and_travel_status": 200,
+  "actual_new_leaf_after_hook_install_verified": false,
+  "saved_watch_alert_timer_still_disabled": true,
+  "manual_renewal_or_proxy_reload_requested": false
+}

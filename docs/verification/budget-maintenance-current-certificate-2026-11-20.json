@@ -1,0 +1,36 @@
+{
+  "format": 1,
+  "date": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "read-only listener inspection and local regression of renewal-aware maintenance publication",
+  "origin_observation": {
+    "shared_http_status": 200,
+    "direct_backend_http_health_received": false,
+    "direct_backend_observation": "RemoteDisconnected",
+    "public_443_trusted_tls_observed": false,
+    "public_443_observation": "SSLEOFError",
+    "origin_back_end_listener": "0.0.0.0:8000",
+    "shared_http_proxy": "172.18.0.5",
+    "shared_http_upstream": "172.18.0.1:8000",
+    "dedicated_edge_present": false,
+    "public_443_published": false
+  },
+  "reviewed_publication_bundle_sha256": "0728464a41fd595834274738f1094d53442a7419bf4d971cc740b2ff10412abe",
+  "reviewed_publication_bundle_bytes": 53017,
+  "historical_issuance_receipt_rechecked": true,
+  "current_saved_cert_and_key_selected_under_store_lock": true,
+  "stable_origin_leaf_required_for_readiness_retention_and_external_checks": true,
+  "previous_pointer_restored_after_failed_publication_cleanup_in_test": true,
+  "local_regression_passed": 47,
+  "formal_application_plan_reverified": "3546a422a4ce7b43bdde35b184c39f1d4ab886e33eb6df151dcf43c7346fdb80",
+  "source_sha256": {
+    "backend/tools/publish_travel_maintenance.py": "a12979378f2254c007868c0ad3d30df5d5cf840cf02231219d6d6b9440bfa9e7",
+    "backend/tools/publish_travel_maintenance_remote.py": "3bfcb0d94e053ce5e732b65fd814f6a8544311453d086380713f1886880a7452",
+    "backend/tools/recheck_travel_maintenance.py": "b4107c5adfd53b83d36c49a5233d0b8a5cd8badafcf7c44e64c818d5d1992451",
+    "backend/tests/test_publish_travel_maintenance.py": "7dd422f2e2b7e61dbc4ab226d6a34b0ad090cce0b10bab6d3b127bfebcfdcb1d"
+  },
+  "production_443_changed": false,
+  "production_backend_filter_changed": false,
+  "cloud_firewall_access_verified": false,
+  "new_production_order_submitted": false
+}

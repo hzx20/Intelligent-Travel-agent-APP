@@ -1,0 +1,34 @@
+{
+  "format": 1,
+  "date": "2026-11-24",
+  "timezone": "Asia/Shanghai",
+  "scope": "read-only live edge preflight using installed commands and local reconciliation tests",
+  "pinned_edge_config_digest_verified_in_host_and_container": true,
+  "pinned_target_sha256": "74b7165d6be745c2b86446f5ac1142dca7c1b2002204dd48d5ee2126876955df",
+  "approved_container_and_image_match_publication": true,
+  "published_leaf_saved_leaf_and_store_pointer_match": true,
+  "saved_certificate_sha256": "19c0f0f01f07f295794d5cf58764a689d32fe8a2acec69e1d91aef606f27c44c",
+  "timer_enabled_waiting_and_last_result_success": true,
+  "edge_load_hook_installed": false,
+  "installed_checker_matches_local_candidate": true,
+  "proposed_new_files": [
+    "/usr/local/libexec/travel_tls_rotate.py",
+    "/usr/local/libexec/travel_tls_edge.py",
+    "/etc/systemd/system/travel-ip-renew.service.d/90-edge-load.conf"
+  ],
+  "local_input_sha256": {
+    "backend/tools/travel_tls_check.py": "0bde8ab80c94be3c1b68282625c5efeb0571d404150ac2c6a54dce95710937f3",
+    "backend/tools/travel_tls_rotate.py": "870becb7c41bb34805e76916c4e6913b2d61897197207319f4996bfebe261a15",
+    "backend/tools/travel_tls_edge.py": "dc57940cd85e7d44af1037f1210ab3b954693801d8975e9243f61386b4f8a806",
+    "deploy/travel-tls/travel-ip-renew.service.d/90-edge-load.conf.example": "099f0a17387d696266beae8aacb8e6270ea4d5e29f6876ad93491e471bee3328"
+  },
+  "proposed_new_files_total_bytes": 18714,
+  "local_tests_passed": 38,
+  "local_tests_skipped": 1,
+  "reviewed_observer_drop_in_cases_passed": 5,
+  "observer_sha256": "1894d8cf19e65dac536f9fb250fece59fae4ff0956adc833a11623c7b8c814b6",
+  "production_upload_and_root_candidate_preflight_rejected_by_auto_review": true,
+  "native_unit_candidate_preflight_passed": false,
+  "production_configuration_changed": false,
+  "public_trial_receipt_sha256": "e70f5d058cd553e09602df7942376ff0cfdabbf2bc0a5594709f29e0a0892376"
+}

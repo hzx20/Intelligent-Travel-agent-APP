@@ -1,0 +1,9 @@
+{
+  "frontend_id": "591787ffcd689465c2c720bfb07f69b87cb5a9e48cf86c38e1872d4488bd5aba",
+  "public_files": 49,
+  "http_200": 49,
+  "sha256_matched": 49,
+  "bytes_checked": 592682,
+  "failed": [],
+  "probe": "direct HTTPS, SHA-256 compared with frozen manifest"
+}

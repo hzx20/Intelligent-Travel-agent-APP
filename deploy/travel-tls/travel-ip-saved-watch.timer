@@ -1,0 +1,10 @@
+[Unit]
+Description=Check the saved travel certificate hourly
+
+[Timer]
+OnCalendar=*-*-* *:24:00
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target
