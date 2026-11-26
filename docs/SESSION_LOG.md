@@ -1205,3 +1205,13 @@ graph 改五节点 clarify→retrieve→generate→verify→weather；need_gener
 回归：离线 783 通过、1 条环境失败（test_provider_budget 多进程 temp DB readonly，单跑 5/5 通过），新增 tests/test_knowledge_rag.py 15 条全过。release 两条曾失败，原因是本轮误跑 npm run build 覆盖了 /travel/ 构建产物（manifest 落点与 base 都变），改回 npm run build:travel 后通过；不是代码缺陷。真模型 test_m1 2 条通过、test_m2 3 条失败，失败点均为午餐/交通项 poi 留空，与 SYSTEM_PROMPT「餐厅未定可留空」冲突的既有断言；改动前后一致，非本轮回归。本轮离线 784 条（783 通过 + 1 环境失败）与全量含真模型口径不混用。
 
 新增 docs/RAG.md（数据流、参数理由、限制、面试口径）；README 增「RAG 检索指标」一节并修正前端构建命令。requirements 增 numpy==2.5.3（环境已装）。未改 SYSTEM_PROMPT、未删 END、未引向量数据库、未污染 spots/guides 表。
+
+## 2026-11-26 RAG 上线（应用包 486ac4f7…）
+
+git 6a660a9（RAG）+43bda9e（发布工具）推送 origin/main，ls-remote 与本地 43bda9ee 一致。服务器新应用包 486ac4f73e495ab1b0a446023be6bcadbc7e61722206da322d0dc70f75b2cc6c（120 文件，prepared_python 3.12.3，release_candidate verify 通过）放 /opt/travel/releases/；沿用 28ba runtime env 补装 numpy 2.5.3（腾讯云镜像，pip check 无冲突）；只改 drop-in 55-weather-cache-release.conf 的 WorkingDirectory，保留 TRAVEL_SHARED_CACHE=1，主 unit 与 ExecStart 未动。
+
+停写前 backup_db 快照 638,976 字节，integrity/FK 通过；unit 与 drop-in 备份在 /opt/travel/backup/2026-11-26-rag/。服务器访问 zh.wikivoyage.org 超时，不能跑 ingest_guides：本机 export_knowledge 1708 片段（10,578,436 字节，sha256 02189c49…9cf9f5b）+ scp + import_knowledge，dry-run 后写入，stats 1708/1708（guide 1208/spot 500）。前端 build:travel 上传后 frontend_release prepare/verify/publish，id 10024412…6212c888，status committed/matches_published true。
+
+线上验证：首页 200（HTTP 308→HTTPS）、/api/health ok、PlanView-C83LK-1b.js 200 且含「参考了站内」；服务器内 search「成都 带娃 少走路」返回 3 条 472ms；真实游客 /api/plan/stream 2m27s 完成，日志 澄清→资料检索 5 条→生成→核实→天气，result.references 3 条（成都·观光 oldid=224482 / 成都动物园 / 塔子山公园），days 2。
+
+回退：恢复 drop-in 备份 + daemon-reload + restart；前端 rollback --release-id 100244…；knowledge_chunks 为新增表，旧版忽略，库无需回退。已知：numpy 装在共享 env、语料只能离线搬运、发布包不含灌库/导入脚本。

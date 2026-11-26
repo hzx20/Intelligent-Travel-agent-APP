@@ -1,0 +1,84 @@
+{
+  "kind": "rag-production-verification",
+  "date": "2026-11-26",
+  "timezone": "Asia/Shanghai",
+  "git": {
+    "rag_feature_commit": "6a660a9",
+    "tooling_commit": "43bda9e",
+    "branch": "main",
+    "local_head": "43bda9ee023366a0b8c70d2d58ae723675412121",
+    "remote_head": "43bda9ee023366a0b8c70d2d58ae723675412121",
+    "remote_matches_local": true
+  },
+  "release": {
+    "application_id": "486ac4f73e495ab1b0a446023be6bcadbc7e61722206da322d0dc70f75b2cc6c",
+    "application_files": 120,
+    "prepared_python": "3.12.3",
+    "release_path": "/opt/travel/releases/486ac4f73e495ab1b0a446023be6bcadbc7e61722206da322d0dc70f75b2cc6c",
+    "release_verify": "candidate_verified=true",
+    "runtime_env": "/opt/travel/runtime-envs/28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+    "runtime_change": "numpy==2.5.3 installed; pip check clean",
+    "systemd_change": "drop-in 55-weather-cache-release.conf WorkingDirectory updated; TRAVEL_SHARED_CACHE=1 kept; ExecStart unchanged",
+    "frontend_id": "100244128c8be4e326a72962cbf7e31cd0ec74aaa8a360a6e91066e66212c888",
+    "frontend_publish": "committed, matches_published=true"
+  },
+  "backup": {
+    "database": "/opt/travel/backup/2026-11-26-rag/app-before-rag.db",
+    "database_bytes": 638976,
+    "database_verify": "integrity_check=ok, foreign_key_check=ok",
+    "dropin": "/opt/travel/backup/2026-11-26-rag/55-weather-cache-release.conf.bak",
+    "unit": "/opt/travel/backup/2026-11-26-rag/travel.service.bak"
+  },
+  "corpus": {
+    "total_chunks": 1708,
+    "guide_chunks": 1208,
+    "spot_chunks": 500,
+    "embedding": "zhipu embedding-3, 1024-dim float32",
+    "transport": "knowledge-2026-11-26.jsonl",
+    "transport_sha256": "02189c497ed073adc3efcc9285bb1e6a253a94d38557a3d9b1582f53e9cf9f5b",
+    "transport_bytes": 10578436,
+    "import_verified": "1708 rows, 1024 dims, dry-run passed before write"
+  },
+  "checks": {
+    "home_http_status": 200,
+    "http_to_https": 308,
+    "api_health": "{\"status\":\"ok\"}",
+    "new_plan_asset": "PlanView-C83LK-1b.js 200, contains 参考了站内",
+    "server_search": {
+      "query": "成都 带娃 少走路",
+      "city": "成都",
+      "results": 3,
+      "top1": "成都动物园",
+      "elapsed_ms": 472
+    },
+    "live_plan": {
+      "endpoint": "POST /travel/api/plan/stream",
+      "done": true,
+      "days": 2,
+      "logs": [
+        "需求澄清：解析你的目的地、天数与偏好",
+        "资料检索：匹配 5 条站内资料",
+        "行程生成：成都 2 天框架完成",
+        "地图核实：2 个安排中，2 个地点位置已匹配，合并 2 天里的重复地点",
+        "天气查询：成都 成功"
+      ],
+      "references": [
+        "成都·观光 (guide, oldid=224482)",
+        "成都动物园 (spot)",
+        "塔子山公园 (spot)"
+      ],
+      "spots": ["成都大熊猫繁育研究基地", "青城山景区"]
+    }
+  },
+  "rollback": {
+    "backend": "restore drop-in backup, daemon-reload, restart travel",
+    "frontend": "frontend_release.py rollback --target /opt/continew/web/travel --release-id 100244128c8be4e326a72962cbf7e31cd0ec74aaa8a360a6e91066e66212c888",
+    "database": "not required; knowledge_chunks is additive and ignored by the previous release"
+  },
+  "known_limits": [
+    "Production host cannot reach zh.wikivoyage.org; corpus updates must use export_knowledge.py + import_knowledge.py.",
+    "numpy was installed into the shared runtime env, not a per-release venv.",
+    "The release package contains only backend/app and fixed tools; ingest/import scripts run from the source tree.",
+    "Live itinerary quality remains model-dependent (the 2026-11-26 smoke plan produced one named spot per day)."
+  ]
+}

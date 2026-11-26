@@ -170,6 +170,8 @@ python scripts/eval_retrieval.py --sweep   # 阈值 × K 九组对比
 
 攻略正文来自中文维基导游，CC BY-SA 4.0；每个片段都存了固定版本链接（`oldid`），前端展示出处时一并标注授权。
 
+> 2026-11-26 已上线（应用包 `486ac4f7…`，前端 `10024412…`）。生产机访问不了维基导游，语料更新走「本机灌库 → export → 上传 → import」；上线、备份与回退步骤见 `docs/交接归档-RAG检索层上线.md`，线上体检见 `docs/verification/rag-production-2026-11-26.json`。
+
 ---
 
 ## 六、环境变量
