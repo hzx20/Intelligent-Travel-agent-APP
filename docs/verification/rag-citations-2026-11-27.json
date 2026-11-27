@@ -1,0 +1,106 @@
+{
+  "kind": "rag-citations-production-verification",
+  "date": "2026-11-27",
+  "timezone": "Asia/Shanghai",
+  "git": {
+    "feature_commit": "6a2dae2",
+    "branch": "main",
+    "local_head": "6a2dae2be770528883e96aa78e83bd7a2d693e31",
+    "remote_head": "6a2dae2be770528883e96aa78e83bd7a2d693e31",
+    "remote_matches_local": true
+  },
+  "release": {
+    "application_id": "edc36ecfe63795ed6761eb378818036a01b58b15d2e6b5c4b94337bdc3c6236a",
+    "application_files": 121,
+    "prepared_python": "3.12.3",
+    "release_path": "/opt/travel/releases/edc36ecfe63795ed6761eb378818036a01b58b15d2e6b5c4b94337bdc3c6236a",
+    "release_verify": "candidate_verified=true",
+    "runtime_env": "/opt/travel/runtime-envs/28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
+    "runtime_change": "none (numpy 2.5.3 already present from 2026-11-26)",
+    "systemd_change": "drop-in WorkingDirectory updated; TRAVEL_SHARED_CACHE=1 kept; TRAVEL_SHARED_LIMITS stays 0 (edge nginx already limits planning endpoints); ExecStart unchanged",
+    "frontend_id": "6cbaf1e624bc58c494f7994d3a79d460023b385cfa692f5620280feea3a3a542",
+    "frontend_publish": "committed, matches_published=true"
+  },
+  "backup": {
+    "directory": "/opt/travel/backup/2026-11-27-citations",
+    "database": "/opt/travel/backup/2026-11-27-citations/app-before-citations.db",
+    "database_bytes": 9195520,
+    "database_verify": "backup_db verify passed",
+    "dropin": "/opt/travel/backup/2026-11-27-citations/55-weather-cache-release.conf.bak"
+  },
+  "corpus": {
+    "total_chunks": 1708,
+    "guide_chunks": 1208,
+    "spot_chunks": 500,
+    "changed": false,
+    "note": "Corpus content is unchanged; the price/date strip happens at prompt-injection time, not at ingest. Ingest-time stripping was measured at Recall@3 0.75 vs 0.82 and reverted."
+  },
+  "checks": {
+    "home_http_status": 200,
+    "http_to_https": 308,
+    "api_health": "{\"status\":\"ok\"}",
+    "new_plan_asset": "PlanView-CweQZ9QC.js 200, contains 参考了站内 and 处安排直接来自这些资料",
+    "rate_limit": {
+      "correction": "上一个版本说“规划接口没有限流”是错的。443 入口容器 travel-https-edge 的 nginx 早已按真实公网 IP 对 /travel/api/plan/stream、/plan/jobs、/plan/jobs/create 做 6r/m + burst 2 限流（zone travel_plan）；trips 的 AI 接口另有 travel_ai 6r/m。",
+      "observed": "连续 POST /travel/api/plan/jobs，前 3 次 422（业务校验），第 4 次起 429；uvicorn 日志里没有 429，说明是入口 nginx 返回的。",
+      "app_layer": "PUBLIC_QUOTAS 增加了对应表项（5/60s）作为“没有反向代理、直接跑 uvicorn”时的兜底，但生产 TRAVEL_SHARED_LIMITS=0，未启用——两道叠加会把实际额度压到更严的一道。",
+      "safety_added": "SharedPublicLimits 增加私有/回环 peer 跳过：反代没传真实 IP 时所有用户共用一个 key，按它限流会挡住全站。"
+    },
+    "quota_store": {
+      "path": "/opt/travel/app/backend/data/request-quotas.db",
+      "writable_by_service_user": true,
+      "smoke": "claim 1/2 -> 0, claim 3 of limit 2 -> retry 60"
+    },
+    "live_plan": {
+      "endpoint": "POST /travel/api/plan/stream",
+      "done": true,
+      "days": 2,
+      "elapsed_seconds": 121,
+      "logs": [
+        "需求澄清：解析你的目的地、天数与偏好",
+        "资料检索：匹配 5 条站内资料",
+        "行程生成：成都 2 天框架完成；资料引用：2/2 天、3/4 个安排对应到站内资料",
+        "地图核实：4 个安排中，4 个地点位置已匹配",
+        "天气查询：成都 成功"
+      ],
+      "references": [
+        {"title": "成都·观光", "source_type": "guide", "ref_ids": [1, 2, 5]},
+        {"title": "成都动物园", "source_type": "spot", "ref_ids": [3]},
+        {"title": "塔子山公园", "source_type": "spot", "ref_ids": [4]}
+      ],
+      "citation_stats": {"days": 2, "days_with_refs": 2, "spots": 4, "spots_with_refs": 3, "refs": 5},
+      "density": {"floor": 2, "counts": [2, 2], "thin_days": []},
+      "spot_ref_ids": {
+        "成都大熊猫繁育研究基地": [5],
+        "塔子山公园": [4],
+        "宽窄巷子景区": null,
+        "成都动物园": [3]
+      },
+      "note": "宽窄巷子 has no ref_id because the retrieved chunks do not mention it. The merged 成都·观光 row keeps all three original numbers, so [5] still points at a visible row."
+    }
+  },
+  "eval": {
+    "dev_recall_at_3": 0.95,
+    "dev_queries": 20,
+    "holdout_recall_at_3": 0.82,
+    "holdout_queries": 60,
+    "avg_latency_ms": 239,
+    "holdout_failure_breakdown": {
+      "corpus_gap": 9,
+      "over_strict_label": 1,
+      "chunking": 1
+    }
+  },
+  "rollback": {
+    "backend": "restore drop-in backup (WorkingDirectory back to 486ac4f7..., TRAVEL_SHARED_LIMITS=0), daemon-reload, restart travel",
+    "frontend": "frontend_release.py rollback --target /opt/continew/web/travel --release-id 6cbaf1e624bc58c494f7994d3a79d460023b385cfa692f5620280feea3a3a542",
+    "database": "not required; this release adds no schema change and no new rows"
+  },
+  "known_limits": [
+    "Nginx forwards X-Forwarded-For with $proxy_add_x_forwarded_for, so a client that spoofs the leftmost value can evade per-IP quotas. Switch to $remote_addr if abuse becomes real.",
+    "Rate limiting is per client IP; a shared NAT (campus, office) will hit the 5/minute ceiling collectively.",
+    "Production host still cannot reach zh.wikivoyage.org; corpus updates keep using export/import.",
+    "Citation matching is name-based; an alias the chunk never mentions cannot be linked.",
+    "Density is observed in the log and in itinerary.density but does not trigger regeneration."
+  ]
+}

@@ -1220,7 +1220,7 @@ git 6a660a9（RAG）+43bda9e（发布工具）推送 origin/main，ls-remote 与
 
 引用落到具体安排：新增 services/citations.py，按地点名匹配资料正文（通用词黑名单，「去后缀」核心词须 ≥3 字，避免「人民公园→人民」误命中），命中写 spot.ref_ids 与 day.ref_ids；地图核实前后各算一次（幂等，先清后写），核实改名后以最终名字为准。generate 日志增「资料引用：x/y 天、a/b 个安排」。前端 PlanView 在天标题与地点名后显示 [1][2]，PlanReferences 把同章节片段合并成一行并保留全部原始编号——合并后编号错位是个真 bug（行程标 [5]、底部只有 3 行），已修并加测试。
 
-限流：PUBLIC_QUOTAS 增 /api/plan/stream、/api/plan/jobs、/api/plan/jobs/create 各 5 次/60 秒，/api/clarify 20、/api/itinerary 6。一次规划 = 一次澄清 + 一次 embedding + 一次 240 秒超时的长文本生成，不设限时游客可无限堆积。默认仍由 TRAVEL_SHARED_LIMITS 开关控制。
+限流：PUBLIC_QUOTAS 增 /api/plan/stream、/api/plan/jobs、/api/plan/jobs/create 各 5 次/60 秒，/api/clarify 20、/api/itinerary 6。**上一版说“规划接口没限流”是错的**：443 入口容器 travel-https-edge 的 nginx 早已按真实公网 IP 对这三个路径做 6r/m + burst 2（zone travel_plan），trips 的 AI 接口另有 travel_ai 6r/m。实测连续 POST /api/plan/jobs 前 3 次 422、第 4 次起 429，而 uvicorn 日志没有 429 —— 429 来自入口 nginx。因此生产保持 TRAVEL_SHARED_LIMITS=0，新增表项只作为“没有反向代理、直接跑 uvicorn”时的兜底；同时给 SharedPublicLimits 加了私有/回环 peer 跳过：反代没传真实 IP 时所有人共用一个 key，按它限流会挡全站。
 
 输出质量：_reference_block 注入前剥价格与更新日期（knowledge.strip_stale_facts，删数字留结构，不造词），并加「每天 4-6 项、至少 3 个具名地点」「价格以现场为准」两句；itinerary.density 记每天具名地点数，不足只写日志不触发重生成（硬约束会让真模型整单失败率上升）。
 

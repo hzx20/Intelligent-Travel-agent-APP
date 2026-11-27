@@ -372,3 +372,14 @@ def test_display_references_empty():
 
     assert _display_references(None) == []
     assert _display_references([]) == []
+
+
+def test_shared_peer_skips_proxy_addresses():
+    """反代没传真实 IP 时，按 127.0.0.1 限流等于全站共享额度。"""
+    from app.core.shared_limits import _shared_peer
+
+    assert _shared_peer("127.0.0.1")
+    assert _shared_peer("172.31.240.2")
+    assert _shared_peer("10.0.0.5")
+    assert not _shared_peer("134.175.137.18")
+    assert _shared_peer("unknown")  # 解析不出地址，同样无法区分用户

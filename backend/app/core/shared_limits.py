@@ -2,12 +2,28 @@
 from contextlib import closing
 from starlette.concurrency import run_in_threadpool
 import hashlib
+import ipaddress
 import math
 from pathlib import Path
 import sqlite3
 import time
 
 from starlette.responses import JSONResponse
+
+
+def _shared_peer(peer: str) -> bool:
+    """这个 peer 是否代表"一群人"而不是一个用户。
+
+    反向代理没把真实 IP 传下来时，scope.client 会是 127.0.0.1 或 172.16/10.x
+    这类地址：所有用户共用一个 key。按它限流等于全站共享同一个额度——
+    5 次/分钟会把整个站点挡死。这种地址宁可不限，也不误伤。
+    """
+    try:
+        addr = ipaddress.ip_address(str(peer))
+    except ValueError:
+        # 解析不出地址（空值、"unknown"）就没法区分用户，一律当作共享
+        return True
+    return addr.is_loopback or addr.is_private or addr.is_link_local
 
 
 class LimitStoreUnavailable(Exception):
@@ -50,9 +66,10 @@ class SharedQuota:
 # Apply before request-body reads. Existing per-process capacity/limits remain.
 # Polling, cancellation, account/session checks and reads are not covered here.
 #
-# 规划类接口单独一档：一次规划 = 一次澄清 + 一次 embedding + 一次长文本生成
-# （上游超时给到 240 秒），比地图查询贵两个数量级。不设限时游客可以无限提交，
-# 上游配额和 2G 内存都会被拖垮。取消、轮询、读历史不在这里挡。
+# 注意：线上生产环境（travel-https-edge）的 nginx 已经按真实公网 IP 对
+# /travel/api/plan/stream、/plan/jobs、/plan/jobs/create 做了 6r/m + burst 2 的限流，
+# 这里再列一遍只是给"没有反向代理、直接跑 uvicorn"的场景兜底。默认不启用
+# （TRAVEL_SHARED_LIMITS=0），两道叠加会把实际额度压到更严的那一道。
 PUBLIC_QUOTAS = {
     '/api/map/guest-route': (30, 60),
     '/api/map/place-search': (30, 60),
@@ -77,6 +94,9 @@ class SharedPublicLimits:
             # Uvicorn's configured trusted-proxy handling has already resolved
             # scope.client. Never trust forwarded headers directly here.
             peer = (scope.get('client') or ('unknown', 0))[0]
+            if _shared_peer(peer):
+                # 无法区分到具体用户，限流只会挡住所有人
+                return await self.app(scope, receive, send)
             try:
                 retry = await run_in_threadpool(self.store.claim, scope['path'], peer, *rule)
             except LimitStoreUnavailable:
