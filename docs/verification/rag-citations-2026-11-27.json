@@ -3,23 +3,24 @@
   "date": "2026-11-27",
   "timezone": "Asia/Shanghai",
   "git": {
-    "feature_commit": "6a2dae2",
+    "feature_commit": "8ab11f0",
     "branch": "main",
-    "local_head": "6a2dae2be770528883e96aa78e83bd7a2d693e31",
-    "remote_head": "6a2dae2be770528883e96aa78e83bd7a2d693e31",
+    "local_head": "8ab11f0",
+    "remote_head": "8ab11f0",
     "remote_matches_local": true
   },
   "release": {
-    "application_id": "edc36ecfe63795ed6761eb378818036a01b58b15d2e6b5c4b94337bdc3c6236a",
+    "application_id": "79c41c3073167a464f72a925cbb32d6c1896e345342edc1e30e0d8fdec709910",
     "application_files": 121,
     "prepared_python": "3.12.3",
-    "release_path": "/opt/travel/releases/edc36ecfe63795ed6761eb378818036a01b58b15d2e6b5c4b94337bdc3c6236a",
+    "release_path": "/opt/travel/releases/79c41c3073167a464f72a925cbb32d6c1896e345342edc1e30e0d8fdec709910",
     "release_verify": "candidate_verified=true",
     "runtime_env": "/opt/travel/runtime-envs/28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
     "runtime_change": "none (numpy 2.5.3 already present from 2026-11-26)",
     "systemd_change": "drop-in WorkingDirectory updated; TRAVEL_SHARED_CACHE=1 kept; TRAVEL_SHARED_LIMITS stays 0 (edge nginx already limits planning endpoints); ExecStart unchanged",
     "frontend_id": "6cbaf1e624bc58c494f7994d3a79d460023b385cfa692f5620280feea3a3a542",
-    "frontend_publish": "committed, matches_published=true"
+    "frontend_publish": "committed, matches_published=true",
+    "note": "Two rolling switches: edc36ecf… (feature, TRAVEL_SHARED_LIMITS=1) then 79c41c30… (limiter disabled after discovering the edge already limits planning endpoints)."
   },
   "backup": {
     "directory": "/opt/travel/backup/2026-11-27-citations",
@@ -64,17 +65,56 @@
         "天气查询：成都 成功"
       ],
       "references": [
-        {"title": "成都·观光", "source_type": "guide", "ref_ids": [1, 2, 5]},
-        {"title": "成都动物园", "source_type": "spot", "ref_ids": [3]},
-        {"title": "塔子山公园", "source_type": "spot", "ref_ids": [4]}
+        {
+          "title": "成都·观光",
+          "source_type": "guide",
+          "ref_ids": [
+            1,
+            2,
+            5
+          ]
+        },
+        {
+          "title": "成都动物园",
+          "source_type": "spot",
+          "ref_ids": [
+            3
+          ]
+        },
+        {
+          "title": "塔子山公园",
+          "source_type": "spot",
+          "ref_ids": [
+            4
+          ]
+        }
       ],
-      "citation_stats": {"days": 2, "days_with_refs": 2, "spots": 4, "spots_with_refs": 3, "refs": 5},
-      "density": {"floor": 2, "counts": [2, 2], "thin_days": []},
+      "citation_stats": {
+        "days": 2,
+        "days_with_refs": 2,
+        "spots": 4,
+        "spots_with_refs": 3,
+        "refs": 5
+      },
+      "density": {
+        "floor": 2,
+        "counts": [
+          2,
+          2
+        ],
+        "thin_days": []
+      },
       "spot_ref_ids": {
-        "成都大熊猫繁育研究基地": [5],
-        "塔子山公园": [4],
+        "成都大熊猫繁育研究基地": [
+          5
+        ],
+        "塔子山公园": [
+          4
+        ],
         "宽窄巷子景区": null,
-        "成都动物园": [3]
+        "成都动物园": [
+          3
+        ]
       },
       "note": "宽窄巷子 has no ref_id because the retrieved chunks do not mention it. The merged 成都·观光 row keeps all three original numbers, so [5] still points at a visible row."
     }
