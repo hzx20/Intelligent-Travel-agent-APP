@@ -3,24 +3,25 @@
   "date": "2026-11-27",
   "timezone": "Asia/Shanghai",
   "git": {
-    "feature_commit": "8ab11f0",
+    "feature_commit": "82db66d",
     "branch": "main",
-    "local_head": "211483d4c5633c34f6dbc0338cf11c4b3a8a9e62",
-    "remote_head": "211483d4c5633c34f6dbc0338cf11c4b3a8a9e62",
-    "remote_matches_local": true
+    "local_head": "82db66d",
+    "remote_head": "82db66d",
+    "remote_matches_local": true,
+    "note": "docs commits follow the feature commit; /opt/travel/releases matches 82db66d"
   },
   "release": {
-    "application_id": "79c41c3073167a464f72a925cbb32d6c1896e345342edc1e30e0d8fdec709910",
+    "application_id": "174518a68ede80deb3ea87d909a3f9283080566f19ea49189e0f010c00bfa023",
     "application_files": 121,
     "prepared_python": "3.12.3",
-    "release_path": "/opt/travel/releases/79c41c3073167a464f72a925cbb32d6c1896e345342edc1e30e0d8fdec709910",
+    "release_path": "/opt/travel/releases/174518a68ede80deb3ea87d909a3f9283080566f19ea49189e0f010c00bfa023",
     "release_verify": "candidate_verified=true",
     "runtime_env": "/opt/travel/runtime-envs/28ba4881d397e73dd76bfed0ade8f8533d11510fb2a2f347192fd07bb76cc281",
     "runtime_change": "none (numpy 2.5.3 already present from 2026-11-26)",
     "systemd_change": "drop-in WorkingDirectory updated; TRAVEL_SHARED_CACHE=1 kept; TRAVEL_SHARED_LIMITS stays 0 (edge nginx already limits planning endpoints); ExecStart unchanged",
     "frontend_id": "6cbaf1e624bc58c494f7994d3a79d460023b385cfa692f5620280feea3a3a542",
     "frontend_publish": "committed, matches_published=true",
-    "note": "Two rolling switches: edc36ecf… (feature, TRAVEL_SHARED_LIMITS=1) then 79c41c30… (limiter disabled after discovering the edge already limits planning endpoints)."
+    "note": "Three rolling switches: edc36ecf (feature), 79c41c30 (limiter disabled), 174518a6 (density recomputed after dedupe). Frontend unchanged since 6cbaf1e6."
   },
   "backup": {
     "directory": "/opt/travel/backup/2026-11-27-citations",
@@ -117,6 +118,12 @@
         ]
       },
       "note": "宽窄巷子 has no ref_id because the retrieved chunks do not mention it. The merged 成都·观光 row keeps all three original numbers, so [5] still points at a visible row."
+    },
+    "server_module_smoke": {
+      "plan_density": "{'floor': 2, 'counts': [2], 'thin_days': []}",
+      "match_refs": "[1]",
+      "display_ref_ids": "[[1, 2]]",
+      "strip_stale_facts": "门票 60 元 -> 门票"
     }
   },
   "eval": {
