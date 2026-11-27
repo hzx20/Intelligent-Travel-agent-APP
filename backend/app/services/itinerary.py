@@ -352,6 +352,34 @@ def _budget_amount(value):
 
 
 _COST_CATEGORIES = ('交通', '住宿', '餐饮', '门票', '其他')
+
+# 模型经常把类别写成「景点门票」「市内交通」「购物」这类近义词。
+# 以前这里直接抛错，一个词的差异就让整份行程作废——用户等两分半拿到「生成失败」。
+# 能落到五个类别里就归一化，实在沾不上边才归「其他」。
+_COST_ALIASES = {
+    '景点门票': '门票', '门票费': '门票', '景区门票': '门票', '票价': '门票',
+    '市内交通': '交通', '长途交通': '交通', '城际交通': '交通', '车费': '交通', '打车': '交通',
+    '餐费': '餐饮', '饮食': '餐饮', '用餐': '餐饮', '吃饭': '餐饮',
+    '住宿费': '住宿', '酒店': '住宿', '房费': '住宿',
+    '购物': '其他', '娱乐': '其他', '其他费用': '其他', '杂费': '其他', '小费': '其他',
+}
+
+
+def _normalize_cost_category(value):
+    """把模型写的费用类别收拢到五个合法值；认不出来就归「其他」。"""
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    if text in _COST_CATEGORIES:
+        return text
+    if text in _COST_ALIASES:
+        return _COST_ALIASES[text]
+    for key in ('门票', '交通', '住宿', '餐饮'):
+        if key in text:
+            return key
+    return '其他'
 _BUDGET_FORMAT = 'items_and_additions_v1'
 _ITEM_COST_TYPES = {'交通': '交通', '酒店': '住宿', '住宿': '住宿', '餐饮': '餐饮',
                     '景点': '门票', '室内场馆': '门票', '门票': '门票',
@@ -367,9 +395,9 @@ def _item_costs(it, *, explicit_categories=False):
             if explicit_categories and not isinstance(item, dict):
                 raise ValueError(f'第{day_number}天第{position}项必须是包含费用类别的安排对象')
             if isinstance(item, dict):
-                category = item.get('cost_category')
-                if category is not None and category not in _COST_CATEGORIES:
-                    raise ValueError(f'第{day_number}天第{position}项费用类别只能为交通、住宿、餐饮、门票或其他')
+                category = _normalize_cost_category(item.get('cost_category'))
+                if category is not None:
+                    item['cost_category'] = category  # 归一化写回，后续计算和前端都用合法值
                 if category is None and explicit_categories:
                     raise ValueError(f'第{day_number}天第{position}项缺少cost_category，请明确费用类别')
             if not isinstance(item, dict) or item.get('cost_estimate') is None:
@@ -724,33 +752,6 @@ def _reference_block(references) -> str:
     return "\n" + _REFERENCE_PROMPT.format(lines="\n".join(lines))
 
 
-def _density_gap(itinerary) -> bool:
-    """是否值得为"行程太空"重生成一次。
-
-    全量重试的代价是用户多等两分多钟，所以只在「超过一半的天都偏少」时才触发：
-    两天里有半天偏少还能接受，两天都只有一两个点就不像一份行程了。
-    """
-    density = itinerary.get('density') or {}
-    thin = density.get('thin_days') or []
-    total = len(itinerary.get('days') or [])
-    if not thin or not total:
-        return False
-    return len(thin) * 2 > total
-
-
-def _density_hint(itinerary) -> str:
-    """把「哪天少了几个点」说具体，比笼统的"请充实行程"有效。"""
-    density = itinerary.get('density') or {}
-    thin = density.get('thin_days') or []
-    floor = int(density.get('floor') or 2)
-    days = '、'.join(f'第{d}天' for d in thin)
-    return (
-        f"{days}只有不到 {floor} 个具名地点（餐饮、交通、休息不算）。"
-        f"请每天至少安排 {floor + 1} 个不同的景点或场馆，并保证它们真实存在、同城可达；"
-        "同一个远郊景点只放在一天。"
-    )
-
-
 async def generate_itinerary(collected, references=None):
     """生成行程。时段问题局部纠正一次，其余校验失败重新生成一次。
 
@@ -790,13 +791,7 @@ async def generate_itinerary(collected, references=None):
                     raise ValueError('日程纠正内容过长')
                 draft = apply_schedule_repair(repair, _reply_object(reply))
                 return _validate_draft(draft, collected, require_cost_components=True)
-            itinerary = _validated_itinerary(reply, collected, require_cost_components=True)
-            # 结构过了、但一天只有一两个点，也算不合格：重生成一次。
-            # 第二次不再检查，避免为了凑数一直重跑。
-            if attempt == 0 and _density_gap(itinerary):
-                correction = f"\n【上次输出的问题】{_density_hint(itinerary)}"
-                continue
-            return itinerary
+            return _validated_itinerary(reply, collected, require_cost_components=True)
         except ValueError as exc:
             error = str(exc)
             if isinstance(exc, RepairableSchedule):

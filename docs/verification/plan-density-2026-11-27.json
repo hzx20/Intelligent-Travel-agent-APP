@@ -1,0 +1,43 @@
+{
+  "kind": "plan-density-and-reliability",
+  "date": "2026-11-27",
+  "timezone": "Asia/Shanghai",
+  "changes": [
+    "行程密度：提示词要求每天至少 3 个具名地点、远郊景点只排一天；仍不足则从同城 spots 表补 1 个/天（filled=true），补位优先市区、县级市降权",
+    "费用类别归一化：景点门票→门票、市内交通→交通、购物→其他，认不出来归其他，不再因为一个词的差异整份作废",
+    "引用分类：PlanReferences 区分「目的地资料（guide）」与「景点库（spot）」；行程页给补充点标「补充推荐」",
+    "每日备份：travel-backup.timer 每天 03:00 快照 app.db，integrity/外键校验，保留 7 份",
+    "CI：.github/workflows/ci.yml，后端离线 pytest + 前端 npm ci && build:travel"
+  ],
+  "incidents": [
+    {
+      "when": "2026-11-27 11:06 首次上线后",
+      "symptom": "完整规划返回 {done:false, error:'生成失败，请稍后重试'}；日志 RuntimeError: 行程结构校验失败：第1天第3项费用类别只能为交通、住宿、餐饮、门票或其他",
+      "cause": "密度重试占用了第二次尝试；第二次模型把 cost_category 写成近义词，被旧校验判为非法。为了多一个景点，牺牲了整单成功率。",
+      "fix": "去掉密度重试（只保留提示词 + 补点）；把费用类别改成归一化。第二次回归又暴露 test_plan_schedule 里用「休息」当非法类别的旧断言，改为用缺失触发，测试意图（两类错误一起报告）不变。"
+    }
+  ],
+  "measured": {
+    "before_prompt_only": {"spots_per_day": [2, 2], "elapsed": "2m22s"},
+    "after_prompt_and_fill": {"spots_per_day": [3, 3], "elapsed": "1m29s"},
+    "filled_examples": ["东郊记忆（成华区）", "宽窄巷子景区（青羊区）"],
+    "verify_matched": "6/6"
+  },
+  "tests": {
+    "offline_suite": "801 passed / 1 failed (test_provider_budget 多进程，单跑 3/3 通过) / 1 skipped",
+    "new_cases": [
+      "test_fill_thin_days_adds_one_and_dedupes",
+      "test_fill_thin_days_without_candidates_is_noop",
+      "test_normalize_cost_category_maps_model_variants",
+      "test_city_spots_puts_county_level_cities_last",
+      "test_shared_peer_skips_proxy_addresses"
+    ],
+    "selector_fix": "原来 -k \"not test_graph\" 会把 test_graph_contains_retrieve_before_generate 一起排除，改为 not test_graph_compiled_and_flows"
+  },
+  "backup": {
+    "script": "/opt/travel/tools/daily-backup.sh",
+    "timer": "travel-backup.timer, OnCalendar=03:00, Persistent=true, RandomizedDelaySec=300",
+    "retention": "按数量保留 7 份，按天数兜底清理 14 天",
+    "manual_run": "integrity=ok fk_rows=0 chunks=1708 bytes=9228288"
+  }
+}

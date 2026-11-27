@@ -235,14 +235,16 @@ def test_retry_reports_late_rest_and_separate_invalid_cost_together():
     value = plan_with_schedule()
     first_day = value['days'][0]
     rest = first_day['items'].pop(2)
-    rest.update(time='16:00', cost_category='休息', cost_estimate=None)
+    rest.update(time='16:00', cost_category='', cost_estimate=None)
     first_day['items'].append(rest)
-    first_day['items'][1]['cost_category'] = '休息'
+    # 空值代表"没写类别"。像「景点门票」「市内交通」这类近义词会被归一化，不再报错，
+    # 所以这里用缺失来触发费用错误，测试要验的是"两类错误一起报告"。
+    first_day['items'][1]['cost_category'] = ''
     with pytest.raises(ValueError) as error:
         itinerary._validated_itinerary(json.dumps(value), INTENT, require_cost_components=True)
     message = str(error.value)
     assert '第1天须在11:00至15:00之间开始午间休息' in message
-    assert '第1天第2项费用类别' in message
+    assert '第1天第2项缺少cost_category' in message
 
 
 def test_job_saves_recovered_schedule_and_conversion_reads_the_same_rest_slots(client, monkeypatch):

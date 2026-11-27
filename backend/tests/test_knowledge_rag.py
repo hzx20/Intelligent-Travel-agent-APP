@@ -387,16 +387,17 @@ def test_shared_peer_skips_proxy_addresses():
     assert not _shared_peer("testclient")
 
 
-def test_density_gap_only_when_most_days_are_thin():
-    from app.services.itinerary import _density_gap, _density_hint
+def test_normalize_cost_category_maps_model_variants():
+    """模型写「景点门票」「市内交通」「购物」不能被整份打回。"""
+    from app.services.itinerary import _normalize_cost_category as norm
 
-    two_thin = {"days": [{"day": 1}, {"day": 2}], "density": {"thin_days": [1, 2], "floor": 2}}
-    one_thin = {"days": [{"day": 1}, {"day": 2}], "density": {"thin_days": [1], "floor": 2}}
-    assert _density_gap(two_thin), "两天都不足，值得重生成"
-    assert not _density_gap(one_thin), "一天不足就重跑，用户要多等两分钟"
-    assert not _density_gap({"days": [], "density": {"thin_days": []}})
-    hint = _density_hint(two_thin)
-    assert "第1天、第2天" in hint and "3 个" in hint
+    assert norm("门票") == "门票"
+    assert norm("景点门票") == "门票"
+    assert norm("市内门票") == "门票"
+    assert norm("市内交通") == "交通"
+    assert norm("餐费") == "餐饮"
+    assert norm("购物") == "其他"
+    assert norm("") is None and norm(None) is None
 
 
 def test_fill_thin_days_adds_one_and_dedupes():
