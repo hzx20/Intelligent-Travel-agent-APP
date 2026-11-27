@@ -415,8 +415,8 @@ def test_fill_thin_days_adds_one_and_dedupes():
         {"name": "人民公园"},
         {"name": "塔子山公园"},
     ]
-    filled = fill_thin_days(itinerary, candidates, floor=3)
-    assert filled == 1, "每天最多补 1 个，不要把一天塞满"
+    filled = fill_thin_days(itinerary, candidates, floor=3, per_day=1)
+    assert filled == 1, "per_day=1 时每天最多补 1 个"
     day1 = itinerary["days"][0]["spots"]
     assert day1[-1]["name"] == "人民公园"
     assert day1[-1]["filled"] is True
@@ -443,3 +443,23 @@ def test_city_spots_puts_county_level_cities_last():
     assert names, "成都要有候选"
     if "都江堰景区" in names and "人民公园" in names:
         assert names.index("人民公园") < names.index("都江堰景区")
+
+
+def test_fill_thin_days_reaches_three_by_default():
+    """模型一天只排 1 个点时，默认补 2 个凑到 3 个，而不是停在 2 个。"""
+    from app.services.itinerary import fill_thin_days
+
+    itinerary = {"days": [{"day": 1, "spots": [{"name": "A"}]}]}
+    filled = fill_thin_days(itinerary, [{"name": "B"}, {"name": "C"}, {"name": "D"}], floor=3)
+    assert filled == 2
+    assert [s["name"] for s in itinerary["days"][0]["spots"]] == ["A", "B", "C"]
+
+
+def test_fill_thin_days_reaches_three_by_default():
+    """模型一天只排 1 个点时，默认补 2 个凑到 3 个，而不是停在 2 个。"""
+    from app.services.itinerary import fill_thin_days
+
+    itinerary = {"days": [{"day": 1, "spots": [{"name": "A"}]}]}
+    filled = fill_thin_days(itinerary, [{"name": "B"}, {"name": "C"}, {"name": "D"}], floor=3)
+    assert filled == 2
+    assert [s["name"] for s in itinerary["days"][0]["spots"]] == ["A", "B", "C"]

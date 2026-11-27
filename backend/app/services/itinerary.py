@@ -612,11 +612,11 @@ def has_thin_day(itinerary, target: int = 3) -> bool:
     return False
 
 
-def fill_thin_days(itinerary, candidates, *, floor: int = 3, per_day: int = 1) -> int:
+def fill_thin_days(itinerary, candidates, *, floor: int = 3, per_day: int = 2) -> int:
     """给地点不足的天补同城景点，返回补了几个。
 
-    只补不删：模型只排了两个点，重跑一次要多等两分多钟，补一个「补充推荐」
-    更快也更可控。跨天去重，否则同一个景点会在两天各出现一次——
+    只补不删：模型只排了一个点，重跑一次要多等两分多钟，补两个「补充推荐」
+    更快也更可控；per_day 默认 2，能把「一天一个点」抬到三个。跨天去重，否则同一个景点会在两天各出现一次——
     那正是核实阶段要合并的脏数据。
     """
     days = itinerary.get('days') or []
