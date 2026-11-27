@@ -472,55 +472,107 @@ def test_fill_thin_days_reaches_three_by_default():
 
 # ---------------------------------------------------------------- 补点时刻
 
-def test_slot_after_continues_from_last_spot():
-    """补的点要接在当天最后一个点后面，不能凭空给 09:00。"""
-    from app.services.itinerary import _slot_after
+def test_free_slot_fills_the_gap_between_two_points():
+    """线上真实形状：09:00 熊猫基地（3 小时）、18:00 东郊记忆，中间六小时空着。
+
+    旧实现接在最后一项之后算出 20:30，直接放弃补点；空档算法该落在 13:00。
+    """
+    from app.services.itinerary import _free_slot
+
+    spots = [
+        {"name": "熊猫基地", "time": "09:00", "duration_min": 180},
+        {"name": "东郊记忆", "time": "18:00", "duration_min": 120},
+    ]
+    assert _free_slot(spots) == "13:00"
+
+
+def test_free_slot_starts_at_nine_when_day_is_empty():
+    from app.services.itinerary import _free_slot
+
+    assert _free_slot([]) == "09:00"
+    assert _free_slot([{"name": "A"}]) == "09:00"
+
+
+def test_free_slot_falls_back_to_the_end_when_gaps_are_small():
+    """09:00-11:00、13:30-15:00 之间只有 2.5 小时，放不下 3 小时的补点，接在后面。"""
+    from app.services.itinerary import _free_slot
 
     spots = [
         {"name": "A", "time": "09:00", "duration_min": 120},
         {"name": "B", "time": "13:30", "duration_min": 90},
     ]
-    # 13:30 + 90 分钟 = 15:00，再加 30 分钟路上时间
-    assert _slot_after(spots) == "15:30"
+    assert _free_slot(spots) == "16:00"
 
 
-def test_slot_after_starts_at_nine_without_times():
-    from app.services.itinerary import _slot_after
+def test_free_slot_returns_empty_when_day_is_full():
+    from app.services.itinerary import _free_slot
 
-    assert _slot_after([{"name": "A"}]) == "09:00"
-    assert _slot_after([]) == "09:00"
-
-
-def test_slot_after_gives_up_when_day_is_full():
-    """排到 20:00 之后就不补了：塞一个 21:30 的公园没有意义。"""
-    from app.services.itinerary import _slot_after
-
-    spots = [{"name": "A", "time": "18:00", "duration_min": 180}]
-    assert _slot_after(spots) == ""
+    spots = [
+        {"name": "A", "time": "09:00", "duration_min": 120},
+        {"name": "B", "time": "11:30", "duration_min": 120},
+        {"name": "C", "time": "14:00", "duration_min": 120},
+        {"name": "D", "time": "16:30", "duration_min": 120},
+    ]
+    assert _free_slot(spots) == ""
 
 
-def test_fill_thin_days_sets_time_on_filled_spots():
+def test_fill_thin_days_keeps_chronological_order():
+    """补一个 13:00 的点，不能追加到 18:00 后面。"""
     from app.services.itinerary import fill_thin_days
 
     itinerary = {
-        "days": [
-            {"day": 1, "spots": [{"name": "A", "time": "09:00", "duration_min": 120}]},
-        ]
+        "days": [{
+            "day": 1,
+            "spots": [
+                {"name": "熊猫基地", "time": "09:00", "duration_min": 180},
+                {"name": "东郊记忆", "time": "18:00", "duration_min": 120},
+            ],
+        }]
     }
-    filled = fill_thin_days(itinerary, [{"name": "B"}, {"name": "C"}], floor=3)
-    assert filled == 2
+    filled = fill_thin_days(itinerary, [{"name": "宽窄巷子"}], floor=3)
+    assert filled == 1
     spots = itinerary["days"][0]["spots"]
-    assert [s["time"] for s in spots] == ["09:00", "11:30", "14:00"]
-    assert all(s.get("duration_min") == 120 for s in spots[1:])
+    assert [(s["name"], s["time"]) for s in spots] == [
+        ("熊猫基地", "09:00"), ("宽窄巷子", "13:00"), ("东郊记忆", "18:00")
+    ]
+    assert spots[1]["filled"] is True and spots[1]["duration_min"] == 120
 
 
 def test_fill_thin_days_skips_day_that_is_already_full():
     from app.services.itinerary import fill_thin_days
 
     itinerary = {
-        "days": [
-            {"day": 1, "spots": [{"name": "A", "time": "19:00", "duration_min": 120}]},
-        ]
+        "days": [{
+            "day": 1,
+            "spots": [
+                {"name": "A", "time": "09:00", "duration_min": 180},
+                {"name": "B", "time": "13:00", "duration_min": 180},
+                {"name": "C", "time": "17:00", "duration_min": 180},
+            ],
+        }]
     }
-    assert fill_thin_days(itinerary, [{"name": "B"}, {"name": "C"}], floor=3) == 0
-    assert len(itinerary["days"][0]["spots"]) == 1
+    assert fill_thin_days(itinerary, [{"name": "D"}], floor=4) == 0
+
+
+# ---------------------------------------------------------------- 维基 listing 标记
+
+def test_strip_removes_wiki_price_and_phone_tags():
+    """「💰 0」被模型当成免费，线上那次门票预算因此全写 0。"""
+    text = "锦里古街，地址 武侯区。🕘 全天开放。💰 0。📞 +86-028-85538914。简介 民俗区"
+    cleaned = knowledge.strip_stale_facts(text)
+    assert "💰" not in cleaned and "📞" not in cleaned
+    assert "0" not in cleaned
+    assert "锦里古街" in cleaned and "民俗区" in cleaned
+
+
+def test_strip_keeps_opening_hours():
+    """营业时间对排程有用，保留；模型会自己补「以现场为准」。"""
+    text = "武侯祠博物馆。🕘 8:00-18:00。"
+    assert "🕘 8:00-18:00" in knowledge.strip_stale_facts(text)
+
+
+def test_strip_removes_free_label():
+    """「💰 免费」同样会过期：景点可能开始收费。"""
+    cleaned = knowledge.strip_stale_facts("东安湖体育公园。💰 免费。")
+    assert "免费" not in cleaned
+    assert "东安湖体育公园" in cleaned

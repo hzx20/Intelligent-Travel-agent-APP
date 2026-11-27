@@ -66,6 +66,12 @@ _STALE_DATE = re.compile(
     r"\d{4}\s*[-年./]\s*\d{1,2}\s*(?:[-月./]\s*\d{1,2}\s*[日号]?)?\s*月?"
 )
 _ORPHAN = re.compile(r"[（(]\s*[）)]|，\s*[，。；]|、\s*[。；]")
+# 维基导游的 listing 标记：💰 价格、📞 电话。
+# 「💰 0」是这里最坑的一种：模型看到就当真，把要门票的景区写成 0 元，
+# 整份行程的门票预算变成 0。电话同理，是过期信息且对规划没用。
+# 营业时间（🕘）保留——它对排程有用，模型也会自己标「以现场为准」。
+_MONEY_TAG = re.compile(r"💰\s*[^。\n]{0,40}[。\n]?")
+_PHONE_TAG = re.compile(r"📞\s*[^。\n]{0,40}[。\n]?")
 # 「人均 50 元左右」删掉数字后剩「人均 左右」，把量词尾巴一并收掉
 _PRICE_RESIDUE = re.compile(
     r"(人均|门票|票价|价格|费用|花费|预算)\s*(?:约|大约|大概|差不多)?\s*"
@@ -76,7 +82,11 @@ _PRICE_RESIDUE = re.compile(
 def stale_fact_hits(text: str) -> int:
     """一段文本里有多少处价格/日期断言，用于灌库时统计与调参。"""
     value = str(text or "")
-    return len(_PRICE.findall(value)) + len(_STALE_DATE.findall(value))
+    return (
+        len(_PRICE.findall(value))
+        + len(_STALE_DATE.findall(value))
+        + len(_MONEY_TAG.findall(value))
+    )
 
 
 def strip_stale_facts(text: str) -> str:
@@ -88,6 +98,8 @@ def strip_stale_facts(text: str) -> str:
     value = str(text or "")
     if not value:
         return ""
+    value = _MONEY_TAG.sub("", value)
+    value = _PHONE_TAG.sub("", value)
     value = _STALE_DATE.sub("", value)
     value = _PRICE.sub("", value)
     value = _PRICE_RESIDUE.sub(r"\1", value)

@@ -613,14 +613,22 @@ def has_thin_day(itinerary, target: int = 3) -> bool:
     return False
 
 
-def _slot_after(spots, *, gap_min: int = 30, ceiling: int = 20 * 60):
-    """给补进来的地点找一个当天可行的时刻，找不到就返回 ''。
+def _fmt_minutes(value: int) -> str:
+    return f'{value // 60:02d}:{value % 60:02d}'
 
-    接在当天最后一个有时刻的地点之后：开始时间 + 时长 + 路上 30 分钟。
-    没有一项带时刻时从 09:00 起算。超过 ceiling（20:00）就认为当天排满了——
-    「补充推荐」排到晚上九点，用户不会去，不如不补。
+
+def _free_slot(spots, *, duration: int = 120, buffer: int = 60,
+               day_start: int = 9 * 60, day_end: int = 20 * 60) -> str:
+    """在当天时间轴上找第一个放得下的空档，找不到返回 ''。
+
+    不能简单接在「最后一项之后」。模型常把一天排成「09:00 熊猫基地、18:00 东郊记忆」，
+    中间空六小时；接在最后会算出 20:30，白白放弃补点，用户拿到的还是两个点。
+    真正该补的位置是那段空档。
+
+    buffer 给午饭和路上留余量，所以空档必须能放下 buffer + duration 才算数。
+    整天都排满时返回 ''——「补充推荐」排到晚上九点，用户不会去。
     """
-    latest = None
+    busy = []
     for spot in spots or []:
         if not isinstance(spot, dict):
             continue
@@ -631,17 +639,45 @@ def _slot_after(spots, *, gap_min: int = 30, ceiling: int = 20 * 60):
         if hour > 23 or minute > 59:
             continue
         try:
-            duration = int(spot.get('duration_min') or 0)
+            length = int(spot.get('duration_min') or 0)
         except (TypeError, ValueError):
-            duration = 0
-        if duration <= 0 or duration > 600:
-            duration = 120
-        end = hour * 60 + minute + duration
-        latest = end if latest is None else max(latest, end)
-    start = 9 * 60 if latest is None else latest + gap_min
-    if start > ceiling:
-        return ''
-    return f'{start // 60:02d}:{start % 60:02d}'
+            length = 0
+        if length <= 0 or length > 600:
+            length = duration
+        start = hour * 60 + minute
+        busy.append((start, start + length))
+    if not busy:
+        return _fmt_minutes(day_start)
+    busy.sort()
+    need = buffer + duration
+    cursor = day_start
+    for start, end in busy:
+        if start - cursor >= need:
+            return _fmt_minutes(cursor + buffer)
+        cursor = max(cursor, end)
+    if day_end - cursor >= need:
+        return _fmt_minutes(cursor + buffer)
+    return ''
+
+
+def _insert_by_time(spots: list, entry: dict) -> None:
+    """按时刻插到合适位置，不是一律追加。
+
+    补一个 13:00 的点到「09:00、18:00」那天，追加会变成 09:00、18:00、13:00，
+    前端照着数组顺序渲染，用户看到的是倒着的。没有时刻的项不参与比较。
+    """
+    slot = str(entry.get('time') or '')
+    for index, spot in enumerate(spots):
+        if not isinstance(spot, dict):
+            continue
+        other = str(spot.get('time') or '').strip()
+        if re.match(r'^(\d{1,2}):(\d{2})$', other):
+            hour, minute = other.split(':')
+            other = f'{int(hour):02d}:{minute}'
+            if other > slot:
+                spots.insert(index, entry)
+                return
+    spots.append(entry)
 
 
 def fill_thin_days(itinerary, candidates, *, floor: int = 3, per_day: int = 2) -> int:
@@ -670,11 +706,12 @@ def fill_thin_days(itinerary, candidates, *, floor: int = 3, per_day: int = 2) -
         count = _named_sight_count(spots)
         added = 0
         while count < floor and added < per_day and pool:
-            slot = _slot_after(spots)
+            slot = _free_slot(spots)
             if not slot:
-                break  # 当天已排到晚上，硬塞「21:00 去公园」没有意义
+                break  # 当天已经排满，硬塞「21:00 去公园」没有意义
             candidate = pool.pop(0)
-            spots.append(
+            _insert_by_time(
+                spots,
                 {
                     'name': candidate['name'],
                     'type': '景点',
@@ -682,7 +719,7 @@ def fill_thin_days(itinerary, candidates, *, floor: int = 3, per_day: int = 2) -
                     'time': slot,
                     'duration_min': 120,
                     'note': '补充推荐，出发前请确认开放时间',
-                }
+                },
             )
             used.add(candidate['name'])
             count += 1
@@ -754,6 +791,7 @@ _REFERENCE_PROMPT = """【可参考的站内资料】
 
 请在有把握时优先采用上述资料中的地点与路线；资料未覆盖的部分按常识安排。
 资料里的价格、门票和营业时间可能已经过时：不要照抄成确定报价，但也不要把 cost_estimate 留空——按你自己的常识给一个中低价位的估算，并在 note 里注明"以现场为准"。一份行程的预算总计是 0，比估得不准更糟。
+门票要分开看：收门票的知名景区一般 40-120 元，城市公园、开放街区和博物馆常设展免费。把要买票的景区写成 0 元是错的，宁可写区间。
 资料只是参考，不要因为资料条数少就压缩每天的安排——每天仍要有 4-6 项，其中至少 3 个不同的具名地点（餐饮、交通、休息不算），地点不足时按常识补充同城景点。
 同一个远郊景点（车程一小时以上的山、古镇、度假区）只能安排在一天，不要连续两天重复；每天的地点尽量在同一片区域，别把城市两头串成一天。"""
 
