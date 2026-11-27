@@ -5,8 +5,8 @@
   "git": {
     "feature_commit": "8ab11f0",
     "branch": "main",
-    "local_head": "8ab11f0",
-    "remote_head": "8ab11f0",
+    "local_head": "211483d4c5633c34f6dbc0338cf11c4b3a8a9e62",
+    "remote_head": "211483d4c5633c34f6dbc0338cf11c4b3a8a9e62",
     "remote_matches_local": true
   },
   "release": {
