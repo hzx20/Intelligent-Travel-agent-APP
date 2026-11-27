@@ -18,6 +18,7 @@ import { guestTrips, isGuestTripId, isGuestTripStorageChange } from '../store/gu
 import { allowTripDeparture, guardTripUnload } from '../utils/tripDraftGuard'
 import { registerAuthChangeGuard } from '../store/authChangeGuard'
 import { formatTripText } from '../utils/tripTextExport'
+import { formatTripMarkdown, tripMarkdownFilename } from '../utils/tripMarkdownExport'
 import { scheduleWarning } from '../utils/tripScheduleWarnings'
 import { isLocationFreeRest, routeLegKey } from '../utils/tripRouteSummary'
 import {validWorkspaceTrip,workspaceTabs,workspaceView} from '../utils/tripWorkspace'
@@ -352,6 +353,15 @@ function exportItinerary() {
   link.href = url; link.download = '旅行行程.txt'; link.click()
   window.setTimeout(() => URL.revokeObjectURL(url), 60000)
 }
+// Markdown 导出：与文本导出并列。带标题层级/列表/加粗，粘贴进语雀、Notion、
+// 飞书文档会保留结构；不带 BOM（.md 不需要，加了反而会在开头显示乱码字符）。
+function exportItineraryMarkdown() {
+  if (!trip.value || hasDraft.value || busy.value || accessLost.value || remoteUpdate.value) return
+  const file = new Blob([formatTripMarkdown(trip.value)], { type: 'text/markdown;charset=utf-8' })
+  const url = URL.createObjectURL(file), link = document.createElement('a')
+  link.href = url; link.download = tripMarkdownFilename(trip.value); link.click()
+  window.setTimeout(() => URL.revokeObjectURL(url), 60000)
+}
 </script>
 <template>
   <main class="trip-page">
@@ -360,8 +370,8 @@ function exportItinerary() {
     <div v-else-if="loading && !trip" class="state">正在加载行程…</div>
     <div v-else-if="!trip" class="state" role="alert">{{ error || '旅行不存在' }} <button @click="load">重试</button></div>
     <template v-else>
-      <header class="trip-header"><div><p class="eyebrow">YOUR JOURNEY · {{ statusText[trip.status] }}</p><h1>{{ trip.title }}</h1><p>{{ trip.destination || '目的地待定' }} <span>·</span> {{ trip.start_date || '日期待定' }} <span>·</span> {{ trip.days.length }} 天</p></div><div class="header-actions"><button class="ai-link" :disabled="editorBlocked" @click="editTrip">编辑旅行信息</button><button class="ai-link" :disabled="hasDraft || busy || accessLost || remoteUpdate" @click="exportItinerary">导出行程文本</button><button class="ai-link" @click="openWorkspace('assistant')">✦ AI 规划助手</button><button class="ai-link" :disabled="editorBlocked || loading" @click="refreshRemote">刷新旅行</button></div></header>
-      <p class="export-hint">导出当前页面已保存的每日安排，包含安排备注；不包含预订记录和账本。{{ hasDraft || busy ? '请先处理未保存的内容或等待保存完成。' : remoteUpdate ? '请先刷新其他页面的更新。' : '' }}</p>
+      <header class="trip-header"><div><p class="eyebrow">YOUR JOURNEY · {{ statusText[trip.status] }}</p><h1>{{ trip.title }}</h1><p>{{ trip.destination || '目的地待定' }} <span>·</span> {{ trip.start_date || '日期待定' }} <span>·</span> {{ trip.days.length }} 天</p></div><div class="header-actions"><button class="ai-link" :disabled="editorBlocked" @click="editTrip">编辑旅行信息</button><button class="ai-link" :disabled="hasDraft || busy || accessLost || remoteUpdate" @click="exportItinerary">导出行程文本</button><button class="ai-link" :disabled="hasDraft || busy || accessLost || remoteUpdate" @click="exportItineraryMarkdown">导出 Markdown</button><button class="ai-link" @click="openWorkspace('assistant')">✦ AI 规划助手</button><button class="ai-link" :disabled="editorBlocked || loading" @click="refreshRemote">刷新旅行</button></div></header>
+      <p class="export-hint">导出当前页面已保存的每日安排，包含安排备注；不包含预订记录和账本。「导出 Markdown」带标题层级与列表结构，适合粘贴进语雀、Notion、飞书文档。{{ hasDraft || busy ? '请先处理未保存的内容或等待保存完成。' : remoteUpdate ? '请先刷新其他页面的更新。' : '' }}</p>
       <p v-if="localTrip" class="local-note">本机旅行仅保存在此浏览器，清除浏览器数据会丢失；登录后可在首页复制到账号。{{ !guestTrips.supportsCrossTabLock() ? '当前浏览器不支持跨标签页协调，请只在一个标签页编辑。' : '' }}</p>
       <p v-if="accessLost" class="local-note" role="alert">{{ localTrip ? '本机旅行已被其他页面删除或浏览器数据已清除；当前页面中的未保存内容仍保留。' : '当前账号已无法访问此旅行，未保存的内容仍显示在页面上；请联系旅行所有者或重新登录。' }}</p>
       <p v-else-if="remoteUpdate" class="local-note" role="status">{{ localTrip ? '本机旅行已在其他页面更新。' : '同行者更新了旅行。' }}为保留你的未保存内容，页面暂未自动覆盖。 <button @click="refreshRemote">刷新旅行</button></p>

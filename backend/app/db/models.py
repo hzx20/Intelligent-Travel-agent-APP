@@ -299,3 +299,26 @@ class KnowledgeChunk(Base):
     embedding: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     source_url: Mapped[str] = mapped_column(String(500), default="")   # 出处链接
     updated_at: Mapped[datetime] = mapped_column(default=now_local, onupdate=now_local)
+
+
+class LlmUsage(Base):
+    """LLM 调用计量：每次 chat 调用落一行（2026-11-27 新增）。
+
+    为什么单独一张表而不是塞进 ai_plans：调用计量是横切数据，澄清/行程/攻略
+    哪条链路都会产生 token 消耗，按行追加最简单，也方便按天聚合。
+    只增不改：写路径只有 INSERT，聚合走 SQL，不存在并发写冲突。
+    ts 存本地时间 ISO 字符串（SQLite date() 可直接解析），按天分组够用。
+    """
+
+    __tablename__ = "llm_usage"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    ts: Mapped[str] = mapped_column(String(32), index=True)            # ISO 本地时间
+    route: Mapped[str] = mapped_column(String(60), default="")         # 调用场景标签（可选）
+    model: Mapped[str] = mapped_column(String(60), default="")         # 模型名
+    prompt_tokens: Mapped[int] = mapped_column(Integer, default=0)     # 输入 token
+    completion_tokens: Mapped[int] = mapped_column(Integer, default=0) # 输出 token
+    total_tokens: Mapped[int] = mapped_column(Integer, default=0)      # 总 token
+    latency_ms: Mapped[int] = mapped_column(Integer, default=0)        # 调用耗时
+    ok: Mapped[int] = mapped_column(Integer, default=1)                # 1 成功 / 0 失败
+    error: Mapped[str] = mapped_column(String(120), default="")        # 失败类型名

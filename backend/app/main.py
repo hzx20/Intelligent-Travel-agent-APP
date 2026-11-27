@@ -17,6 +17,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.core import metrics
 from app.db.database import init_db
 from app.routers.admin import router as admin_router
 from app.routers.auth import router as auth_router
@@ -26,6 +27,7 @@ from app.routers.guides import router as guides_router
 from app.routers.hotels import router as hotels_router
 from app.routers.map import router as map_router
 from app.routers.me import router as me_router
+from app.routers.metrics import router as metrics_router
 from app.routers.planner import router as planner_router
 from app.routers.spots import router as spots_router
 from app.routers.trips import router as trips_router
@@ -37,6 +39,7 @@ from app.routers.trip_plan_import import router as trip_plan_import_router
 from app.routers.trip_sharing import router as trip_sharing_router
 from app.routers.trip_footprints import router as trip_footprints_router
 from app.routers.trip_reservations import router as trip_reservations_router
+from app.routers.usage import router as usage_router
 from app.schemas import ClarifyRequest, ClarifyResponse, ItineraryRequest
 from app.services.clarify import clarify_turn
 from app.services.itinerary import generate_itinerary
@@ -83,6 +86,49 @@ app.include_router(trip_imports_router)
 app.include_router(trip_sharing_router)
 app.include_router(trip_footprints_router)
 app.include_router(trip_reservations_router)
+app.include_router(usage_router)
+app.include_router(metrics_router)
+
+
+# 请求量指标：用纯 ASGI 中间件而不是 @app.middleware("http")。
+# 原因：BaseHTTPMiddleware 会把每个请求包进 anyio 任务组，对 SSE 流式响应
+# （/api/trips/*/plan-stream）的生命周期有干扰——实测会让后台规划任务拿到
+# 已关闭的事件循环（Event loop is closed）。纯 ASGI 只在响应开始消息里读一次
+# scope["route"] 计数，不创建任务、不缓冲响应体，流式行为与无中间件时完全一致。
+class RequestMetricsMiddleware:
+    """计数 (方法, 路由模板, 状态码) 的纯 ASGI 中间件。
+
+    用路由模板而不是原始路径：/api/trips/123 与 /api/trips/456 应聚合成
+    /api/trips/{trip_id}，否则每个 trip id 都会撑出一个新时间序列。
+    未匹配到路由的请求（404）记作 "unmatched"。
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_wrapper(message):
+            if message["type"] == "http.response.start":
+                try:
+                    route = scope.get("route")
+                    path = getattr(route, "path", None) or "unmatched"
+                    metrics.REQUESTS.labels(
+                        method=str(scope.get("method", "?")),
+                        path=path,
+                        status=str(message.get("status", "?")),
+                    ).inc()
+                except Exception:
+                    pass  # 指标挂了不影响业务响应
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
+
+
+app.add_middleware(RequestMetricsMiddleware)
 
 
 @app.get("/api/health")

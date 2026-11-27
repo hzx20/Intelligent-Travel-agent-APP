@@ -22,9 +22,12 @@ import httpx
 import numpy as np
 from cachetools import TTLCache
 
+from app.core.circuit_breaker import get_breaker
 from app.core.config import settings
 from app.core.llm import ZHIPU_BASE_URL
+from app.core.metrics import SEARCH_LATENCY
 from app.core.provider_budget import async_provider_slot, provider_slot
+from app.services.rerank import rerank_scores
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -37,6 +40,21 @@ _RETRY = 2                        # 失败重试 2 次（共 3 次尝试）
 
 # 同一 query 反复检索（用户连点、重试、多标签页）不该重复付 embedding 费用
 _cache: TTLCache = TTLCache(maxsize=256, ttl=600)
+
+# 缓存命中计数（进程生命周期累计）：给 /api/usage/summary 和 /metrics 提供
+# 「缓存命中率」。只增不减；clear_cache() 清条目不清计数（命中率是长期指标）
+_cache_hits = 0
+_cache_misses = 0
+
+
+def cache_stats() -> dict:
+    """检索缓存的命中统计：命中率 = hits / (hits + misses)，无请求时为 0。"""
+    total = _cache_hits + _cache_misses
+    return {
+        "hits": _cache_hits,
+        "misses": _cache_misses,
+        "hit_rate": round(_cache_hits / total, 4) if total else 0.0,
+    }
 
 
 # ---------------------------------------------------------------- 切块
@@ -326,6 +344,110 @@ def expand_query(query: str) -> str:
     return f"{text} {' '.join(extra)}" if extra else text
 
 
+# ---------------------------------------------------------- LLM 查询改写（三路对比的第二路）
+#
+# 词典改写（expand_query）覆盖的是「预先想到的口语」，覆盖面受词典限制；
+# LLM 改写理论上能处理任意口语。是否值得多付一次 LLM 调用（延迟 + token），
+# 由 eval_retrieval.py --rewrite dict|llm|none 三路对比拿数字说话。
+
+_REWRITE_SYSTEM = (
+    "你是旅游检索查询改写器。把用户输入改写成适合语义检索的查询："
+    "1) 把口语说法换成旅游攻略正文常用的书面说法（例：带娃→亲子 儿童；不想爬山→平路 缆车 少台阶）；"
+    "2) 保留城市与具体地名，补充正文里可能出现的同义词；"
+    "3) 只输出改写后的查询本身，一行，60 字以内，不要解释、不要引号。"
+)
+
+# 独立熔断器：改写挂了不能连带把 chat/rerank 的熔断状态搅浑
+_rewrite_breaker = get_breaker("rewrite")
+
+# 改写重试 1 次（共 2 次尝试）：改写是锦上添花，3 次重试 × 5s 超时会把
+# 检索拖到不可接受；与 rerank.py 的重试强度保持一致
+_REWRITE_RETRY = 1
+
+# 改写调用的累计统计（进程生命周期）：给 eval 报 token 与延迟，给 /metrics 报调用量
+_rewrite_stats = {
+    "calls": 0, "failures": 0,
+    "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0,
+    "latency_ms": 0,
+}
+
+
+def rewrite_stats() -> dict:
+    """LLM 改写调用的累计统计快照。"""
+    return dict(_rewrite_stats)
+
+
+def expand_query_llm(query: str) -> str | None:
+    """用 GLM 把口语查询改写成检索友好的查询（同步接口，供 search 线程调用）。
+
+    返回改写文本；失败/熔断/未配 key 返回 None，调用方自己决定回退目标
+    （eval 的 llm 臂回退到原 query，保持三臂对比纯净）。绝不抛异常。
+    """
+    try:
+        q = str(query or "").strip()
+        if not q or not settings.zhipu_api_key:
+            return None
+        payload = {
+            "model": settings.glm_model,
+            "temperature": 0.2,  # 改写要稳定，不要发散
+            "messages": [
+                {"role": "system", "content": _REWRITE_SYSTEM},
+                {"role": "user", "content": q},
+            ],
+        }
+        timeout = httpx.Timeout(5.0, connect=4.0)
+        last: Exception | None = None
+        for attempt in range(_REWRITE_RETRY + 1):
+            started = time.perf_counter()
+            try:
+                if not _rewrite_breaker.allow():
+                    return None
+                with provider_slot("chat"):
+                    # 复用 chat 槽位：同样是智谱调用，共享限流节奏
+                    with httpx.Client(timeout=timeout, trust_env=False) as client:
+                        resp = client.post(
+                            f"{ZHIPU_BASE_URL}/chat/completions",
+                            headers={"Authorization": f"Bearer {settings.zhipu_api_key}"},
+                            json=payload,
+                        )
+                    resp.raise_for_status()
+                data = resp.json()
+                choices = data.get("choices") or [{}]
+                text = str(choices[0].get("message", {}).get("content") or "").strip()
+                if not text:
+                    raise RuntimeError("改写返回为空")
+
+                usage = data.get("usage") or {}
+
+                def _int(key: str) -> int:
+                    try:
+                        return int(usage.get(key) or 0)
+                    except (TypeError, ValueError):
+                        return 0
+
+                _rewrite_stats["calls"] += 1
+                _rewrite_stats["prompt_tokens"] += _int("prompt_tokens")
+                _rewrite_stats["completion_tokens"] += _int("completion_tokens")
+                _rewrite_stats["total_tokens"] += _int("total_tokens")
+                _rewrite_stats["latency_ms"] += int((time.perf_counter() - started) * 1000)
+                _rewrite_breaker.record_success()
+                # 清洗：剥引号/句号尾巴、压空白、限长——模型偶尔会带礼貌用语
+                text = text.strip(" \t\r\n\"'「」『』。.")
+                return " ".join(text.split())[:120]
+            except Exception as exc:
+                last = exc
+                _rewrite_breaker.record_failure()
+                if attempt < _REWRITE_RETRY:
+                    time.sleep(0.4 * (attempt + 1))
+        # failures 按「整次调用」计（与 calls 同口径）：重试尝试的失败只进熔断器
+        _rewrite_stats["failures"] += 1
+        logger.warning("LLM 改写失败（%s），按调用方的回退策略继续", type(last).__name__)
+        return None
+    except Exception:
+        logger.exception("LLM 改写模块异常")
+        return None
+
+
 def _city_match(left: str, right: str) -> bool:
     """城市比较放宽到包含关系：「成都」要能匹配「成都市」，反之亦然。"""
     a = str(left or "").strip()
@@ -457,22 +579,95 @@ def _score(query_vec: np.ndarray, rows) -> list[tuple[float, object]]:
     return list(zip(scores.tolist(), kept))
 
 
-def search(query: str, city: str = "", k: int = 5, min_score: float = 0.35) -> list[dict]:
-    """同步检索：城市硬过滤 → 向量 + 关键词 + 意图修正排序 → 阈值截断 → Top-K。
+def _rerank_doc(row) -> str:
+    """给 rerank 接口看的候选文本：标题 + 正文压成一行并截断。
+
+    截到 400 字符：chunk_text 的片段上限就是 400，正常情况下不会截；
+    超长只可能来自历史数据，截断保证永不超 rerank 的 4K 上下文。
+    """
+    return " ".join(f"{row.title or ''} {row.content or ''}".split())[:400]
+
+
+def _rerank_select(original_query: str, scored: list, k: int) -> list[tuple]:
+    """两阶段检索的第二阶段：cross-encoder 精排选最终 Top-K。
+
+    第一阶段（混合检索）按「快但糙」的分数把候选池捞到 rerank_pool 个；
+    第二阶段用智谱托管 rerank 按语义相关性重排，取 Top-K。
+    返回 [(混合分, row, rerank分或None)]，只调一次 rerank 接口。
+
+    与第一阶段的取舍关系：
+    - 候选池不看 min_score 阈值——被阈值卡掉的「正确但分低」片段正是
+      rerank 要捞回来的对象，先卡阈值就把重排的意义卡没了；
+    - 相关性 floor（rerank_min_score）由 rerank 模型把关质量，
+      比混合分的阈值更可靠；
+    - 全部低于 floor 或 rerank 失败时回退混合排序 Top-K：可用性优先，
+      重排只改进排序，绝不减少结果、绝不抛异常。
+    """
+    try:
+        pool = scored[: max(k, int(settings.rerank_pool))]
+        if len(pool) <= 1 or k <= 1:
+            return [(final, row, None) for final, row in pool[:k]]
+        ordered = rerank_scores(original_query, [_rerank_doc(row) for _, row in pool])
+        if ordered is None:
+            return [(final, row, None) for final, row in pool[:k]]
+        floor = float(settings.rerank_min_score)
+        selected = []
+        for idx, rel in ordered:
+            if rel >= floor:
+                final, row = pool[idx]
+                selected.append((final, row, rel))
+            if len(selected) >= k:
+                break
+        # 候选全被 floor 判为不相关时保底返回混合排序头几条，别把结果掏空
+        if not selected:
+            return [(final, row, None) for final, row in pool[:k]]
+        return selected
+    except Exception:
+        logger.exception("rerank 阶段异常，回退混合排序")
+        return [(final, row, None) for final, row in scored[:k]]
+
+
+def search(
+    query: str,
+    city: str = "",
+    k: int = 5,
+    min_score: float = 0.35,
+    rerank: bool | None = None,
+    rewrite: str = "dict",
+) -> list[dict]:
+    """同步检索：城市硬过滤 → 查询改写 → 向量 + 关键词 + 意图修正 → （可选）精排 → Top-K。
+
+    rerank 参数三态：None（默认）跟随配置 settings.rerank_enabled（默认关）；
+    True / False 显式开关，评测脚本用。原四参调用完全兼容。
+    rewrite 参数三态（默认 "dict" 保持现行为）：
+    - "dict"：词典改写（expand_query，口语→书面同义词，零 LLM 成本）
+    - "llm" ：LLM 改写（expand_query_llm，失败回退原 query，保持评测臂纯净）
+    - "none"：不改写，原 query 直接送 embedding（对照组）
 
     返回 [{"source_type","source_id","city","title","content","source_url","score"}]
-    score 是混合分（0.8 向量 + 0.2 关键词 + 意图小幅修正），不再等于纯余弦。
+    score 是混合分（0.8 向量 + 0.2 关键词 + 意图小幅修正），不再等于纯余弦；
+    rerank 生效时结果按 rerank 相关性排序，score 仍是混合分，另带
+    rerank_score 字段（rerank 未生效时不带该字段，保持旧返回形状不变）。
     任何异常返回空列表（记服务端日志），绝不向上抛。
     """
+    global _cache_hits, _cache_misses
+    started = time.perf_counter()
     try:
         query = str(query or "").strip()
         if not query:
             return []
         k = max(1, int(k))
-        key = (query, str(city or ""), k, float(min_score))
+        use_rerank = settings.rerank_enabled if rerank is None else bool(rerank)
+        mode = str(rewrite or "dict").lower()
+        if mode not in ("dict", "llm", "none"):
+            mode = "dict"
+        # rerank 开关与改写模式都进缓存键：不同组合互不串结果
+        key = (query, str(city or ""), k, float(min_score), bool(use_rerank), mode)
         cached = _cache.get(key)
         if cached is not None:
+            _cache_hits += 1
             return [dict(item) for item in cached]
+        _cache_misses += 1
 
         rows = _load_rows(str(city or ""))
         if city:
@@ -482,7 +677,14 @@ def search(query: str, city: str = "", k: int = 5, min_score: float = 0.35) -> l
         if not rows:
             return []  # 空库不调接口：省一次 8 秒超时的风险
 
-        rewritten = expand_query(query)
+        # 查询改写三路：dict（默认，与历史行为一致）/ llm（失败回退原 query）/
+        # none（对照组：原 query 直接送 embedding）
+        if mode == "dict":
+            rewritten = expand_query(query)
+        elif mode == "llm":
+            rewritten = expand_query_llm(query) or query
+        else:
+            rewritten = query
         query_vec = np.asarray(_embed_sync([rewritten])[0], dtype=np.float32)
         # 混合检索：向量分 0.8 + 关键词覆盖率 0.2。
         # 纯向量对专有名词（洪崖洞、漓江）和小语料不够稳，关键词分把它们捞回来；
@@ -493,32 +695,43 @@ def search(query: str, city: str = "", k: int = 5, min_score: float = 0.35) -> l
         # 注意用改写后的 query 取词：否则「不想爬山」里的「爬山」二字会反过来
         # 给登山线路加分，把否定意图抵消掉。
         terms = _terms(rewritten)
-        ranked = []
+        scored = []
         for vec_score, row in _score(query_vec, rows):
             kw = _keyword_score(terms, f"{row.title or ''} {row.content or ''}")
             final = 0.8 * vec_score + 0.2 * kw
             final += _intent_adjust(row.source_type, row.title or "", row.content or "", rewritten)
-            if final >= min_score:
-                ranked.append((final, row))
-        ranked.sort(key=lambda item: item[0], reverse=True)
+            scored.append((final, row))
+        scored.sort(key=lambda item: item[0], reverse=True)
 
-        out = [
-            {
+        if use_rerank:
+            # 两阶段：精排结果自带 rerank 分数，不需要二次调用
+            selected = _rerank_select(query, scored, k)
+        else:
+            # 原路径（不重排）：阈值过滤后取 Top-K，行为与历史版本逐字节一致
+            selected = [(final, row, None) for final, row in scored if final >= min_score][:k]
+
+        out = []
+        for final, row, rel in selected[:k]:
+            item = {
                 "source_type": row.source_type,
                 "source_id": row.source_id,
                 "city": row.city,
                 "title": row.title,
                 "content": row.content,
                 "source_url": row.source_url,
-                "score": round(float(score), 4),
+                "score": round(float(final), 4),
             }
-            for score, row in ranked[:k]
-        ]
+            if rel is not None:
+                item["rerank_score"] = round(float(rel), 4)
+            out.append(item)
         _cache[key] = out
         return [dict(item) for item in out]
     except Exception:
         logger.exception("知识库检索失败，按无资料继续生成")
         return []
+    finally:
+        # 成功与失败都计入延迟直方图：失败路径的耗时同样反映服务健康度
+        SEARCH_LATENCY.observe(time.perf_counter() - started)
 
 
 def clear_cache() -> None:

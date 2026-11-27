@@ -39,6 +39,21 @@ class Settings(BaseSettings):
     # 不配时使用保存在 backend/data/ 下的本机随机密钥
     jwt_secret: str = ""
 
+    # ---- Rerank（两阶段检索的第二阶段，2026-11-27 新增）----
+    # 模型选型依据：智谱官方提供托管 rerank 接口（docs.bigmodel.cn「文本重排序」，
+    # POST /api/paas/v4/rerank），0 内存占用，2G 服务器首选；本地 ONNX 方案仅作
+    # 托管接口不可用时的后备。默认关闭：.env 设 RERANK_ENABLED=1 或调用
+    # search(..., rerank=True) 才启用，保证对现有 556 个测试与线上行为零影响。
+    rerank_enabled: bool = False
+    # 智谱托管 rerank 的模型名（官方文档示例值就是 "rerank"）
+    rerank_model: str = "rerank"
+    # 混合排序后送入 rerank 的候选池大小：比 k 大才能"捞回"排在后面的正确片段
+    rerank_pool: int = 10
+    # rerank 单次 HTTP 超时（秒）。超时/失败一律回退混合排序，不阻断主流程
+    rerank_timeout: float = 5.0
+    # relevance_score 低于该值视为不相关直接丢弃；全部低于时回退混合排序保证可用
+    rerank_min_score: float = 0.10
+
     model_config = SettingsConfigDict(
         env_file=str(ENV_FILE),
         env_file_encoding="utf-8",

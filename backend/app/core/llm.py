@@ -10,15 +10,22 @@
 """
 import json
 import re
+import time
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
+from app.core.circuit_breaker import CircuitOpen, get_breaker
 from app.core.config import settings
-from app.core.provider_budget import async_provider_slot, enabled
+from app.core.llm_usage import extract_usage, record as record_usage
+from app.core.provider_budget import ProviderBusy, async_provider_slot, enabled
 
 # 智谱 OpenAI 兼容端点（ChatOpenAI 会自动在后面拼 /chat/completions）
 ZHIPU_BASE_URL = "https://open.bigmodel.cn/api/paas/v4"
+
+# chat 路径的熔断器：连续 5 次失败开路、30s 冷却、半开放 1 个探测（见 circuit_breaker.py）。
+# 与限流（provider_budget）互补：限流管「排队慢」，熔断管「服务挂了别再撞」。
+_chat_breaker = get_breaker("chat")
 
 
 def _to_lc_messages(messages):
@@ -52,13 +59,42 @@ async def chat(messages, temperature: float = 0.5, timeout_ms: int = 60000) -> s
     """调用智谱 GLM 对话接口，返回 AI 回复文本。
 
     与 Node 版 chat() 签名一致：chat(messages, {temperature, timeoutMs})
+
+    熔断行为：连续 5 次失败后开路，开路期间直接抛 CircuitOpen（RuntimeError
+    子类，调用方现有 except 兜底能接住），不再消耗 60s 超时等待；30s 后放
+    1 个探测请求确认服务是否恢复。ProviderBusy（本地限流满）不算服务故障，
+    不计入熔断计数。
+
+    token 计量：成功与失败都会落一行 llm_usage（见 llm_usage.record），
+    并把用量快照 set 到 llm_usage.last_usage 这个 contextvar——调用方在同
+    任务里 get 即可读到，30+ 调用点的签名完全不动。
     """
     llm = _make_llm(temperature, timeout_ms)
-    async with async_provider_slot('chat'):
-        resp = await llm.ainvoke(_to_lc_messages(messages))
-    content = resp.content
-    if not content:
-        raise RuntimeError("智谱API返回异常：无 content 字段")
+    if not _chat_breaker.allow():
+        raise CircuitOpen("chat", _chat_breaker.cooldown_remaining())
+    started = time.perf_counter()
+    try:
+        async with async_provider_slot('chat'):
+            resp = await llm.ainvoke(_to_lc_messages(messages))
+        content = resp.content
+        if not content:
+            raise RuntimeError("智谱API返回异常：无 content 字段")
+    except ProviderBusy:
+        # 本地并发额度满了是我们自己拦的，不是智谱挂了——别污染熔断计数
+        raise
+    except BaseException as exc:
+        _chat_breaker.record_failure()
+        # 失败也计量（token 全 0）：失败次数本身就是排障与成本视角的一部分
+        record_usage(
+            settings.glm_model,
+            {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+            (time.perf_counter() - started) * 1000,
+            ok=False,
+            error=type(exc).__name__,
+        )
+        raise
+    _chat_breaker.record_success()
+    record_usage(settings.glm_model, extract_usage(resp), (time.perf_counter() - started) * 1000)
     return content
 
 

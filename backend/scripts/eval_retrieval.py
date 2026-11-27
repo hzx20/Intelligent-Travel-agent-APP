@@ -55,7 +55,15 @@ def hit(item: dict, results: list[dict]) -> bool:
     return False
 
 
-def run(queries: list[dict], k: int, min_score: float, *, verbose: bool = True) -> dict:
+def run(
+    queries: list[dict],
+    k: int,
+    min_score: float,
+    *,
+    verbose: bool = True,
+    rerank: bool = False,
+    rewrite: str = "dict",
+) -> dict:
     knowledge.clear_cache()  # 实测耗时要包含真实 embedding 调用
     hits = 0
     misses = []
@@ -63,7 +71,12 @@ def run(queries: list[dict], k: int, min_score: float, *, verbose: bool = True) 
     for item in queries:
         started = time.perf_counter()
         results = knowledge.search(
-            item.get("query", ""), item.get("city", ""), k=k, min_score=min_score
+            item.get("query", ""),
+            item.get("city", ""),
+            k=k,
+            min_score=min_score,
+            rerank=rerank,
+            rewrite=rewrite,
         )
         elapsed.append((time.perf_counter() - started) * 1000)
         ok = hit(item, results)
@@ -98,20 +111,43 @@ def main() -> int:
     parser.add_argument("--set", dest="eval_set", choices=sorted(EVAL_SETS), default="dev",
                         help="dev=调参用过（偏乐观）；holdout=写完未调参（更接近真实）")
     parser.add_argument("--sweep", action="store_true", help="阈值 0.30/0.35/0.40 × K 3/5/8")
+    parser.add_argument("--rerank", choices=("on", "off"), default="off",
+                        help="on=两阶段检索（混合排序 + 智谱 rerank 精排），off=只混合排序。"
+                             "rerank 打开时 min_score 只约束候选池兜底路径，精排质量由 "
+                             "RERANK_MIN_SCORE 把关（2026-11-27 新增）")
+    parser.add_argument("--rewrite", choices=("dict", "llm", "none"), default="dict",
+                        help="查询改写三路对比：dict=词典改写（现行为）；"
+                             "llm=GLM 改写（失败回退原 query）；none=不改写对照组")
     args = parser.parse_args()
 
     queries = load_queries(EVAL_DIR / EVAL_SETS[args.eval_set])
-    print(f"评测集：{args.eval_set}（{len(queries)} 条）")
+    print(f"评测集：{args.eval_set}（{len(queries)} 条）rerank={args.rerank} rewrite={args.rewrite}")
     if args.sweep:
         print("阈值\tK\tRecall\t平均耗时")
         for score in (0.30, 0.35, 0.40):
             for k in (3, 5, 8):
-                r = run(queries, k, score, verbose=False)
+                r = run(queries, k, score, verbose=False,
+                        rerank=args.rerank == "on", rewrite=args.rewrite)
                 print(f"{score:.2f}\t{k}\t{r['recall']:.2f}\t{r['avg_ms']:.0f} ms")
         return 0
 
-    result = run(queries, args.k, args.min_score)
+    stats_before = knowledge.rewrite_stats()
+    result = run(queries, args.k, args.min_score, rerank=args.rerank == "on",
+                 rewrite=args.rewrite)
     report(result, args.k)
+    if args.rewrite == "llm":
+        now_stats = knowledge.rewrite_stats()
+        delta = {key: now_stats[key] - stats_before[key] for key in now_stats}
+        calls = delta["calls"]
+        if calls:
+            print(
+                f"LLM 改写开销：调用 {calls} 次（失败 {delta['failures']}），"
+                f"token 合计 {delta['total_tokens']}"
+                f"（输入 {delta['prompt_tokens']} / 输出 {delta['completion_tokens']}），"
+                f"平均改写耗时 {delta['latency_ms'] / calls:.0f} ms"
+            )
+        else:
+            print("LLM 改写开销：0 次调用（未配 key 或全部熔断）")
     return 0 if result["recall"] >= 0.75 else 1
 
 
