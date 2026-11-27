@@ -9,7 +9,13 @@ from tools.travel_https_host import publishes_443
 
 RECEIPT = Path(__file__).resolve().parents[2] / 'docs/verification/budget-https-entry-host-readback-2026-11-19.json'
 
+# 这两条要读 binder.REVIEW 里的私有复核包（.gitignore 排除）。CI 没有就跳过。
+needs_review = pytest.mark.skipif(
+    not binder.REVIEW.is_dir(), reason='Private review bundle required (local .release-candidates/)'
+)
 
+
+@needs_review
 def test_live_readback_binds_edge_and_backend_to_exact_same_reviewed_addresses():
     files, report = binder.candidate_files(RECEIPT)
     assert report['files']['nginx-edge.conf'] == edge.DEDICATED_NORMAL
@@ -26,6 +32,7 @@ def test_live_readback_binds_edge_and_backend_to_exact_same_reviewed_addresses()
         edge.parse_target(json.dumps({**target, 'network': 'continew_default'}))
 
 
+@needs_review
 def test_binding_refuses_port_or_extra_upstream_and_network_conflict(tmp_path):
     normal, _ = binder.candidate_files(RECEIPT)
     with pytest.raises(ValueError, match='two exact travel upstreams'):

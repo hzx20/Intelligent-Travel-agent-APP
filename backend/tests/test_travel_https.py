@@ -22,6 +22,12 @@ ROOT = Path(__file__).resolve().parents[2]
 REVIEW = ROOT / '.release-candidates/budget-https-load-2026-11-19'
 PORT80 = 'listen 80;'
 
+# 复核包是本机产物，整目录在 .gitignore 里。CI 拿不到就跳过，
+# 不要在没有材料的机器上跑"核实"——那只会红，不会证明任何事。
+needs_review = pytest.mark.skipif(
+    not REVIEW.is_dir(), reason='Private review bundle required (local .release-candidates/)'
+)
+
 
 def source():
     template = (REVIEW / 'application/deploy/nginx-travel.conf').read_text(encoding='utf-8')
@@ -32,6 +38,7 @@ def source():
             'server {listen 80; location = / { return 200 "OTHER SITE"; }\n' + locations + '\n}\n}\n')
 
 
+@needs_review
 def test_exact_plan_remains_intact_and_conflicting_inputs_are_refused():
     plan = REVIEW / 'private-plan'
     manifest = json.loads((plan / 'plan.json').read_bytes())
@@ -53,6 +60,7 @@ def test_exact_plan_remains_intact_and_conflicting_inputs_are_refused():
         tls.challenge_only(bootstrap)
 
 
+@needs_review
 def test_standalone_edge_does_not_copy_other_site_or_change_its_http_rules():
     plan = REVIEW / 'private-plan/ops'
     current = (plan/'nginx-before.conf').read_bytes().decode('utf-8')

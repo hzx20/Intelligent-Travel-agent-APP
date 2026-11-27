@@ -1245,3 +1245,19 @@ git 6a660a9（RAG）+43bda9e（发布工具）推送 origin/main，ls-remote 与
 CI：.github/workflows/ci.yml，两个 job——后端离线 pytest（排除 test_m1/test_m2 与两个真模型/慢用例）、前端 npm ci + build:travel。env 给假 ZHIPU_API_KEY，避免没有 .env 时模块级 client 初始化直接抛错。
 
 顺手修了测试选择器：原来 `-k "not test_graph"` 会把 `test_graph_contains_retrieve_before_generate` 一起排除（宽匹配），改成 `not test_graph_compiled_and_flows` 后多跑 2 条，离线用例从 799 变 801。
+
+## 2026-11-27 第二轮：预算归零、补点时刻、CI 首跑
+
+线上那次规划暴露三个问题，全部修掉并重新上线（应用包 `0f1aecbb…c1a2ad`）。
+
+**预算总计 ¥0。** 注入块写「不要编造具体价格与营业时间」「能写以现场为准就不要写死数字」，系统提示写的是「未给预算时按中低标准估算」——模型听前者，10 个条目 `cost_estimate` 全 null。改成「不照抄成确定报价，但也不要把 cost_estimate 留空」，并明说「预算总计是 0，比估得不准更糟」。线上复测总计 ¥200（只有餐饮项给价，其余待确认），方向对了。教训：注入块只能补充信息，不能覆盖系统提示的行为约定。
+
+**补点没有时刻。** `fill_thin_days` 只写了 name/type/filled/note，前端时间栏空着。新增 `_slot_after`：接在当天最后一个点之后（开始 + 时长 + 30 分钟路上），无时刻时从 09:00 起算，算出来超过 20:00 就认为当天排满、不再补。实测补的点拿到 18:00 / 14:30 / 17:00。
+
+**补点只在生成后做，核实后不补。** 核实会合并重复地点（同景点排两天、同山不同名），合并后「每天 3 个」可能又掉回 2 个，日志说补过、用户看到的还是稀。现在 `verify_node` 里再补一次，补的点标 `verification_status=unverified`（它们确实没核实过）。
+
+顺带把 `plan_density` 的 floor 统一成 3：悠闲档原来给 2，模型排两个就判达标，提示词里「至少 3 个」形同虚设。悠闲是每处待久一点，不是少去一处。
+
+**CI 首跑红灯。** 三次失败，前两次拿不到日志（job log 下载要 admin），第三次把失败用例转成 `::error` 注解才定位到：5 条用例依赖 `.release-candidates/`（整目录在 .gitignore 里），CI 拿不到直接 FileNotFoundError——`test_travel_https` 2 条、`test_bind_travel_https_network` 2 条、`test_publish_travel_maintenance` 1 条，加上更早修的 `test_linux_budget_load_harness` 2 条。全部改成「材料不在就跳过」，跟仓库里 nginx/dist 那批用例一个写法。workflow 也加了失败摘要写 job summary + 注解，下次不用再猜。
+
+离线回归 809 passed / 1 skipped / 0 failed（首次全绿）。

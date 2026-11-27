@@ -1,10 +1,14 @@
 from io import StringIO
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
 from tools import publish_travel_maintenance as publish, recheck_travel_maintenance as recheck
 from tools import publish_travel_maintenance_remote as remote
+
+# inputs() 读 .release-candidates/ 里的私有复核包，CI 拿不到就跳过。
+REVIEW = Path(__file__).resolve().parents[2] / '.release-candidates/budget-https-load-2026-11-19'
 
 
 NEW_LEAF = 'a' * 64
@@ -34,6 +38,7 @@ def test_public_check_requires_maintenance_on_exact_paths_and_existing_http(monk
             publish.public_checks(before, NEW_LEAF)
 
 
+@pytest.mark.skipif(not REVIEW.is_dir(), reason='Private review bundle required (local .release-candidates/)')
 def test_source_and_input_match_the_verified_private_maintenance_bundle():
     source, payload = publish.inputs()
     assert source and payload.endswith(b'\n')
