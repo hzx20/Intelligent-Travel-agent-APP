@@ -1,0 +1,81 @@
+[
+  {"id": 1, "type": "亲子", "query": "带 6 岁小孩去成都，想找适合孩子的", "city": "成都", "expect_any": ["熊猫", "动物园"]},
+  {"id": 2, "type": "具体", "query": "成都火锅哪家好吃", "city": "成都", "expect_any": ["火锅"]},
+  {"id": 3, "type": "交通", "query": "从成都市区怎么去都江堰", "city": "成都", "expect_any": ["都江堰"]},
+
+  {"id": 4, "type": "无障碍", "query": "带老人去杭州，腿脚不方便", "city": "杭州", "expect_any": ["游船", "平路", "休憩", "无障碍"]},
+  {"id": 5, "type": "交通", "query": "杭州灵隐寺怎么去", "city": "杭州", "expect_any": ["灵隐"]},
+  {"id": 6, "type": "具体", "query": "西湖边骑车环湖", "city": "杭州", "expect_any": ["骑行", "环湖", "自行车"]},
+
+  {"id": 7, "type": "交通", "query": "西安兵马俑怎么坐车", "city": "西安", "expect_any": ["兵马俑"]},
+  {"id": 8, "type": "具体", "query": "西安回民街有什么小吃", "city": "西安", "expect_any": ["回民街", "泡馍", "肉夹馍"]},
+  {"id": 9, "type": "亲子", "query": "带孩子去西安，想看点历史", "city": "西安", "expect_any": ["博物院", "碑林", "城墙", "历史"]},
+
+  {"id": 10, "type": "交通", "query": "厦门鼓浪屿怎么坐船", "city": "厦门", "expect_any": ["鼓浪屿"]},
+  {"id": 11, "type": "具体", "query": "厦门哪里吃海鲜便宜", "city": "厦门", "expect_any": ["海鲜"]},
+  {"id": 12, "type": "具体", "query": "厦门大学能进去参观吗", "city": "厦门", "expect_any": ["厦门大学", "厦大"]},
+
+  {"id": 13, "type": "具体", "query": "北京故宫怎么预约门票", "city": "北京", "expect_any": ["故宫"]},
+  {"id": 14, "type": "交通", "query": "从北京市区怎么去长城", "city": "北京", "expect_any": ["长城"]},
+  {"id": 15, "type": "亲子", "query": "带孩子去北京看博物馆", "city": "北京", "expect_any": ["科技馆", "自然博物馆", "国家博物馆", "博物院"]},
+
+  {"id": 16, "type": "具体", "query": "上海外滩夜景几点最好", "city": "上海", "expect_any": ["外滩"]},
+  {"id": 17, "type": "亲子", "query": "上海迪士尼带小孩怎么玩", "city": "上海", "expect_any": ["迪士尼"]},
+  {"id": 18, "type": "交通", "query": "上海地铁怎么坐去机场", "city": "上海", "expect_any": ["磁浮", "机场"]},
+
+  {"id": 19, "type": "具体", "query": "重庆洪崖洞晚上好看吗", "city": "重庆", "expect_any": ["洪崖洞"]},
+  {"id": 20, "type": "具体", "query": "重庆火锅推荐", "city": "重庆", "expect_any": ["火锅"]},
+  {"id": 21, "type": "交通", "query": "重庆轻轨怎么坐", "city": "重庆", "expect_any": ["轻轨", "李子坝"]},
+
+  {"id": 22, "type": "交通", "query": "长沙橘子洲头怎么去", "city": "长沙", "expect_any": ["橘子洲"]},
+  {"id": 23, "type": "具体", "query": "长沙臭豆腐哪家正宗", "city": "长沙", "expect_any": ["臭豆腐"]},
+  {"id": 24, "type": "无障碍", "query": "带老人爬岳麓山累不累", "city": "长沙", "expect_any": ["岳麓山"]},
+
+  {"id": 25, "type": "具体", "query": "青岛栈桥附近有什么玩的", "city": "青岛", "expect_any": ["栈桥"]},
+  {"id": 26, "type": "具体", "query": "青岛海鲜市场怎么买", "city": "青岛", "expect_any": ["海鲜"]},
+  {"id": 27, "type": "具体", "query": "青岛啤酒博物馆值得去吗", "city": "青岛", "expect_any": ["啤酒"]},
+
+  {"id": 28, "type": "具体", "query": "大理洱海怎么环湖", "city": "大理", "expect_any": ["洱海"]},
+  {"id": 29, "type": "住宿", "query": "大理古城住哪里方便", "city": "大理", "expect_any": ["客栈", "住宿"]},
+  {"id": 30, "type": "具体", "query": "大理苍山怎么上去", "city": "大理", "expect_any": ["苍山"]},
+
+  {"id": 31, "type": "具体", "query": "丽江古城有什么好逛的", "city": "丽江", "expect_any": ["古城"]},
+  {"id": 32, "type": "具体", "query": "丽江束河古镇值得去吗", "city": "丽江", "expect_any": ["束河"]},
+  {"id": 33, "type": "交通", "query": "丽江怎么去玉龙雪山", "city": "丽江", "expect_any": ["玉龙雪山"]},
+
+  {"id": 34, "type": "具体", "query": "苏州园林哪个最值得看", "city": "苏州", "expect_any": ["拙政园", "留园", "狮子林"]},
+  {"id": 35, "type": "具体", "query": "苏州平江路怎么逛", "city": "苏州", "expect_any": ["平江路"]},
+  {"id": 36, "type": "亲子", "query": "带小孩去苏州博物馆要预约吗", "city": "苏州", "expect_any": ["博物馆", "预约"]},
+
+  {"id": 37, "type": "交通", "query": "南京中山陵怎么去", "city": "南京", "expect_any": ["中山陵"]},
+  {"id": 38, "type": "具体", "query": "南京夫子庙秦淮河夜景", "city": "南京", "expect_any": ["夫子庙", "秦淮"]},
+  {"id": 39, "type": "具体", "query": "南京博物院值得去吗", "city": "南京", "expect_any": ["博物院"]},
+
+  {"id": 40, "type": "具体", "query": "广州早茶去哪里喝", "city": "广州", "expect_any": ["早茶", "茶楼", "点心"]},
+  {"id": 41, "type": "具体", "query": "广州珠江夜游怎么买票", "city": "广州", "expect_any": ["珠江", "夜游"]},
+  {"id": 42, "type": "具体", "query": "广州沙面有什么好看的", "city": "广州", "expect_any": ["沙面"]},
+
+  {"id": 43, "type": "具体", "query": "深圳世界之窗值得去吗", "city": "深圳", "expect_any": ["世界之窗"]},
+  {"id": 44, "type": "具体", "query": "深圳哪里看海", "city": "深圳", "expect_any": ["大梅沙", "小梅沙", "海滩"]},
+  {"id": 45, "type": "交通", "query": "深圳地铁怎么去机场", "city": "深圳", "expect_any": ["机场"]},
+
+  {"id": 46, "type": "具体", "query": "武汉黄鹤楼怎么去", "city": "武汉", "expect_any": ["黄鹤楼"]},
+  {"id": 47, "type": "具体", "query": "武汉热干面哪家好吃", "city": "武汉", "expect_any": ["热干面"]},
+  {"id": 48, "type": "亲子", "query": "带小孩去武汉东湖玩什么", "city": "武汉", "expect_any": ["东湖"]},
+
+  {"id": 49, "type": "交通", "query": "昆明石林怎么去", "city": "昆明", "expect_any": ["石林"]},
+  {"id": 50, "type": "具体", "query": "昆明滇池看海鸥", "city": "昆明", "expect_any": ["滇池", "海鸥"]},
+  {"id": 51, "type": "具体", "query": "昆明过桥米线推荐", "city": "昆明", "expect_any": ["米线"]},
+
+  {"id": 52, "type": "具体", "query": "桂林漓江怎么游", "city": "桂林", "expect_any": ["漓江"]},
+  {"id": 53, "type": "具体", "query": "桂林阳朔西街晚上", "city": "桂林", "expect_any": ["西街"]},
+  {"id": 54, "type": "具体", "query": "桂林象鼻山值得去吗", "city": "桂林", "expect_any": ["象鼻山"]},
+
+  {"id": 55, "type": "具体", "query": "哈尔滨冰雪大世界什么时候开", "city": "哈尔滨", "expect_any": ["冰雪"]},
+  {"id": 56, "type": "具体", "query": "哈尔滨中央大街有什么", "city": "哈尔滨", "expect_any": ["中央大街"]},
+  {"id": 57, "type": "具体", "query": "哈尔滨红肠哪里买", "city": "哈尔滨", "expect_any": ["红肠"]},
+
+  {"id": 58, "type": "亲子", "query": "三亚带小孩去哪个海滩好", "city": "三亚", "expect_any": ["亚龙湾", "大东海", "海棠湾"]},
+  {"id": 59, "type": "交通", "query": "三亚蜈支洲岛怎么去", "city": "三亚", "expect_any": ["蜈支洲"]},
+  {"id": 60, "type": "具体", "query": "三亚吃海鲜去哪里", "city": "三亚", "expect_any": ["海鲜"]}
+]

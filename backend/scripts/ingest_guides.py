@@ -155,6 +155,11 @@ def sections_of(html: str) -> list[tuple[str, str]]:
         # 只压行内空白，保留换行：每个 listing 一行，切块时按行装箱更精准
         text = re.sub(r"[ \t\u3000]+", " ", text)
         text = re.sub(r"\n[ ]*\n+", "\n", text).strip()
+        # 价格和日期**不在这里洗**。实测在入库时剥掉数字会把留出集
+        # Recall@3 从 0.82 拉低到 0.75：数字在原文里占了不少语义分量，
+        # 删掉后片段变短、切块边界移动，住宿类章节（「XX客栈 ¥120」一行一个）
+        # 受影响最大。库里留着旧价格不影响用户——注入提示词前还有一道
+        # itinerary._strip_stale 会把它们剥掉，模型看不到。
         if title in _DROP_SECTIONS or len(text) < 30:
             continue
         out.append((title, text))

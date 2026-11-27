@@ -8,6 +8,8 @@ import { computed } from 'vue'
 
 const props = defineProps({
   references: { type: Array, default: () => [] },
+  // 后端 citations.py 算的落地统计：哪些安排真的对应到了某条资料
+  stats: { type: Object, default: null },
 })
 
 const refs = computed(() =>
@@ -15,15 +17,27 @@ const refs = computed(() =>
 )
 /** 是否包含维基导游正文：授权要求标注来源，景点片段不属于 CC BY-SA，不能一概而论 */
 const hasGuide = computed(() => refs.value.some((r) => r.source_type === 'guide'))
+/** 有统计且至少有 1 处落上才显示，否则「参考了 5 篇」和实际无关会显得像凑数 */
+const cited = computed(() => {
+  const n = Number(props.stats?.spots_with_refs || 0)
+  return n > 0 ? n : 0
+})
+
+/** 同一章节可能贡献多个片段，行程里标的是 [1][2][5]，这里要把编号都列出来 */
+function markList(ids) {
+  return Array.isArray(ids) && ids.length ? ids.map((n) => `[${n}]`).join('') : ''
+}
 </script>
 
 <template>
   <section v-if="refs.length" class="plan-refs" aria-label="参考的站内资料">
     <div class="refs-head">
       本行程参考了站内 {{ refs.length }} 篇资料
+      <span v-if="cited" class="refs-cited">其中 {{ cited }} 处安排直接来自这些资料</span>
     </div>
     <ul class="refs-list">
       <li v-for="(r, i) in refs" :key="i">
+        <span v-if="r.ref_ids && r.ref_ids.length" class="refs-num">{{ markList(r.ref_ids) }}</span>
         <a v-if="r.source_url" :href="r.source_url" target="_blank" rel="noopener noreferrer">《{{ r.title }}》</a>
         <span v-else>《{{ r.title }}》</span>
       </li>
@@ -47,6 +61,12 @@ const hasGuide = computed(() => refs.value.some((r) => r.source_type === 'guide'
   font-weight: 700;
   color: #1a6e50;
 }
+.refs-cited {
+  margin-left: 6px;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: #4d6b5b;
+}
 .refs-list {
   list-style: none;
   margin: 8px 0 0;
@@ -65,6 +85,12 @@ const hasGuide = computed(() => refs.value.some((r) => r.source_type === 'guide'
   color: var(--green, #1a6e50);
   text-decoration: none;
   border-bottom: 1px dashed currentColor;
+}
+.refs-num {
+  margin-right: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1a6e50;
 }
 .refs-list a:hover {
   border-bottom-style: solid;

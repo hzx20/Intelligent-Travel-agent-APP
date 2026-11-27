@@ -49,12 +49,21 @@ class SharedQuota:
 
 # Apply before request-body reads. Existing per-process capacity/limits remain.
 # Polling, cancellation, account/session checks and reads are not covered here.
+#
+# 规划类接口单独一档：一次规划 = 一次澄清 + 一次 embedding + 一次长文本生成
+# （上游超时给到 240 秒），比地图查询贵两个数量级。不设限时游客可以无限提交，
+# 上游配额和 2G 内存都会被拖垮。取消、轮询、读历史不在这里挡。
 PUBLIC_QUOTAS = {
     '/api/map/guest-route': (30, 60),
     '/api/map/place-search': (30, 60),
     '/api/trips/guest-guide-image-text': (2, 60),
     '/api/trips/guest-ai-preview': (2, 60),
     '/api/trips/guest-guide-preview': (4, 60),
+    '/api/plan/stream': (5, 60),
+    '/api/plan/jobs': (5, 60),
+    '/api/plan/jobs/create': (5, 60),
+    '/api/clarify': (20, 60),
+    '/api/itinerary': (6, 60),
 }
 
 

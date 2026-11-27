@@ -48,6 +48,58 @@ def _clean(text: str) -> str:
     return "\n".join(lines).strip()
 
 
+# ---------------------------------------------------------- 事实时效性清洗
+#
+# 维基导游正文里大量「门票 60 元」「人均 50 元」「更新日期 2019-05」这类断言。
+# 价格和营业时间是最容易过期、也最容易被模型当真写进行程的东西：
+# 模型看到「人均 60 元左右」会照抄，用户到店发现涨到 120，比不写更糟。
+# 处理原则是删数字、留结构：把「门票 60 元」变成「门票」，让模型知道
+# 这里有门票，但不敢写具体金额。
+
+_PRICE = re.compile(
+    r"[¥￥]\s*\d+(?:\.\d+)?(?:\s*[-~至]\s*\d+(?:\.\d+)?)?"
+    r"|\d+(?:\.\d+)?\s*[-~至]\s*\d+(?:\.\d+)?\s*(?:元|块钱|块)(?:\s*(?:/|每)\s*[人晚天间次])?"
+    r"|\d+(?:\.\d+)?\s*(?:元|块钱|块)(?:\s*(?:/|每)\s*[人晚天间次])?"
+)
+_STALE_DATE = re.compile(
+    r"(?:最后)?(?:更新|编辑|修订)日期?\s*[:：]?\s*"
+    r"\d{4}\s*[-年./]\s*\d{1,2}\s*(?:[-月./]\s*\d{1,2}\s*[日号]?)?\s*月?"
+)
+_ORPHAN = re.compile(r"[（(]\s*[）)]|，\s*[，。；]|、\s*[。；]")
+# 「人均 50 元左右」删掉数字后剩「人均 左右」，把量词尾巴一并收掉
+_PRICE_RESIDUE = re.compile(
+    r"(人均|门票|票价|价格|费用|花费|预算)\s*(?:约|大约|大概|差不多)?\s*"
+    r"(?:左右|上下|起|以内|以下|出头)"
+)
+
+
+def stale_fact_hits(text: str) -> int:
+    """一段文本里有多少处价格/日期断言，用于灌库时统计与调参。"""
+    value = str(text or "")
+    return len(_PRICE.findall(value)) + len(_STALE_DATE.findall(value))
+
+
+def strip_stale_facts(text: str) -> str:
+    """删掉易过期的具体价格与更新日期，保留句子结构。
+
+    只做删除，不改写语义：删完可能出现「门票」后面直接接逗号，
+    用 _ORPHAN 收一下尾，不额外造词。
+    """
+    value = str(text or "")
+    if not value:
+        return ""
+    value = _STALE_DATE.sub("", value)
+    value = _PRICE.sub("", value)
+    value = _PRICE_RESIDUE.sub(r"\1", value)
+    value = _ORPHAN.sub(lambda m: "，" if "，" in m.group(0) else "", value)
+    value = re.sub(r"[ \t]{2,}", " ", value)
+    value = re.sub(r"\s+([，。；：、])", r"\1", value)
+    value = re.sub(r"([，。；：])\s*([，。；：])", r"\1", value)
+    # 中文之间不该留空格：删掉价格后常剩「预算 够了」这种缝
+    value = re.sub(r"(?<=[\u4e00-\u9fa5])\s+(?=[\u4e00-\u9fa5])", "", value)
+    return value.strip(" ，、")
+
+
 def _sentences(block: str) -> list[str]:
     """按中英文句末标点断句，并保留标点（切块后读起来仍是完整句子）。"""
     parts = re.split(r"(?<=[。！？!?；;])", block)

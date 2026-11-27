@@ -1,9 +1,17 @@
 """检索评测：算 Recall@3（前 3 条里是否出现该查询的正确答案）。
 
 用法（在 backend/ 下）：
-    python scripts/eval_retrieval.py
+    python scripts/eval_retrieval.py                  # 开发集 20 条
+    python scripts/eval_retrieval.py --set holdout    # 留出集 60 条
     python scripts/eval_retrieval.py --k 5 --min-score 0.30
     python scripts/eval_retrieval.py --sweep          # 三档阈值 × 三档 K 全跑一遍
+
+两套评测集必须分开看：
+- dev（eval_queries.json）：写同义词表、调权重时对着它改过，分数偏高，
+  只能用来防回归，不能当成效果证明。
+- holdout（eval_queries_holdout.json）：写完就没再按它调过参数，反映的是
+  「换一批问法还能不能召回」。真实用户日志攒够之前，这是能拿到的最接近
+  无偏的估计。
 
 评测集的判定方式：每条查询带 expect_any（若干个必须能在片段里看到的关键词）。
 为什么不用 knowledge_chunks.id 标注：灌库是整表重建，id 每次都会变，
@@ -21,7 +29,11 @@ sys.path.insert(0, str(BACKEND))
 
 from app.services import knowledge  # noqa: E402
 
-EVAL_FILE = BACKEND / "tests" / "eval_queries.json"
+EVAL_DIR = BACKEND / "tests"
+EVAL_SETS = {
+    "dev": "eval_queries.json",
+    "holdout": "eval_queries_holdout.json",
+}
 
 
 def load_queries(path: Path) -> list[dict]:
@@ -83,10 +95,13 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--k", type=int, default=3)
     parser.add_argument("--min-score", type=float, default=0.35)
+    parser.add_argument("--set", dest="eval_set", choices=sorted(EVAL_SETS), default="dev",
+                        help="dev=调参用过（偏乐观）；holdout=写完未调参（更接近真实）")
     parser.add_argument("--sweep", action="store_true", help="阈值 0.30/0.35/0.40 × K 3/5/8")
     args = parser.parse_args()
 
-    queries = load_queries(EVAL_FILE)
+    queries = load_queries(EVAL_DIR / EVAL_SETS[args.eval_set])
+    print(f"评测集：{args.eval_set}（{len(queries)} 条）")
     if args.sweep:
         print("阈值\tK\tRecall\t平均耗时")
         for score in (0.30, 0.35, 0.40):

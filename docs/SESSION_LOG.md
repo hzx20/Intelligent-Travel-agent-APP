@@ -1215,3 +1215,17 @@ git 6a660a9（RAG）+43bda9e（发布工具）推送 origin/main，ls-remote 与
 线上验证：首页 200（HTTP 308→HTTPS）、/api/health ok、PlanView-C83LK-1b.js 200 且含「参考了站内」；服务器内 search「成都 带娃 少走路」返回 3 条 472ms；真实游客 /api/plan/stream 2m27s 完成，日志 澄清→资料检索 5 条→生成→核实→天气，result.references 3 条（成都·观光 oldid=224482 / 成都动物园 / 塔子山公园），days 2。
 
 回退：恢复 drop-in 备份 + daemon-reload + restart；前端 rollback --release-id 100244…；knowledge_chunks 为新增表，旧版忽略，库无需回退。已知：numpy 装在共享 env、语料只能离线搬运、发布包不含灌库/导入脚本。
+
+## 2026-11-27 引用落地 / 规划限流 / 留出集
+
+引用落到具体安排：新增 services/citations.py，按地点名匹配资料正文（通用词黑名单，「去后缀」核心词须 ≥3 字，避免「人民公园→人民」误命中），命中写 spot.ref_ids 与 day.ref_ids；地图核实前后各算一次（幂等，先清后写），核实改名后以最终名字为准。generate 日志增「资料引用：x/y 天、a/b 个安排」。前端 PlanView 在天标题与地点名后显示 [1][2]，PlanReferences 把同章节片段合并成一行并保留全部原始编号——合并后编号错位是个真 bug（行程标 [5]、底部只有 3 行），已修并加测试。
+
+限流：PUBLIC_QUOTAS 增 /api/plan/stream、/api/plan/jobs、/api/plan/jobs/create 各 5 次/60 秒，/api/clarify 20、/api/itinerary 6。一次规划 = 一次澄清 + 一次 embedding + 一次 240 秒超时的长文本生成，不设限时游客可无限堆积。默认仍由 TRAVEL_SHARED_LIMITS 开关控制。
+
+输出质量：_reference_block 注入前剥价格与更新日期（knowledge.strip_stale_facts，删数字留结构，不造词），并加「每天 4-6 项、至少 3 个具名地点」「价格以现场为准」两句；itinerary.density 记每天具名地点数，不足只写日志不触发重生成（硬约束会让真模型整单失败率上升）。
+
+评测：新增 tests/eval_queries_holdout.json 60 条（20 城 × 3），脚本加 --set。留出集 Recall@3 = 0.82（49/60，239-325ms），开发集 0.95。11 条失败归因：语料缺口 9（厦门无餐饮章节、深圳观光没列大梅沙、桂林正文只写独秀峰）、标注过严 1（三亚返回椰梦长廊/小东海也是海滩）、切块 1（成都火锅落在用餐章节另一块）。没有一条是排序算法写错，结论是补语料优先于加 rerank。
+
+失败的尝试：曾在入库时清洗价格，留出集从 0.82 掉到 0.75（片段变短、切块边界移动，住宿章节「XX客栈 ¥120」一行一个受影响最大）。改回只在注入时清洗，向量仍基于原文；库里留旧价格不影响用户，模型看不到。
+
+测试：新增 12 条（citations 7、清洗 3、配额 1、display 2），test_knowledge_rag.py 28 条全过。离线回归 795 passed / 2 failed（test_provider_budget 与 test_shared_cache 的多进程 temp DB 用例，整套并发时偶发，单跑 3/3 通过）。前端 npm run build:travel 通过（PlanView-CweQZ9QC.js）。

@@ -240,3 +240,135 @@ def test_export_import_round_trip(tmp_path):
     )
     with pytest.raises(ValueError, match="条数不符"):
         import_knowledge.load(path)
+
+
+# ---------------------------------------------------------------- 引用落地
+
+def test_strip_stale_facts_removes_prices_and_dates():
+    text = "门票 60 元，人均 50 元左右。更新日期：2019-05-01"
+    cleaned = knowledge.strip_stale_facts(text)
+    assert "60" not in cleaned and "50" not in cleaned
+    assert "2019" not in cleaned
+    assert "门票" in cleaned and "人均" in cleaned
+
+
+def test_strip_stale_facts_keeps_normal_sentences():
+    text = "地铁 1 号线直达，车程 20 分钟，适合带小孩。"
+    assert knowledge.strip_stale_facts(text) == text
+
+
+def test_stale_fact_hits_counts_markers():
+    assert knowledge.stale_fact_hits("票价￥120，更新日期 2020-01-01") >= 2
+    assert knowledge.stale_fact_hits("步行十分钟到湖边") == 0
+
+
+def test_match_refs_prefers_exact_spot_title():
+    from app.services import citations
+
+    refs = [
+        {"title": "观光", "content": "宽窄巷子下午人多，人民公园可以喝茶。"},
+        {"title": "成都动物园", "content": "适合带小孩，上午人少。"},
+    ]
+    assert citations.match_refs("成都动物园", refs) == [2]
+    assert citations.match_refs("宽窄巷子", refs) == [1]
+
+
+def test_match_refs_does_not_match_generic_words():
+    from app.services import citations
+
+    # 「人民」只是通用前缀：正文里出现「人民路」不代表就是人民公园
+    refs = [{"title": "交通", "content": "人民路一带小吃很多，公交可到。"}]
+    assert citations.match_refs("人民公园", refs) == []
+    assert citations.match_refs("公园", refs) == []
+
+
+def test_attach_citations_is_idempotent_and_per_day():
+    from app.services import citations
+
+    refs = [{"title": "观光", "content": "宽窄巷子适合下午去。"}]
+    itinerary = {
+        "days": [
+            {"day": 1, "spots": [{"name": "宽窄巷子"}, {"name": "春熙路"}]},
+            {"day": 2, "spots": [{"name": "青城山"}]},
+        ]
+    }
+    first = citations.attach_citations(itinerary, refs)
+    second = citations.attach_citations(itinerary, refs)
+    assert first == second
+    assert itinerary["days"][0]["spots"][0]["ref_ids"] == [1]
+    assert "ref_ids" not in itinerary["days"][0]["spots"][1]
+    assert itinerary["days"][0]["ref_ids"] == [1]
+    assert "ref_ids" not in itinerary["days"][1]
+    assert first["spots_with_refs"] == 1 and first["days_with_refs"] == 1
+
+
+def test_attach_citations_without_refs_keeps_structure():
+    from app.services import citations
+
+    itinerary = {"days": [{"day": 1, "spots": [{"name": "宽窄巷子"}]}]}
+    stats = citations.attach_citations(itinerary, [])
+    assert stats["refs"] == 0
+    assert "ref_ids" not in itinerary["days"][0]["spots"][0]
+
+
+def test_plan_density_ignores_meals_and_rest():
+    from app.services.itinerary import plan_density
+
+    itinerary = {
+        "days": [
+            {"day": 1, "spots": [
+                {"name": "宽窄巷子"}, {"name": "人民公园"},
+                {"name": "午餐", "timeBlock": "餐饮"}, {"name": "休息", "type": "休息"},
+            ]},
+            {"day": 2, "spots": [{"name": "青城山"}]},
+        ]
+    }
+    density = plan_density(itinerary, {"pace": "悠闲"})
+    assert density["counts"] == [2, 1]
+    assert density["thin_days"] == [2]
+    assert density["floor"] == 2
+
+
+def test_public_quotas_cover_plan_endpoints():
+    from app.core.shared_limits import PUBLIC_QUOTAS
+
+    for path in ("/api/plan/stream", "/api/plan/jobs", "/api/plan/jobs/create"):
+        assert path in PUBLIC_QUOTAS, f"{path} 没有限流：游客可无限提交长文本生成"
+        limit, window = PUBLIC_QUOTAS[path]
+        assert 0 < limit <= 10 and window == 60
+
+
+def test_reference_block_strips_prices():
+    from app.services.itinerary import _reference_block
+
+    block = _reference_block([
+        {"title": "成都·美食", "content": "玉林路小馆人均 60 元左右，适合家庭。"}
+    ])
+    assert "60" not in block
+    assert "玉林路" in block
+
+
+def test_display_references_keeps_original_numbers():
+    """行程里标 [1]..[5]，底部合并同名章节后编号还得对得上。"""
+    from app.services.graph import _display_references
+
+    refs = [
+        {"source_id": 2557, "source_type": "guide", "title": "成都·观光", "source_url": "u1"},
+        {"source_id": 2557, "source_type": "guide", "title": "成都·观光", "source_url": "u1"},
+        {"source_id": 17, "source_type": "spot", "title": "成都动物园", "source_url": "u2"},
+        {"source_id": 55, "source_type": "spot", "title": "塔子山公园", "source_url": "u3"},
+        {"source_id": 2557, "source_type": "guide", "title": "成都·观光", "source_url": "u1"},
+    ]
+    display = _display_references(refs)
+    assert [d["title"] for d in display] == ["成都·观光", "成都动物园", "塔子山公园"]
+    assert display[0]["ref_ids"] == [1, 2, 5]
+    assert display[1]["ref_ids"] == [3]
+    assert display[2]["ref_ids"] == [4]
+    assert "content" not in display[0]
+
+
+def test_display_references_empty():
+    from app.services.graph import _display_references
+
+    assert _display_references(None) == []
+    assert _display_references([]) == []

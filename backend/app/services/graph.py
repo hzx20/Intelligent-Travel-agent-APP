@@ -80,43 +80,66 @@ async def retrieve_node(state: PlanState) -> dict:
     return {"references": refs, "logs": _log(state, msg)}
 
 
+def _display_references(refs) -> list[dict]:
+    """把检索结果整理成前端可展示的出处列表。
+
+    只带 id/标题/链接，不把正文塞进响应体。同一小节的多个片段合并成一行，
+    但要把原始编号都记下来——行程里标的是 [1]..[5]，底部去重后若只剩 3 行，
+    编号就对不上，用户点不到对应的资料。
+    """
+    display, slot = [], {}
+    for index, ref in enumerate((refs or [])[:5], 1):
+        if not isinstance(ref, dict):
+            continue
+        key = (ref.get("source_id"), ref.get("title") or "")
+        if key in slot:
+            display[slot[key]]["ref_ids"].append(index)
+            continue
+        slot[key] = len(display)
+        display.append(
+            {
+                "source_id": ref.get("source_id"),
+                "source_type": ref.get("source_type", ""),
+                "title": ref.get("title") or "",
+                "source_url": ref.get("source_url") or "",
+                "ref_ids": [index],
+            }
+        )
+    return display
+
+
 async def generate_node(state: PlanState) -> dict:
     """节点2：行程生成（复用 M2 提示词与生成逻辑）。"""
+    from app.services import citations
+
     refs = state.get("references") or []
     itinerary = await generate_itinerary(state.get("collected") or {}, references=refs)
+    tail = ""
     if refs and isinstance(itinerary, dict):
-        # 只带 id/标题/出处，不把正文塞进响应体：前端要的是"点得开的出处"，
-        # source_type 用来决定是否标注 CC BY-SA（景点片段不是维基内容）。
-        # 同一小节的多个片段只展示一次，否则底部会出现两三个同名链接。
-        display, seen = [], set()
-        for ref in refs[:5]:
-            if not isinstance(ref, dict):
-                continue
-            key = (ref.get("source_id"), ref.get("title") or "")
-            if key in seen:
-                continue
-            seen.add(key)
-            display.append(
-                {
-                    "source_id": ref.get("source_id"),
-                    "source_type": ref.get("source_type", ""),
-                    "title": ref.get("title") or "",
-                    "source_url": ref.get("source_url") or "",
-                }
-            )
-        itinerary["references"] = display
+        itinerary["references"] = _display_references(refs)
+        # 引用落到具体安排：只在 generate 阶段先算一次，verify 会按核实后的
+        # 地点名再算一次（核实可能改名或替换地点），两边都幂等。
+        stats = citations.attach_citations(itinerary, refs)
+        desc = citations.describe(stats)
+        if desc:
+            tail = f"；资料引用：{desc}"
     days = len((itinerary.get("days") or []))
+    density = itinerary.get("density") if isinstance(itinerary, dict) else None
+    if isinstance(density, dict) and density.get("thin_days"):
+        # 说出来比藏着好：这一版仍照常返回，但日志里能看出哪天内容偏薄
+        tail += f"；{len(density['thin_days'])} 天具名地点偏少"
     # 澄清收集的字段名是 destination（前端快捷模块也写它），city 只是兼容旧数据的备选
     city = state["collected"].get("destination") or state["collected"].get("city", "")
     return {
         "itinerary": itinerary,
-        "logs": _log(state, f"行程生成：{city} {days} 天框架完成"),
+        "logs": _log(state, f"行程生成：{city} {days} 天框架完成{tail}"),
     }
 
 
 async def verify_node(state: PlanState) -> dict:
     """节点3：地图核实。无法唯一确认时保留原安排供核对。"""
     from app.db.database import SessionLocal
+    from app.services import citations
 
     db = SessionLocal()
     try:
@@ -128,6 +151,8 @@ async def verify_node(state: PlanState) -> dict:
             db,
             True,
         )
+        # 核实可能替换或改名地点，按最终名字重算一次引用（幂等，先清后写）
+        citations.attach_citations(new_itinerary, state.get("references") or [])
         # 按"天"去重，不能直接数日志条数：同一天可能产生两条去重记录
         # （核实前按名字合并一次、核实后按 POI 编号再合并一次），
         # 数条数会出现"2 天行程却说合并了 3 天"这种明显不实的提示。

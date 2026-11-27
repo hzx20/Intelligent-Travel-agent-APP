@@ -430,6 +430,12 @@ onBeforeUnmount(() => {
   infoWin = null
   mapReady.value = false
 })
+
+/** 引用编号渲染成 [1][2]。编号就是页面底部 PlanReferences 列表的序号，
+ *  由后端 citations.py 按提示词里 [1][2] 的同一顺序写死，前端不做重排。 */
+function refMarks(ids) {
+  return Array.isArray(ids) && ids.length ? ids.map((n) => `[${n}]`).join('') : ''
+}
 </script>
 
 
@@ -629,6 +635,9 @@ onBeforeUnmount(() => {
                 <span class="dot big" :style="{ background: colorOf(d.day) }"></span>
                 第{{ d.day }}天 · {{ d.theme || '' }}
                 <span class="day-count">{{ (d.spots || []).length }} 个点</span>
+                <span v-if="d.ref_ids && d.ref_ids.length" class="day-refs" title="这一天用到了站内资料，编号对应页面底部的资料列表">
+                  资料 {{ refMarks(d.ref_ids) }}
+                </span>
                 <span class="diff-badge" :style="{ background: diffColor(d.difficulty?.level) }">
                   {{ d.difficulty?.level || '难度待评估' }}
                 </span>
@@ -655,7 +664,7 @@ onBeforeUnmount(() => {
               <div v-for="(s, i) in planDayEntries(d)" :key="i" class="spot-row">
                 <span class="spot-idx" :style="{ background: colorOf(d.day) }">{{ i + 1 }}</span>
                 <div class="spot-info">
-                  <b>{{ s.name }}<span v-if="s.timeBlock === '休息'" class="basis-tag">休息时段</span><span v-else-if="s.timeBlock === '餐饮'" class="basis-tag">餐厅待选</span><span v-else-if="s.timeBlock" class="basis-tag">{{ s.timeBlock }} · 未指定地点</span><span v-else-if="s.type === '室内场馆'" class="basis-tag">室内候选</span><span v-if="isUnverifiedPlanPlace(s)" class="unverified-badge">地点待核实</span><span v-else-if="s.replacedNote" class="v-badge">已替换</span><span
+                  <b>{{ s.name }}<sup v-if="s.ref_ids && s.ref_ids.length" class="ref-mark" :title="`这个安排来自站内资料 ${refMarks(s.ref_ids)}`">{{ refMarks(s.ref_ids) }}</sup><span v-if="s.timeBlock === '休息'" class="basis-tag">休息时段</span><span v-else-if="s.timeBlock === '餐饮'" class="basis-tag">餐厅待选</span><span v-else-if="s.timeBlock" class="basis-tag">{{ s.timeBlock }} · 未指定地点</span><span v-else-if="s.type === '室内场馆'" class="basis-tag">室内候选</span><span v-if="isUnverifiedPlanPlace(s)" class="unverified-badge">地点待核实</span><span v-else-if="s.replacedNote" class="v-badge">已替换</span><span
                     v-if="!s.timeBlock && isLodging(s)" class="lodging-badge" title="这是住宿地点，不是游玩景点">住宿</span></b>
                   <small v-if="s.timeBlock">{{ s.time }}<template v-if="s.duration_min"> · {{ fmtMin(s.duration_min) }}</template><template v-if="s.note"> · {{ s.note }}</template></small>
                   <small v-else>{{ s.time }}<template v-if="!isUnverifiedPlanPlace(s) && (s.address || s.district)">{{ s.time ? ' · ' : '' }}{{ s.address || s.district }}</template></small>
@@ -726,7 +735,7 @@ onBeforeUnmount(() => {
                 💡 最终建议：{{ result.itinerary.stay_pick.why }}
               </div>
             </div>
-            <PlanReferences :references="result.itinerary.references || []" />
+            <PlanReferences :references="result.itinerary.references || []" :stats="result.itinerary.citation_stats || null" />
             <details class="vlog">
               <summary>地图核实报告（{{ (result.verify_logs || []).length }} 条）</summary>
               <div v-for="(l, i) in result.verify_logs" :key="i" class="v-line">
@@ -858,6 +867,8 @@ onBeforeUnmount(() => {
 .day-group { margin-bottom: 10px; }
 .day-title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 7px; }
 .day-count { font-weight: 400; font-size: 11.5px; color: var(--text-sub); }
+.day-refs { font-weight: 400; font-size: 11px; color: #1a6e50; background: #eef6f1; border: 1px solid #cfe3d7; border-radius: 6px; padding: 1px 7px; }
+.ref-mark { margin-left: 3px; font-size: 10.5px; font-weight: 600; color: #1a6e50; vertical-align: super; line-height: 0; letter-spacing: -0.2px; }
 .day-reason { font-size: 12px; color: #55605a; background: var(--green-soft); border-radius: 8px; padding: 6px 10px; margin: 6px 0 2px; line-height: 1.6; }
 /* 出行难度 / 交通可达性 / 在途耗时 */
 .diff-badge { margin-left: auto; color: #fff; border-radius: 999px; padding: 1px 10px; font-size: 11px; font-weight: 600; }

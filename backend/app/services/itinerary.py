@@ -556,6 +556,37 @@ def _validate_draft(it, collected, *, require_cost_components=False):
     return _normalize_draft(it, collected, requirements)
 
 
+_NON_SIGHT_TYPES = {'餐饮', '交通', '休息', '住宿', '购物'}
+
+
+def plan_density(itinerary, collected) -> dict:
+    """统计每天"真正能去的地点"有几个。
+
+    只观测、不拦截：校验层现在只要求每天至少一个地点，餐饮/交通/休息
+    都算数，于是模型用「午餐 + 自由活动 + 返回酒店」就能凑满一天。
+    直接抛错重生成会让真模型测试更容易整单失败，所以先把数字记下来，
+    交给日志和前端展示，等评测能证明重试有收益再改成硬约束。
+    """
+    pace = str(collected.get('pace') or '')
+    floor = 3 if pace in ('紧凑', '中等') else 2
+    counts, thin = [], []
+    for day in itinerary.get('days') or []:
+        if not isinstance(day, dict):
+            continue
+        count = 0
+        for spot in day.get('spots') or []:
+            if not isinstance(spot, dict):
+                continue
+            if spot.get('timeBlock') or str(spot.get('type') or '') in _NON_SIGHT_TYPES:
+                continue
+            if str(spot.get('name') or '').strip():
+                count += 1
+        counts.append(count)
+        if count < floor:
+            thin.append(day.get('day'))
+    return {'floor': floor, 'counts': counts, 'thin_days': thin}
+
+
 def _normalize_draft(it, collected, requirements):
     it.pop('schedule_requirements', None)
     if requirements:
@@ -573,6 +604,7 @@ def _normalize_draft(it, collected, requirements):
                 for spot in spots
             ):
                 raise ValueError("地点结构无效")
+        normalized["density"] = plan_density(normalized, collected)
         return normalized
     except (AttributeError, TypeError, ValueError) as exc:
         raise ValueError("行程字段结构无效") from exc
@@ -593,14 +625,29 @@ _REFERENCE_PROMPT = """【可参考的站内资料】
 {lines}
 
 请在有把握时优先采用上述资料中的地点与路线；资料未覆盖的部分按常识安排，不要编造具体价格与营业时间。
-资料只是参考，不要因为资料条数少就压缩每天的安排——每天仍要有 4-6 项，地点不足时按常识补充。"""
+资料里的价格、门票和时间可能已经过时，能写"以现场为准"就不要写死数字。
+资料只是参考，不要因为资料条数少就压缩每天的安排——每天仍要有 4-6 项，其中至少 3 个不同的具名地点（餐饮、交通、休息不算），地点不足时按常识补充同城景点。"""
+
+
+def _strip_stale(text: str) -> str:
+    """价格/日期清洗。knowledge 导入失败（比如没装 numpy）时原样返回，
+    不能让一个可选优化把整条生成链路拖挂。"""
+    try:
+        from app.services.knowledge import strip_stale_facts
+    except Exception:
+        return text
+    try:
+        return strip_stale_facts(text)
+    except Exception:
+        return text
 
 
 def _reference_block(references) -> str:
     """把检索片段拼成提示词片段。没有可用片段时返回空串（提示词与旧版一字不差）。
 
-    结尾那句「不要编造」是必须的：注入资料后模型反而更容易把资料里没写的
-    细节（门票、营业时间）脑补成事实，必须显式划边界。
+    结尾那两句是必须的：注入资料后模型反而更容易把资料里没写的
+    细节（门票、营业时间）脑补成事实，必须显式划边界；同时它会用
+    「自由活动」填满一天来偷懒，密度要求也得明说。
     """
     usable = [
         r for r in (references or [])
@@ -611,7 +658,7 @@ def _reference_block(references) -> str:
     lines = []
     for index, ref in enumerate(usable, 1):
         title = ' '.join(str(ref.get('title') or '站内资料').split()) or '站内资料'
-        content = ' '.join(str(ref.get('content')).split())
+        content = _strip_stale(' '.join(str(ref.get('content')).split()))
         lines.append(f"[{index}] 《{title}》{content[:400]}")
     return "\n" + _REFERENCE_PROMPT.format(lines="\n".join(lines))
 
