@@ -18,9 +18,24 @@
     }
   ],
   "measured": {
-    "before_prompt_only": {"spots_per_day": [2, 2], "elapsed": "2m22s"},
-    "after_prompt_and_fill": {"spots_per_day": [3, 3], "elapsed": "1m29s"},
-    "filled_examples": ["东郊记忆（成华区）", "宽窄巷子景区（青羊区）"],
+    "before_prompt_only": {
+      "spots_per_day": [
+        2,
+        2
+      ],
+      "elapsed": "2m22s"
+    },
+    "after_prompt_and_fill": {
+      "spots_per_day": [
+        3,
+        3
+      ],
+      "elapsed": "1m29s"
+    },
+    "filled_examples": [
+      "东郊记忆（成华区）",
+      "宽窄巷子景区（青羊区）"
+    ],
     "verify_matched": "6/6"
   },
   "tests": {
@@ -39,5 +54,19 @@
     "timer": "travel-backup.timer, OnCalendar=03:00, Persistent=true, RandomizedDelaySec=300",
     "retention": "按数量保留 7 份，按天数兜底清理 14 天",
     "manual_run": "integrity=ok fk_rows=0 chunks=1708 bytes=9228288"
+  },
+  "git": {
+    "feature_commit": "66a4b98",
+    "fix_commit": "24c83b9",
+    "branch": "main"
+  },
+  "release": {
+    "application_id": "4416bcd0934c94ceb1c25b49865ed955cb9287d847bee473442c2eb742eca973",
+    "application_files": 121,
+    "frontend_id": "fb8e31b01503b9711253aea45cd292d26fbcd20595e7f55529627b613955fffe",
+    "previous_bad_release": "3be8ab3125eff669b963912d592881227c70c36d41dae063915ed224a9c6e696",
+    "note": "3be8ab31 是含密度重试的版本，上线即出现整单失败；4416bcd0 去掉重试并加费用类别归一化",
+    "runtime_change": "none",
+    "systemd_change": "drop-in WorkingDirectory updated; TRAVEL_SHARED_LIMITS stays 0"
   }
 }
