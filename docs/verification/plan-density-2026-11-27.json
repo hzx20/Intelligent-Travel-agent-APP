@@ -30,7 +30,8 @@
         3,
         3
       ],
-      "elapsed": "1m29s"
+      "elapsed": "1m29s",
+      "note": "per_day=2 后，模型排 1 个点的天会补到 3 个"
     },
     "filled_examples": [
       "东郊记忆（成华区）",
@@ -57,16 +58,20 @@
   },
   "git": {
     "feature_commit": "66a4b98",
-    "fix_commit": "24c83b9",
+    "fix_commit": "abb0a7d",
     "branch": "main"
   },
   "release": {
-    "application_id": "4416bcd0934c94ceb1c25b49865ed955cb9287d847bee473442c2eb742eca973",
+    "application_id": "2d4794a39bbd395c9424a2c10f88bbd5f1c4794c562b4e7e7e818eae7aa71731",
     "application_files": 121,
     "frontend_id": "fb8e31b01503b9711253aea45cd292d26fbcd20595e7f55529627b613955fffe",
     "previous_bad_release": "3be8ab3125eff669b963912d592881227c70c36d41dae063915ed224a9c6e696",
-    "note": "3be8ab31 是含密度重试的版本，上线即出现整单失败；4416bcd0 去掉重试并加费用类别归一化",
+    "note": "2d4794a3 把补点上限提到每天 2 个，模型只排 1 个点时也能凑到 3 个",
     "runtime_change": "none",
-    "systemd_change": "drop-in WorkingDirectory updated; TRAVEL_SHARED_LIMITS stays 0"
+    "systemd_change": "drop-in WorkingDirectory updated; TRAVEL_SHARED_LIMITS stays 0",
+    "previous_releases": [
+      "3be8ab31（含密度重试，上线即整单失败）",
+      "4416bcd0（去掉重试 + 费用类别归一化，补点每天 1 个）"
+    ]
   }
 }
