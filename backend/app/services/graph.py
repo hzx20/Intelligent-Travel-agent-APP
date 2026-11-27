@@ -153,6 +153,11 @@ async def verify_node(state: PlanState) -> dict:
         )
         # 核实可能替换或改名地点，按最终名字重算一次引用（幂等，先清后写）
         citations.attach_citations(new_itinerary, state.get("references") or [])
+        # 密度也要重算：核实阶段会合并重复地点，生成时数出来的「每天 3 个点」
+        # 合并后可能只剩 2 个，不重算日志就会虚报
+        from app.services.itinerary import plan_density
+
+        new_itinerary["density"] = plan_density(new_itinerary, state.get("collected") or {})
         # 按"天"去重，不能直接数日志条数：同一天可能产生两条去重记录
         # （核实前按名字合并一次、核实后按 POI 编号再合并一次），
         # 数条数会出现"2 天行程却说合并了 3 天"这种明显不实的提示。
