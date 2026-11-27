@@ -7,6 +7,7 @@
   POI 名称为 AI 建议的真实知名地点，M3 模块会用地图 API 逐一核实
 """
 import json
+import re
 from copy import deepcopy
 from decimal import Decimal, InvalidOperation
 
@@ -612,6 +613,37 @@ def has_thin_day(itinerary, target: int = 3) -> bool:
     return False
 
 
+def _slot_after(spots, *, gap_min: int = 30, ceiling: int = 20 * 60):
+    """给补进来的地点找一个当天可行的时刻，找不到就返回 ''。
+
+    接在当天最后一个有时刻的地点之后：开始时间 + 时长 + 路上 30 分钟。
+    没有一项带时刻时从 09:00 起算。超过 ceiling（20:00）就认为当天排满了——
+    「补充推荐」排到晚上九点，用户不会去，不如不补。
+    """
+    latest = None
+    for spot in spots or []:
+        if not isinstance(spot, dict):
+            continue
+        match = re.match(r'^(\d{1,2}):(\d{2})$', str(spot.get('time') or '').strip())
+        if not match:
+            continue
+        hour, minute = int(match.group(1)), int(match.group(2))
+        if hour > 23 or minute > 59:
+            continue
+        try:
+            duration = int(spot.get('duration_min') or 0)
+        except (TypeError, ValueError):
+            duration = 0
+        if duration <= 0 or duration > 600:
+            duration = 120
+        end = hour * 60 + minute + duration
+        latest = end if latest is None else max(latest, end)
+    start = 9 * 60 if latest is None else latest + gap_min
+    if start > ceiling:
+        return ''
+    return f'{start // 60:02d}:{start % 60:02d}'
+
+
 def fill_thin_days(itinerary, candidates, *, floor: int = 3, per_day: int = 2) -> int:
     """给地点不足的天补同城景点，返回补了几个。
 
@@ -638,12 +670,17 @@ def fill_thin_days(itinerary, candidates, *, floor: int = 3, per_day: int = 2) -
         count = _named_sight_count(spots)
         added = 0
         while count < floor and added < per_day and pool:
+            slot = _slot_after(spots)
+            if not slot:
+                break  # 当天已排到晚上，硬塞「21:00 去公园」没有意义
             candidate = pool.pop(0)
             spots.append(
                 {
                     'name': candidate['name'],
                     'type': '景点',
                     'filled': True,
+                    'time': slot,
+                    'duration_min': 120,
                     'note': '补充推荐，出发前请确认开放时间',
                 }
             )
@@ -657,13 +694,16 @@ def fill_thin_days(itinerary, candidates, *, floor: int = 3, per_day: int = 2) -
 def plan_density(itinerary, collected) -> dict:
     """统计每天"真正能去的地点"有几个。
 
-    只观测、不拦截：校验层现在只要求每天至少一个地点，餐饮/交通/休息
-    都算数，于是模型用「午餐 + 自由活动 + 返回酒店」就能凑满一天。
-    直接抛错重生成会让真模型测试更容易整单失败，所以先把数字记下来，
-    交给日志和前端展示，等评测能证明重试有收益再改成硬约束。
+    下限统一 3 个，不再按节奏分档：悠闲档只是"每个点待久一点、一天少跑两个"，
+    不等于"一天只有两个点"。之前悠闲档给 2，结果模型排 2 个就判达标，
+    提示词里写的「至少 3 个」形同虚设。
+
+    只观测、不拦截：校验层只要求每天至少一个地点，餐饮/交通/休息都算数，
+    所以模型用「午餐 + 自由活动 + 返回酒店」就能凑满一天。改成硬校验会让
+    真模型整单失败率上升（这条线 2026-11-27 试过，上线当天就撤了），
+    所以数字只写日志和前端，补点交给 fill_thin_days。
     """
-    pace = str(collected.get('pace') or '')
-    floor = 3 if pace in ('紧凑', '中等') else 2
+    floor = 3
     counts, thin = [], []
     for day in itinerary.get('days') or []:
         if not isinstance(day, dict):
@@ -712,8 +752,8 @@ item 用输入中从1开始的原安排编号。每天的相邻安排不得重�
 _REFERENCE_PROMPT = """【可参考的站内资料】
 {lines}
 
-请在有把握时优先采用上述资料中的地点与路线；资料未覆盖的部分按常识安排，不要编造具体价格与营业时间。
-资料里的价格、门票和时间可能已经过时，能写"以现场为准"就不要写死数字。
+请在有把握时优先采用上述资料中的地点与路线；资料未覆盖的部分按常识安排。
+资料里的价格、门票和营业时间可能已经过时：不要照抄成确定报价，但也不要把 cost_estimate 留空——按你自己的常识给一个中低价位的估算，并在 note 里注明"以现场为准"。一份行程的预算总计是 0，比估得不准更糟。
 资料只是参考，不要因为资料条数少就压缩每天的安排——每天仍要有 4-6 项，其中至少 3 个不同的具名地点（餐饮、交通、休息不算），地点不足时按常识补充同城景点。
 同一个远郊景点（车程一小时以上的山、古镇、度假区）只能安排在一天，不要连续两天重复；每天的地点尽量在同一片区域，别把城市两头串成一天。"""
 

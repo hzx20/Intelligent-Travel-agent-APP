@@ -189,6 +189,28 @@ async def verify_node(state: PlanState) -> dict:
             tail += f"，{unverified} 个地点未能核实"
         if dedupe_days:
             tail += f"，合并 {len(dedupe_days)} 天里的重复地点"
+
+        # 核实会把重复地点合并掉：生成时补到每天 3 个，合并后可能又掉回 2 个。
+        # 不补的话，日志说"补充过"，用户看到的还是稀稀拉拉两天。补的点标 unverified，
+        # 前端显示「地点待核实」——它们确实没经过地图核实，不能假装核实过。
+        from app.services import knowledge
+        from app.services.itinerary import fill_thin_days, has_thin_day
+
+        if city and has_thin_day(new_itinerary, 3):
+            try:
+                candidates = await asyncio.to_thread(knowledge.city_spots, city, 40)
+            except Exception:
+                candidates = []
+            filled = fill_thin_days(new_itinerary, candidates, floor=3)
+            if filled:
+                for spot in (s for d in new_itinerary.get("days") or [] for s in (d.get("spots") or [])):
+                    if isinstance(spot, dict) and spot.get("filled") and not spot.get("verification_status"):
+                        spot["verification_status"] = "unverified"
+                        spot["verification_note"] = "补充推荐，位置未核实"
+                new_itinerary["density"] = plan_density(new_itinerary, state.get("collected") or {})
+                citations.attach_citations(new_itinerary, state.get("references") or [])
+                total = sum(len(d.get("spots") or []) for d in new_itinerary.get("days") or [])
+                tail += f"，补充 {filled} 个同城景点"
         return {
             "itinerary": new_itinerary,
             "verify_logs": logs,

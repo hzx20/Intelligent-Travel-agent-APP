@@ -178,7 +178,10 @@ def _assert_reference_injection(monkeypatch, references, should_have):
     if should_have:
         assert "【可参考的站内资料】" in user_message
         assert "《成都·亲子》" in user_message
-        assert "不要编造具体价格与营业时间" in user_message
+        # 约束是「别照抄资料里的价」，不是「别给价格」：后者会让整份行程的
+        # 预算总计变成 0（2026-11-27 线上实测），所以两者都要在提示里说清楚。
+        assert "不要照抄成确定报价" in user_message
+        assert "cost_estimate" in user_message
     else:
         assert "【可参考的站内资料】" not in user_message
     assert result["days"], "注入资料不能破坏行程结构"
@@ -325,8 +328,10 @@ def test_plan_density_ignores_meals_and_rest():
     }
     density = plan_density(itinerary, {"pace": "悠闲"})
     assert density["counts"] == [2, 1]
-    assert density["thin_days"] == [2]
-    assert density["floor"] == 2
+    # 悠闲档的下限也是 3：之前给 2，模型排 2 个就判达标，提示词里
+    # 「每天至少 3 个具名地点」等于白写。悠闲是「每处待久一点」，不是「少去一处」。
+    assert density["thin_days"] == [1, 2]
+    assert density["floor"] == 3
 
 
 def test_public_quotas_cover_plan_endpoints():
@@ -463,3 +468,59 @@ def test_fill_thin_days_reaches_three_by_default():
     filled = fill_thin_days(itinerary, [{"name": "B"}, {"name": "C"}, {"name": "D"}], floor=3)
     assert filled == 2
     assert [s["name"] for s in itinerary["days"][0]["spots"]] == ["A", "B", "C"]
+
+
+# ---------------------------------------------------------------- 补点时刻
+
+def test_slot_after_continues_from_last_spot():
+    """补的点要接在当天最后一个点后面，不能凭空给 09:00。"""
+    from app.services.itinerary import _slot_after
+
+    spots = [
+        {"name": "A", "time": "09:00", "duration_min": 120},
+        {"name": "B", "time": "13:30", "duration_min": 90},
+    ]
+    # 13:30 + 90 分钟 = 15:00，再加 30 分钟路上时间
+    assert _slot_after(spots) == "15:30"
+
+
+def test_slot_after_starts_at_nine_without_times():
+    from app.services.itinerary import _slot_after
+
+    assert _slot_after([{"name": "A"}]) == "09:00"
+    assert _slot_after([]) == "09:00"
+
+
+def test_slot_after_gives_up_when_day_is_full():
+    """排到 20:00 之后就不补了：塞一个 21:30 的公园没有意义。"""
+    from app.services.itinerary import _slot_after
+
+    spots = [{"name": "A", "time": "18:00", "duration_min": 180}]
+    assert _slot_after(spots) == ""
+
+
+def test_fill_thin_days_sets_time_on_filled_spots():
+    from app.services.itinerary import fill_thin_days
+
+    itinerary = {
+        "days": [
+            {"day": 1, "spots": [{"name": "A", "time": "09:00", "duration_min": 120}]},
+        ]
+    }
+    filled = fill_thin_days(itinerary, [{"name": "B"}, {"name": "C"}], floor=3)
+    assert filled == 2
+    spots = itinerary["days"][0]["spots"]
+    assert [s["time"] for s in spots] == ["09:00", "11:30", "14:00"]
+    assert all(s.get("duration_min") == 120 for s in spots[1:])
+
+
+def test_fill_thin_days_skips_day_that_is_already_full():
+    from app.services.itinerary import fill_thin_days
+
+    itinerary = {
+        "days": [
+            {"day": 1, "spots": [{"name": "A", "time": "19:00", "duration_min": 120}]},
+        ]
+    }
+    assert fill_thin_days(itinerary, [{"name": "B"}, {"name": "C"}], floor=3) == 0
+    assert len(itinerary["days"][0]["spots"]) == 1

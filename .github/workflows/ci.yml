@@ -34,11 +34,28 @@ jobs:
       # test_m1/test_m2 会打真实模型，跑一次消耗额度还要几分钟，放到人工冒烟里做。
       # 只排除那两个真正依赖线上模型的用例，别再写 "not test_graph" 这种宽匹配——
       # 它会把 test_graph_contains_retrieve_before_generate 一起排除掉。
-      - run: >
-          python -m pytest tests -q
-          --ignore=tests/test_m1.py
-          --ignore=tests/test_m2.py
-          -k "not test_plan_stream_saves_history_when_logged_in and not test_graph_compiled_and_flows"
+      #
+      # 依赖本机材料（.release-candidates/、nginx 二进制、frontend/dist）的用例
+      # 自己 skip，不在这里列——列在这里会让它们永远不被检查。
+      - name: pytest
+        run: |
+          set -o pipefail
+          python -m pytest tests -q --tb=short -rf \
+            --ignore=tests/test_m1.py \
+            --ignore=tests/test_m2.py \
+            -k "not test_plan_stream_saves_history_when_logged_in and not test_graph_compiled_and_flows" \
+            2>&1 | tee pytest.log
+      # 失败时把尾部贴进 job summary：Actions 页面直接能看到哪条挂了，
+      # 不用点进日志翻几千行。
+      - name: failure summary
+        if: failure()
+        run: |
+          {
+            echo '### backend pytest failed'
+            echo '```'
+            tail -60 pytest.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   frontend:
     name: frontend build:travel

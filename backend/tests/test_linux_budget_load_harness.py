@@ -15,6 +15,14 @@ from tools.release_candidate import prepare, verify
 
 FROZEN = Path(__file__).resolve().parents[2] / '.release-candidates/unified-application-2026-11-18-budget'
 
+# 候选包是本机产物，.release-candidates/ 整目录在 .gitignore 里：CI 拿不到它，
+# 直接读会 FileNotFoundError，整条流水线红。跟 nginx / dist 那几个用例一样，
+# 材料不在就跳过，不要在没有材料的环境里假装测过。
+pytestmark = pytest.mark.skipif(
+    not FROZEN.is_dir(),
+    reason='Frozen budget candidate required (local .release-candidates/, not in git)',
+)
+
 
 def test_rehearsal_patches_exact_frozen_file():
     original = (FROZEN / qa.ROUTER).read_bytes()
