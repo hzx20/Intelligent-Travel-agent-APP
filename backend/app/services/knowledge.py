@@ -531,3 +531,48 @@ def stats() -> dict:
             ).fetchall()
         )
     return {"total": int(total), "embedded": int(ready), "by_type": by_type}
+
+
+def city_spots(city: str, limit: int = 40) -> list[dict]:
+    """同城景点候选，只给名字/区县/标签，用来给「一天只有一两个点」补位。
+
+    不走向量检索：补位要的是「这个城市还有哪些能去的地方」，不是语义相似度。
+    优先取标签里带风景名胜/景点的，再按 id 排，保证同一城市每次结果稳定
+    （不稳定的话用户刷新一次，行程里会冒出不同的补充点）。
+    """
+    from app.db.database import SessionLocal
+    from app.db.models import Spot
+
+    name = str(city or "").strip()
+    if not name:
+        return []
+    try:
+        with SessionLocal() as db:
+            rows = (
+                db.query(Spot)
+                .filter(Spot.city.like(f"%{name}%"))
+                .order_by(Spot.id)
+                .limit(max(1, int(limit)))
+                .all()
+            )
+    except Exception:
+        return []
+
+    out = []
+    for row in rows:
+        tags = str(row.tags or "")
+        district = str(row.district or "").strip()
+        # 县级市（都江堰市、彭州市）离主城区通常几十公里，补位时排在市区后面：
+        # 把都江堰补进「动物园 + 塔子山」那天，路线会横穿整个成都平原。
+        remote = district.endswith("市") and district != name and name not in district
+        out.append(
+            {
+                "name": str(row.name or "").strip(),
+                "district": district,
+                "tags": tags,
+                "score": 0 if remote else (2 if ("风景名胜" in tags or "景点" in tags) else 1),
+            }
+        )
+    # 市区景点优先，远郊最后；同档保持 id 顺序，保证结果稳定
+    out.sort(key=lambda item: -item["score"])
+    return [item for item in out if item["name"]]

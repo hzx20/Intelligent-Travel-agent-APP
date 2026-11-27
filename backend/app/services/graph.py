@@ -110,10 +110,14 @@ def _display_references(refs) -> list[dict]:
 
 async def generate_node(state: PlanState) -> dict:
     """节点2：行程生成（复用 M2 提示词与生成逻辑）。"""
-    from app.services import citations
+    from app.services import citations, knowledge
+    from app.services.itinerary import fill_thin_days, has_thin_day, plan_density
 
     refs = state.get("references") or []
-    itinerary = await generate_itinerary(state.get("collected") or {}, references=refs)
+    collected = state.get("collected") or {}
+    # 澄清收集的字段名是 destination（前端快捷模块也写它），city 只是兼容旧数据的备选
+    city = collected.get("destination") or collected.get("city", "")
+    itinerary = await generate_itinerary(collected, references=refs)
     tail = ""
     if refs and isinstance(itinerary, dict):
         itinerary["references"] = _display_references(refs)
@@ -125,11 +129,24 @@ async def generate_node(state: PlanState) -> dict:
             tail = f"；资料引用：{desc}"
     days = len((itinerary.get("days") or []))
     density = itinerary.get("density") if isinstance(itinerary, dict) else None
+    if isinstance(itinerary, dict) and city and has_thin_day(itinerary, 3):
+        # 模型只排了一两个点，就从同城景点库里补一个，别重跑两分钟模型。
+        # 补的点标 filled=True，前端显示「补充推荐」，用户知道这不是 AI 自己想的。
+        try:
+            candidates = await asyncio.to_thread(knowledge.city_spots, city, 40)
+        except Exception:
+            candidates = []
+        filled = fill_thin_days(itinerary, candidates, floor=3)
+        if filled:
+            itinerary["density"] = plan_density(itinerary, collected)
+            if refs:
+                # 补的点如果正好在某条资料里提过，也该标上引用
+                citations.attach_citations(itinerary, refs)
+            tail += f"；补充 {filled} 个同城景点"
+    density = itinerary.get("density") if isinstance(itinerary, dict) else None
     if isinstance(density, dict) and density.get("thin_days"):
-        # 说出来比藏着好：这一版仍照常返回，但日志里能看出哪天内容偏薄
+        # 补完还是少（城市景点池不够用），如实说，不要假装达标
         tail += f"；{len(density['thin_days'])} 天具名地点偏少"
-    # 澄清收集的字段名是 destination（前端快捷模块也写它），city 只是兼容旧数据的备选
-    city = state["collected"].get("destination") or state["collected"].get("city", "")
     return {
         "itinerary": itinerary,
         "logs": _log(state, f"行程生成：{city} {days} 天框架完成{tail}"),

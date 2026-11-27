@@ -664,7 +664,7 @@ function refMarks(ids) {
               <div v-for="(s, i) in planDayEntries(d)" :key="i" class="spot-row">
                 <span class="spot-idx" :style="{ background: colorOf(d.day) }">{{ i + 1 }}</span>
                 <div class="spot-info">
-                  <b>{{ s.name }}<sup v-if="s.ref_ids && s.ref_ids.length" class="ref-mark" :title="`这个安排来自站内资料 ${refMarks(s.ref_ids)}`">{{ refMarks(s.ref_ids) }}</sup><span v-if="s.timeBlock === '休息'" class="basis-tag">休息时段</span><span v-else-if="s.timeBlock === '餐饮'" class="basis-tag">餐厅待选</span><span v-else-if="s.timeBlock" class="basis-tag">{{ s.timeBlock }} · 未指定地点</span><span v-else-if="s.type === '室内场馆'" class="basis-tag">室内候选</span><span v-if="isUnverifiedPlanPlace(s)" class="unverified-badge">地点待核实</span><span v-else-if="s.replacedNote" class="v-badge">已替换</span><span
+                  <b>{{ s.name }}<sup v-if="s.ref_ids && s.ref_ids.length" class="ref-mark" :title="`这个安排来自站内资料 ${refMarks(s.ref_ids)}`">{{ refMarks(s.ref_ids) }}</sup><span v-if="s.filled" class="basis-tag filled-tag" title="行程原本这天地点偏少，从同城景点库补充">补充推荐</span><span v-if="s.timeBlock === '休息'" class="basis-tag">休息时段</span><span v-else-if="s.timeBlock === '餐饮'" class="basis-tag">餐厅待选</span><span v-else-if="s.timeBlock" class="basis-tag">{{ s.timeBlock }} · 未指定地点</span><span v-else-if="s.type === '室内场馆'" class="basis-tag">室内候选</span><span v-if="isUnverifiedPlanPlace(s)" class="unverified-badge">地点待核实</span><span v-else-if="s.replacedNote" class="v-badge">已替换</span><span
                     v-if="!s.timeBlock && isLodging(s)" class="lodging-badge" title="这是住宿地点，不是游玩景点">住宿</span></b>
                   <small v-if="s.timeBlock">{{ s.time }}<template v-if="s.duration_min"> · {{ fmtMin(s.duration_min) }}</template><template v-if="s.note"> · {{ s.note }}</template></small>
                   <small v-else>{{ s.time }}<template v-if="!isUnverifiedPlanPlace(s) && (s.address || s.district)">{{ s.time ? ' · ' : '' }}{{ s.address || s.district }}</template></small>
@@ -874,6 +874,7 @@ function refMarks(ids) {
 .diff-badge { margin-left: auto; color: #fff; border-radius: 999px; padding: 1px 10px; font-size: 11px; font-weight: 600; }
 .diff-basis { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0 2px; }
 .basis-tag { background: #f2f5f2; border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; font-size: 11px; color: #5c6a60; }
+.filled-tag { background: #fdf6e3; border-color: #ecdcae; color: #8a6d1f; }
 .transit-row { margin: 6px 0 2px; font-size: 11.5px; color: #4d5a52; }
 .mode-chip { display: inline-block; background: var(--green-soft); border: 1px solid var(--green-border, #cfe0d3); color: var(--green); border-radius: 6px; padding: 1px 8px; font-size: 11px; margin-right: 5px; }
 .transit-row .combo { color: #55605a; }

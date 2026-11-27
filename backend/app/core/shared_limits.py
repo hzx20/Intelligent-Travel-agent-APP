@@ -12,18 +12,22 @@ from starlette.responses import JSONResponse
 
 
 def _shared_peer(peer: str) -> bool:
-    """这个 peer 是否代表"一群人"而不是一个用户。
+    """这个 peer 是不是「一整片内网」而不是一个用户。
 
-    反向代理没把真实 IP 传下来时，scope.client 会是 127.0.0.1 或 172.16/10.x
-    这类地址：所有用户共用一个 key。按它限流等于全站共享同一个额度——
-    5 次/分钟会把整个站点挡死。这种地址宁可不限，也不误伤。
+    反向代理没把真实 IP 传下来时，scope.client 会是 172.16/10.x 这类内网地址：
+    所有用户共用一个 key，按它限流等于全站共享一个额度。
+
+    只看内网段，不看回环：127.0.0.1 一般出现在「本机直连 uvicorn」和测试里，
+    那是可控的单来源；生产是 172.31.240.2（edge 容器）直连，才是真会共享的那个。
     """
     try:
         addr = ipaddress.ip_address(str(peer))
     except ValueError:
-        # 解析不出地址（空值、"unknown"）就没法区分用户，一律当作共享
-        return True
-    return addr.is_loopback or addr.is_private or addr.is_link_local
+        # 解析不出 IP（Starlette TestClient 的占位 host）：当作单个来源，照常计数
+        return False
+    if addr.is_loopback:
+        return False
+    return addr.is_private or addr.is_link_local
 
 
 class LimitStoreUnavailable(Exception):

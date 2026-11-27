@@ -559,6 +559,73 @@ def _validate_draft(it, collected, *, require_cost_components=False):
 _NON_SIGHT_TYPES = {'餐饮', '交通', '休息', '住宿', '购物'}
 
 
+def _named_sight_count(spots) -> int:
+    """一天里真正能去的具名地点数。餐饮、交通、休息、住宿都不算。"""
+    count = 0
+    for spot in spots or []:
+        if not isinstance(spot, dict):
+            continue
+        if spot.get('timeBlock') or str(spot.get('type') or '') in _NON_SIGHT_TYPES:
+            continue
+        if str(spot.get('name') or '').strip():
+            count += 1
+    return count
+
+
+def has_thin_day(itinerary, target: int = 3) -> bool:
+    """有没有哪天连 target 个具名地点都不到（补点用，比 density.floor 严一档）。
+
+    density.floor 是"能不能接受"的底线，悠闲档两天各两个点不算硬伤；
+    但只要有一天不到 3 个，就该从同城景点库补一个，成本几乎为零。
+    """
+    for day in itinerary.get('days') or []:
+        if isinstance(day, dict) and _named_sight_count(day.get('spots')) < target:
+            return True
+    return False
+
+
+def fill_thin_days(itinerary, candidates, *, floor: int = 3, per_day: int = 1) -> int:
+    """给地点不足的天补同城景点，返回补了几个。
+
+    只补不删：模型只排了两个点，重跑一次要多等两分多钟，补一个「补充推荐」
+    更快也更可控。跨天去重，否则同一个景点会在两天各出现一次——
+    那正是核实阶段要合并的脏数据。
+    """
+    days = itinerary.get('days') or []
+    used = {
+        str(spot.get('name') or '').strip()
+        for day in days
+        for spot in (day.get('spots') or [])
+        if isinstance(spot, dict)
+    }
+    pool = [
+        item for item in (candidates or [])
+        if isinstance(item, dict) and item.get('name') and item['name'] not in used
+    ]
+    filled = 0
+    for day in days:
+        spots = day.get('spots')
+        if not isinstance(spots, list):
+            continue
+        count = _named_sight_count(spots)
+        added = 0
+        while count < floor and added < per_day and pool:
+            candidate = pool.pop(0)
+            spots.append(
+                {
+                    'name': candidate['name'],
+                    'type': '景点',
+                    'filled': True,
+                    'note': '补充推荐，出发前请确认开放时间',
+                }
+            )
+            used.add(candidate['name'])
+            count += 1
+            added += 1
+            filled += 1
+    return filled
+
+
 def plan_density(itinerary, collected) -> dict:
     """统计每天"真正能去的地点"有几个。
 
@@ -573,14 +640,7 @@ def plan_density(itinerary, collected) -> dict:
     for day in itinerary.get('days') or []:
         if not isinstance(day, dict):
             continue
-        count = 0
-        for spot in day.get('spots') or []:
-            if not isinstance(spot, dict):
-                continue
-            if spot.get('timeBlock') or str(spot.get('type') or '') in _NON_SIGHT_TYPES:
-                continue
-            if str(spot.get('name') or '').strip():
-                count += 1
+        count = _named_sight_count(day.get('spots'))
         counts.append(count)
         if count < floor:
             thin.append(day.get('day'))
@@ -626,7 +686,8 @@ _REFERENCE_PROMPT = """【可参考的站内资料】
 
 请在有把握时优先采用上述资料中的地点与路线；资料未覆盖的部分按常识安排，不要编造具体价格与营业时间。
 资料里的价格、门票和时间可能已经过时，能写"以现场为准"就不要写死数字。
-资料只是参考，不要因为资料条数少就压缩每天的安排——每天仍要有 4-6 项，其中至少 3 个不同的具名地点（餐饮、交通、休息不算），地点不足时按常识补充同城景点。"""
+资料只是参考，不要因为资料条数少就压缩每天的安排——每天仍要有 4-6 项，其中至少 3 个不同的具名地点（餐饮、交通、休息不算），地点不足时按常识补充同城景点。
+同一个远郊景点（车程一小时以上的山、古镇、度假区）只能安排在一天，不要连续两天重复；每天的地点尽量在同一片区域，别把城市两头串成一天。"""
 
 
 def _strip_stale(text: str) -> str:
@@ -661,6 +722,33 @@ def _reference_block(references) -> str:
         content = _strip_stale(' '.join(str(ref.get('content')).split()))
         lines.append(f"[{index}] 《{title}》{content[:400]}")
     return "\n" + _REFERENCE_PROMPT.format(lines="\n".join(lines))
+
+
+def _density_gap(itinerary) -> bool:
+    """是否值得为"行程太空"重生成一次。
+
+    全量重试的代价是用户多等两分多钟，所以只在「超过一半的天都偏少」时才触发：
+    两天里有半天偏少还能接受，两天都只有一两个点就不像一份行程了。
+    """
+    density = itinerary.get('density') or {}
+    thin = density.get('thin_days') or []
+    total = len(itinerary.get('days') or [])
+    if not thin or not total:
+        return False
+    return len(thin) * 2 > total
+
+
+def _density_hint(itinerary) -> str:
+    """把「哪天少了几个点」说具体，比笼统的"请充实行程"有效。"""
+    density = itinerary.get('density') or {}
+    thin = density.get('thin_days') or []
+    floor = int(density.get('floor') or 2)
+    days = '、'.join(f'第{d}天' for d in thin)
+    return (
+        f"{days}只有不到 {floor} 个具名地点（餐饮、交通、休息不算）。"
+        f"请每天至少安排 {floor + 1} 个不同的景点或场馆，并保证它们真实存在、同城可达；"
+        "同一个远郊景点只放在一天。"
+    )
 
 
 async def generate_itinerary(collected, references=None):
@@ -702,7 +790,13 @@ async def generate_itinerary(collected, references=None):
                     raise ValueError('日程纠正内容过长')
                 draft = apply_schedule_repair(repair, _reply_object(reply))
                 return _validate_draft(draft, collected, require_cost_components=True)
-            return _validated_itinerary(reply, collected, require_cost_components=True)
+            itinerary = _validated_itinerary(reply, collected, require_cost_components=True)
+            # 结构过了、但一天只有一两个点，也算不合格：重生成一次。
+            # 第二次不再检查，避免为了凑数一直重跑。
+            if attempt == 0 and _density_gap(itinerary):
+                correction = f"\n【上次输出的问题】{_density_hint(itinerary)}"
+                continue
+            return itinerary
         except ValueError as exc:
             error = str(exc)
             if isinstance(exc, RepairableSchedule):

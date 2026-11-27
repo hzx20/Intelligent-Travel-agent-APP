@@ -27,17 +27,27 @@ const cited = computed(() => {
 function markList(ids) {
   return Array.isArray(ids) && ids.length ? ids.map((n) => `[${n}]`).join('') : ''
 }
+
+/** 两类来源的信息量差很多，混在一起会让人以为点开都能看到攻略：
+ *  guide 是维基导游正文（有交通、玩法、注意事项）；spot 是站内景点库，
+ *  只有名称、区县、标签和地址。不标清楚，用户点开一个只有地址的条目会觉得被骗。 */
+function kindLabel(type) {
+  if (type === 'guide') return '目的地资料'
+  if (type === 'spot') return '景点库'
+  return ''
+}
 </script>
 
 <template>
   <section v-if="refs.length" class="plan-refs" aria-label="参考的站内资料">
     <div class="refs-head">
-      本行程参考了站内 {{ refs.length }} 篇资料
+      本行程参考了站内 {{ refs.length }} 条资料
       <span v-if="cited" class="refs-cited">其中 {{ cited }} 处安排直接来自这些资料</span>
     </div>
     <ul class="refs-list">
       <li v-for="(r, i) in refs" :key="i">
         <span v-if="r.ref_ids && r.ref_ids.length" class="refs-num">{{ markList(r.ref_ids) }}</span>
+        <span v-if="kindLabel(r.source_type)" class="refs-kind" :class="r.source_type">{{ kindLabel(r.source_type) }}</span>
         <a v-if="r.source_url" :href="r.source_url" target="_blank" rel="noopener noreferrer">《{{ r.title }}》</a>
         <span v-else>《{{ r.title }}》</span>
       </li>
@@ -91,6 +101,24 @@ function markList(ids) {
   font-size: 11px;
   font-weight: 600;
   color: #1a6e50;
+}
+.refs-kind {
+  margin-right: 4px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  line-height: 1.6;
+  border: 1px solid transparent;
+}
+.refs-kind.guide {
+  color: #1a6e50;
+  background: #eef6f1;
+  border-color: #cfe3d7;
+}
+.refs-kind.spot {
+  color: #7b6a3f;
+  background: #f8f4e8;
+  border-color: #e6dcc0;
 }
 .refs-list a:hover {
   border-bottom-style: solid;

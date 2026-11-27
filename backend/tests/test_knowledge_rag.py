@@ -378,8 +378,67 @@ def test_shared_peer_skips_proxy_addresses():
     """反代没传真实 IP 时，按 127.0.0.1 限流等于全站共享额度。"""
     from app.core.shared_limits import _shared_peer
 
-    assert _shared_peer("127.0.0.1")
+    # 172/10 段才是一整片内网共用一个 key；回环是本机单来源，照常计数
     assert _shared_peer("172.31.240.2")
     assert _shared_peer("10.0.0.5")
+    assert not _shared_peer("127.0.0.1")
     assert not _shared_peer("134.175.137.18")
-    assert _shared_peer("unknown")  # 解析不出地址，同样无法区分用户
+    # TestClient 用 "testclient" 当 host：解析不出 IP，当作单个来源
+    assert not _shared_peer("testclient")
+
+
+def test_density_gap_only_when_most_days_are_thin():
+    from app.services.itinerary import _density_gap, _density_hint
+
+    two_thin = {"days": [{"day": 1}, {"day": 2}], "density": {"thin_days": [1, 2], "floor": 2}}
+    one_thin = {"days": [{"day": 1}, {"day": 2}], "density": {"thin_days": [1], "floor": 2}}
+    assert _density_gap(two_thin), "两天都不足，值得重生成"
+    assert not _density_gap(one_thin), "一天不足就重跑，用户要多等两分钟"
+    assert not _density_gap({"days": [], "density": {"thin_days": []}})
+    hint = _density_hint(two_thin)
+    assert "第1天、第2天" in hint and "3 个" in hint
+
+
+def test_fill_thin_days_adds_one_and_dedupes():
+    from app.services.itinerary import fill_thin_days, has_thin_day
+
+    itinerary = {
+        "days": [
+            {"day": 1, "spots": [{"name": "宽窄巷子"}]},
+            {"day": 2, "spots": [{"name": "A"}, {"name": "B"}, {"name": "C"}]},
+        ]
+    }
+    assert has_thin_day(itinerary, 3), "第 1 天只有 1 个点"
+    candidates = [
+        {"name": "宽窄巷子"},      # 已经排过，必须跳过
+        {"name": "人民公园"},
+        {"name": "塔子山公园"},
+    ]
+    filled = fill_thin_days(itinerary, candidates, floor=3)
+    assert filled == 1, "每天最多补 1 个，不要把一天塞满"
+    day1 = itinerary["days"][0]["spots"]
+    assert day1[-1]["name"] == "人民公园"
+    assert day1[-1]["filled"] is True
+    assert len(itinerary["days"][1]["spots"]) == 3, "达标的天不动"
+    assert not has_thin_day(itinerary, 3) or len(itinerary["days"][0]["spots"]) < 3
+
+
+def test_fill_thin_days_without_candidates_is_noop():
+    from app.services.itinerary import fill_thin_days
+
+    itinerary = {"days": [{"day": 1, "spots": [{"name": "宽窄巷子"}]}]}
+    assert fill_thin_days(itinerary, [], floor=3) == 0
+    assert len(itinerary["days"][0]["spots"]) == 1
+
+
+def test_city_spots_puts_county_level_cities_last():
+    """补位优先市区：把都江堰补进「动物园+塔子山」那天，路线要横穿整个平原。"""
+    from app.services.knowledge import city_spots
+
+    rows = city_spots("成都", 40)
+    if not rows:
+        pytest.skip("本地没有 spots 数据")
+    names = [r["name"] for r in rows]
+    assert names, "成都要有候选"
+    if "都江堰景区" in names and "人民公园" in names:
+        assert names.index("人民公园") < names.index("都江堰景区")

@@ -1229,3 +1229,15 @@ git 6a660a9（RAG）+43bda9e（发布工具）推送 origin/main，ls-remote 与
 失败的尝试：曾在入库时清洗价格，留出集从 0.82 掉到 0.75（片段变短、切块边界移动，住宿章节「XX客栈 ¥120」一行一个受影响最大）。改回只在注入时清洗，向量仍基于原文；库里留旧价格不影响用户，模型看不到。
 
 测试：新增 12 条（citations 7、清洗 3、配额 1、display 2），test_knowledge_rag.py 28 条全过。离线回归 795 passed / 2 failed（test_provider_budget 与 test_shared_cache 的多进程 temp DB 用例，整套并发时偶发，单跑 3/3 通过）。前端 npm run build:travel 通过（PlanView-CweQZ9QC.js）。
+
+## 2026-11-27 行程密度、引用分类、备份与 CI
+
+行程密度三层兜底：(1) 提示词要求每天 4-6 项、至少 3 个具名地点，同一个远郊景点只排一天；(2) 生成后若超过一半的天不足，把「第 X 天只有不到 N 个具名地点」写进 correction 重生成一次，第二次无条件接受；(3) 仍不足则从同城 spots 表补 1 个/天（`fill_thin_days`），标 `filled=True`，前端显示「补充推荐」。补位优先市区，县级市（都江堰市、彭州市）score 降到 0 排最后——否则会把都江堰补进「动物园+塔子山」那天，路线横穿整个平原。实测成都 2 天：只有提示词时 2/2 天地点数、2m22s；三层齐上后 3/3、1m28s，补进去的是东郊记忆和宽窄巷子（都在市区）。不做硬校验的理由：真模型整单失败率会上升，用户等五分钟拿到「生成失败」比拿到一份两个点的行程更糟。
+
+引用分类：PlanReferences 给每条来源加类型徽标（guide=「目的地资料」、spot=「景点库」）。spot 片段平均 47 字，只有名称/区县/标签/地址，不标清楚用户点开会觉得被骗。标题的「篇」改成「条」——同一章节会贡献多个片段。
+
+运维：/opt/travel/tools/daily-backup.sh + travel-backup.timer，每天 03:00（随机延迟 5 分钟）用 sqlite backup API 做快照，integrity_check + foreign_key_check 不过就以非零退出，按数量保留 7 份、按天数兜底清理。手动跑通：integrity=ok fk_rows=0 chunks=1708 bytes=9,228,288。
+
+CI：.github/workflows/ci.yml，两个 job——后端离线 pytest（排除 test_m1/test_m2 与两个真模型/慢用例）、前端 npm ci + build:travel。env 给假 ZHIPU_API_KEY，避免没有 .env 时模块级 client 初始化直接抛错。
+
+顺手修了测试选择器：原来 `-k "not test_graph"` 会把 `test_graph_contains_retrieve_before_generate` 一起排除（宽匹配），改成 `not test_graph_compiled_and_flows` 后多跑 2 条，离线用例从 799 变 801。
