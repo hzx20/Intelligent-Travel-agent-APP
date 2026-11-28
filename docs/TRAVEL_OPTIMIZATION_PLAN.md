@@ -28,6 +28,8 @@
 
 桌面、平板、移动端及 320 px 窄屏都验收首要操作、焦点顺序、布局和可读性。普通正文对比度以 4.5:1 为设计目标，触控操作以 44 px 命中区为目标。自动截图核对首页、规划等待、行程结果、地图降级和移动端编辑状态，另用真机走查导航、软键盘遮挡和地图手势。先完成页面原型和失败状态图，再迭代页面。[旅行首页](../frontend/src/views/TripsView.vue) · [灵感页](../frontend/src/views/HomeView.vue) · [规划页](../frontend/src/views/PlanView.vue) · [旅行详情](../frontend/src/views/TripDetailView.vue)
 
+隔离浏览器复核时，390 px 的旅行首页在只有一张卡片时仍留出半列，确认后的「打开旅行」又出现在结果面板和历史列表里。桌面规划页在模拟地图不可用时，空地图仍占据大半屏幕。新版在移动端用单列承载单卡结果，由确认面板突出下一步。地图不可用时收起空画布，只保留简短提示和重试入口。
+
 ## 3. 业务和交互优化
 
 | 问题或待确认点 | 改进思路 | 验收 |
@@ -74,6 +76,8 @@
 ### 工具与提效
 
 仓库根目录运行 [统一 QA 脚本](../scripts/travel_quality.py)。先按现有 CI 的环境安装 `backend/requirements.txt` 和 `frontend` 锁定依赖，激活 Python 虚拟环境。本地执行浏览器套件需准备已有配置使用的 Edge，或通过 `TRAVEL_E2E_CHANNEL` 选择已安装的兼容渠道。
+
+Windows 用新的测试副本时通过 `git clone --config core.autocrlf=false` 保留仓库原始行尾。恢复演练用例会验证脚本文件的原始字节，自动转换为 CRLF 会触发摘要校验失败。
 
 ```sh
 python scripts/travel_quality.py backend
