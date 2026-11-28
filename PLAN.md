@@ -2,6 +2,8 @@
 
 适用仓库 `hzx20/Intelligent-Travel-agent-APP`，默认分支 `main`。产品目标和路线图见 [PROJECT_PLAN.md](PROJECT_PLAN.md)。接手当前版本时同时核对 [README](README.md)、[会话记录](docs/SESSION_LOG.md)末尾和最新发布回执。
 
+界面重设计、业务交互调整、测试流程和风险验收见 [全栈优化与质量计划](docs/TRAVEL_OPTIMIZATION_PLAN.md)。
+
 ## 1. 目标、架构边界与交付物
 
 项目目标是让用户从自然语言需求生成可核实的多日行程，并能在网页中编辑、保存和再次打开。用户只向 Codex 提需求、确认取舍并接收结果。Codex 把需求整理成可验收的任务，分配给 WorkBuddy，读取 Muse 的巡检结论，最终审核、合并并在获得该轮发布授权后部署。GitHub 是三端共享计划、进度和验收证据的入口。
